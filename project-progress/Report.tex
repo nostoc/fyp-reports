@@ -12,6 +12,7 @@
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{longtable}
+\usepackage{acro}
 \usepackage{comment} 
 % \usepackage{array}
 
@@ -31,6 +32,89 @@
 \def\UrlBreaks{\do/} 
 \usepackage{breakurl}
 
+\usepackage{pgfgantt}  % For creating the chart
+\usepackage{xcolor}    % For custom colors
+\usepackage{rotating}  % For rotating the chart (sidewaysfigure)
+\usepackage{geometry}  % To ensure margins fit large figures
+\usepackage{graphicx}
+
+% Define acronyms
+\DeclareAcronym{AI}{
+  short = AI,
+  long  = Artificial Intelligence
+}
+\DeclareAcronym{ML}{
+  short = ML,
+  long  = Machine Learning
+}
+
+\DeclareAcronym{ssi}{
+  short = SSI,
+  long = Self-Sovereign Identity
+}
+
+\DeclareAcronym{IoV}{
+  short = IoV,
+  long = Internet of Vehicles
+}
+
+\DeclareAcronym{PoA}{
+  short = PoA,
+  long = Proof-of-Authority
+}
+
+\DeclareAcronym{PoW}{
+  short = PoW,
+  long = Proof-of-Work
+}
+
+\DeclareAcronym{PoS}{
+  short = PoS,
+  long = Proof-of-Stake
+}
+
+\DeclareAcronym{IPFS}{
+  short = IPFS,
+  long = InterPlanetary File System
+}
+
+\DeclareAcronym{API}{
+  short = API,
+  long = Application Programming Interface
+}
+
+\DeclareAcronym{GPS}{
+  short = GPS,
+  long = Global Positioning System
+}
+
+\DeclareAcronym{IT}{
+  short = IT,
+  long = Information Technology
+}
+
+\DeclareAcronym{DApp}{
+  short = DApp,
+  long = Decentralized App
+}
+
+\DeclareAcronym{NLP}{
+  short = NLP,
+  long = Natural Language Processing
+}
+
+% --- COLOR DEFINITIONS (Global) ---
+\definecolor{barblue}{HTML}{A4C2F4}
+\definecolor{labelgray}{HTML}{F3F3F3}
+\definecolor{gridgray}{HTML}{E0E0E0}
+
+%for gantt chart
+\newcommand{\ganttlabel}[1]{%
+  \begin{tabular}{@{}p{7cm}@{}} % Width 7cm, single column, no vertical line
+    \raggedright #1
+  \end{tabular}%
+}
+
 
 \begin{document}
 	
@@ -43,6 +127,8 @@
 % Abstract, Acknowledgements, Preface, list of tables, list of figures and Acronyms
 \input{Front_matters/abstract}
 \addcontentsline{toc}{chapter}{Abstract} % add line to the table of contents
+
+Local governments in developing countries often struggle to address public issues efficiently. These struggles are mainly due to limited transparency, centralized data management, and insufficient citizen participation. E-governance and crowdsourced reporting systems are designed to enhance public engagement. But their effectiveness is limited by issues related to data integrity, user anonymity, content reliability, and trustworthiness.As a solution to the above challenges, we propose a blockchain-based, community-assisted, privacy-preserving reporting framework for local governance. The main objective of the project is to design and prototype a permissioned blockchain-based reporting system. This system will enable citizens to anonymously submit public issue reports and participate in opinion polling. Also, our system will ensure data immutability and transparency. To manage reporting workflows, issue tracking, and community voting in a secure and tamper-resistant manner, the blockchain will use \ac{PoA} mechanism and smart contracts. User identity is decoupled from the report content using a simulated identity and an access control mechanism to preserve the privacy of the users. Large data objects, such as images, are stored off-chain with cryptographic hashes anchored on the blockchain. Additionally, an \ac{AI}-assisted content moderation mechanism will be used to minimize the impact of malicious, low-quality reporting content.  To demonstrate the feasibility of the proposed framework, A web-based \ac{DApp} is developed as a proof of concept within a controlled experimental environment. Through this project, we  aim to deliver a practical and scalable prototype that enhances citizen participation, accountability, and trust in local governance systems.
 
 \input{Front_matters/acknowledgements}
 \addcontentsline{toc}{chapter}{Acknowledgements} % add line to the table of contents
@@ -74,12 +160,12 @@
 
 %%%%%%%%%%%%%%%%%%%%% The End matters %%%%%%%%%%%%%%%%%%%%%
 
-\begin{appendix}
-\include{End_matters/appendix_01}
-\include{End_matters/appendix_02}
-\end{appendix}
+% \begin{appendix}
+% \include{End_matters/appendix_01}
+% \include{End_matters/appendix_02}
+% \end{appendix}
 
-\addcontentsline{toc}{chapter}{APPENDIX}
+% \addcontentsline{toc}{chapter}{APPENDIX}
 
 %%%%%%%%%%%%%%%%%%%%% Bibiliography %%%%%%%%%%%%%%%%%%%%%
 \cleardoublepage
