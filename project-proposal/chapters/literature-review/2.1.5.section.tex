@@ -1,0 +1,52 @@
+\section{User Interfaces for Blockchain-Based e-Gover\\nance Applications}
+
+User interfaces play a critical role in determining the accessibility and adoption of blockchain based e-governance systems. In the traditional applications the user literacy is less important but in this conventional blockchain applications the user literacy is highly considered because of the blockchain concepts that are different from the traditional apps and it does make the users hard to understand and adopt. The literature consistently identifies usability and user experience challenges as major barriers to the adoption of decentralized applications for the general public. Particularly where security requirements conflict with established usability principles \cite{mdpi2025usercentric}, \cite{sonule2025uxweb3}. So the design of intuitive, inclusive, and responsive web interfaces is essential for enabling effective interaction between citizens, government officials, and the underlying blockchain infrastructure.
+
+\subsection{Usability Challenges in Decentralized Governance Systems}
+
+Decentralized applications are fundamentally different from traditional web systems due to its architectural characteristics. Blockchain based systems have asynchronous transactions, immutable records, and cryptographic identity management. They can create friction for users who are used to centralized platforms. Studies highlight a significant usability gap in Web3 applications because of the concepts like transaction finality, gas fees, and private key ownership which are difficult for non technical users to understand and manage  \cite{mdpi2025usercentric}, \cite{sonule2025uxweb3}.
+
+\subsection{Identity Management and Cognitive Load}
+
+One of the most critical usability barriers is wallet based identity management. The reason is user identity is tied to cryptographic key pairs instead of institution managed accounts In decentralized systems. Research shows that the responsibility of safeguarding private keys and the unrecoverble key loss red ce the user participation. Specially in general public where inclusivity is essential \cite{sonule2025uxweb3}, \cite{ramotion2026uiux}, \cite{fintechweekly2025usability}.  
+
+The literature further shows that concepts such as self-sovereign identity and identity management remain poorly understood by most users. Studies report unsafe practices and misunderstanding of recovery mechanisms when users are presented with seed phrases or key-based authentication \cite{oup2022governance}, \cite{fraunhofer2026usability}. These findings motivate the need for interface-level abstractions that preserve blockchain security while reducing cognitive load for citizens and officials.
+
+\subsection{Transaction Latency and User Feedback}
+
+Blockchain transactions are inherently asynchronous with confirmation times dependent on network conditions and consensus protocols. This latency can lead to confusion among  the users because of the system status problems and users can determine those as system failures \cite{sonule2025uxweb3}. The literature recommends to use an optimistic user interface pattern, where user actions are acknowledged immediately while blockchain confirmation occurs in the background.  
+
+As advanced design solutions, literature shows progressive status disclosure, distinguishing between off-chain receipt of a report and on-chain verification which allows users to track the lifecycle of an issue without being exposed to unnecessary low level blockchain details \cite{dzone2026blockchainai}, \cite{marian2025transparent}. Mechanisms like that are particularly relevant for issue reporting systems that require transparency and trust.
+
+\subsection{Transaction Costs and Abstraction of Blockchain Complexity}
+
+% Another significant usability challenge arises from transaction costs associated with public blockchains. The concept of gas fees and fluctuating costs is unfamiliar in public service contexts, where users expect free access to reporting platforms \cite{mdpi2025usercentric}. The literature strongly supports the use of gas abstraction techniques, such as meta-transactions, where backend relayer services submit transactions on behalf of users while preserving cryptographic intent verification \cite{sonule2025uxweb3}. This approach enables blockchain interaction without exposing citizens to economic or technical complexities.
+
+A significant usability challenge coming from the blockchain is transaction cost that associated with public blockchains. And also the concepts of gas fees and fluctuating gas costs are very unfamiliar in public services context. Most of the time users expect free access to the reporting platforms\cite{mdpi2025usercentric}. The literature strongly suggest that the use of gas fee abstraction techniques. Meta Transactions is one of the example. In Meta, backend relayer services submit transactions on behalf of the user. Its achieved by preserving cryptographic intent verification\cite{sonule2025uxweb3}. Therefore this approach enable citizen to interact with blockchain without technical or economical complexities.
+
+
+\subsection{Comparison with Centralized Reporting Platforms}
+
+% Existing centralized platforms such as FixMyStreet and SeeClickFix provide valuable benchmarks for citizen reporting interfaces. Their success is attributed to intuitive map-based reporting, simple authentication mechanisms, and clear feedback loops that inform users about issue resolution progress \cite{king2012fixmystreet}, \cite{mysociety2026fixmystreet}. SeeClickFix further incorporates gamification mechanisms to encourage participation, although studies caution against over-financializing civic engagement \cite{seeclickfix2011democracy}.  
+
+% In contrast, blockchain-based reporting platforms must reconcile these usability expectations with immutable data storage, decentralized identity, and transparent verification. The literature highlights the need for interface designs that visualize blockchain guarantees such as data integrity and auditability—using familiar metaphors rather than raw cryptographic representations \cite{adeyeye2025blockchain}, \cite {marian2025transparent}, \cite{nikonenko2025blockchain}.  
+
+% Additionally, as multimedia evidence is central to citizen reporting, interfaces must integrate decentralized storage solutions such as InterPlanetary File System (\ac{IPFS}) in a seamless manner, ensuring that large media files are handled off-chain while their integrity is verifiably linked on-chain without exposing technical details to users \cite{mergel2012distributed}, \cite{pazos2024blockchain}.
+
+FixMyStreet and SeeClickFIx are existing centralized platforms. Eventhough they are centralized, they provide a valuable benchmarks for crowdsource citizen reporting interfaces. Inituitive map based reporting, simple authentication mechanisms and clear feedback loops are the key characteristics that attributed to platform success\cite{king2012fixmystreet}, \cite{mysociety2026fixmystreet}.
+
+With addition to that SeeClickFix further uses a gamification mechanism to encourage the users to participate in the system. In contrast, Even though the proposed application uses blockchain for reporting platform, it must retain the usability and the expectations of the users. The literature highlights the need of interface design such that gurantees the data integrity and auditability using familiar ui elements rather than cryptographic representations\cite{adeyeye2025blockchain}, \cite {marian2025transparent}, \cite{nikonenko2025blockchain}.  
+
+% \subsection{Trust, Anonymity, and Transparency in Interface Design}
+
+% For privacy-preserving reporting systems, user trust depends not only on protocol guarantees but also on how those guarantees are communicated through the interface. Research on privacy-focused reporting systems emphasizes that users must clearly understand that anonymity is mathematically enforced rather than institutionally promised \cite{lin2023prirpt}. Visual explanations and contextual cues have been shown to improve trust and comprehension more effectively than generic security labels \cite{fraunhofer2026usability}.  
+
+% Similarly, transparency mechanisms such as verification badges, audit timelines, and status indicators help bridge the gap between blockchain-level transparency and human interpretability, enabling users to track issue resolution without interacting directly with block explorers or raw ledger data. \cite{marian2025transparent}, \cite{nikonenko2025blockchain}
+
+\subsection{Accessibility and Inclusivity Considerations}
+
+Inclusivity is a fundamental requirement for e-governance systems. According to \cite{bertrand2023connected}, it can be seen that poorly designed blockchain interfaces may digitally divide users. Also it may favor crypto-literate users excluding vulnerable populations. To reduce this issue, literature suggests mobile first design approaches. Furthermore, lightweight client architectures, effiecient bandwidth synchronization can used to support access in resource limited environments.  \cite{shahin2025towards}.  
+
+% The literature warns that poorly designed blockchain interfaces risk exacerbating the digital divide by favoring crypto-literate users and excluding vulnerable populations \cite{bertrand2023connected}. To mitigate this risk, studies advocate mobile-first design approaches, lightweight client architectures, and bandwidth-efficient synchronization to support access in resource-constrained environments \cite{shahin2025towards}.  
+
+% Furthermore, low-code and no-code development platforms are emerging as viable solutions for enabling local governments to deploy and customize reporting interfaces without extensive blockchain expertise, supporting scalability and adaptability across different governance contexts \cite{quixy2025citizen}. These approaches align with the objective of developing user-friendly interfaces that facilitate broad participation and effective interaction with blockchain-based reporting systems.

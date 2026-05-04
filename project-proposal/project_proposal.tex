@@ -1,0 +1,185 @@
+\documentclass[12pt, a4paper]{report}
+\usepackage{graphicx} % For including images
+\usepackage{titlesec} % For customizing section titles
+\usepackage{tocloft} % For customizing table of contents
+\usepackage{acro} % For acronyms
+\usepackage{rotating} % For time line image
+\usepackage{enumerate}
+
+\usepackage{hyperref} % For clickable links in the document
+%% ____Bibliography____%%
+\usepackage[numbers,sort&compress]{natbib}
+%\usepackage{chapterbib}
+%\usepackage[breaklinks]{hyperref}
+\hypersetup{colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue}
+
+% Page margins
+\usepackage[left=1.5in, right=1in, top=1in, bottom=1in]{geometry}
+
+\usepackage{pgfgantt}  % For creating the chart
+\usepackage{xcolor}    % For custom colors
+\usepackage{rotating}  % For rotating the chart (sidewaysfigure)
+\usepackage{geometry}  % To ensure margins fit large figures
+\usepackage{graphicx}
+
+% Remove page number from the first page
+\thispagestyle{empty}
+% Customize table of contents, list of figures, and list of tables
+% \renewcommand{\cfttoctitlefont}{\hfill\Large\bfseries}
+% \renewcommand{\cftaftertoctitle}{\hfill}
+% \renewcommand{\cftloftitlefont}{\hfill\Large\bfseries}
+% \renewcommand{\cftafterloftitle}{\hfill}
+% \renewcommand{\cftlottitlefont}{\hfill\Large\bfseries}
+% \renewcommand{\cftafterlottitle}{\hfill}
+
+\renewcommand{\cfttoctitlefont}{\Huge\bfseries}
+\renewcommand{\cftloftitlefont}{\Huge\bfseries}
+\renewcommand{\cftlottitlefont}{\Huge\bfseries}
+
+
+% --- COLOR DEFINITIONS (Global) ---
+\definecolor{barblue}{HTML}{A4C2F4}
+\definecolor{labelgray}{HTML}{F3F3F3}
+\definecolor{gridgray}{HTML}{E0E0E0}
+
+%for gantt chart
+\newcommand{\ganttlabel}[1]{%
+  \begin{tabular}{@{}p{7cm}@{}} % Width 7cm, single column, no vertical line
+    \raggedright #1
+  \end{tabular}%
+}
+
+% Define acronyms
+\DeclareAcronym{AI}{
+  short = AI,
+  long  = Artificial Intelligence
+}
+\DeclareAcronym{ML}{
+  short = ML,
+  long  = Machine Learning
+}
+
+\DeclareAcronym{ssi}{
+  short = SSI,
+  long = Self-Sovereign Identity
+}
+
+\DeclareAcronym{IoV}{
+  short = IoV,
+  long = Internet of Vehicles
+}
+
+\DeclareAcronym{PoA}{
+  short = PoA,
+  long = Proof-of-Authority
+}
+
+\DeclareAcronym{PoW}{
+  short = PoW,
+  long = Proof-of-Work
+}
+
+\DeclareAcronym{PoS}{
+  short = PoS,
+  long = Proof-of-Stake
+}
+
+\DeclareAcronym{IPFS}{
+  short = IPFS,
+  long = InterPlanetary File System
+}
+
+\DeclareAcronym{API}{
+  short = API,
+  long = Application Programming Interface
+}
+
+\DeclareAcronym{GPS}{
+  short = GPS,
+  long = Global Positioning System
+}
+
+\DeclareAcronym{IT}{
+  short = IT,
+  long = Information Technology
+}
+
+\DeclareAcronym{DApp}{
+  short = DApp,
+  long = Decentralized App
+}
+
+\DeclareAcronym{NLP}{
+  short = NLP,
+  long = Natural Language Processing
+}
+
+\begin{document}
+
+\include{cover}
+
+\renewcommand{\thepage}{\roman{page}} % Start page numbering in roman
+
+% 1. Abstract
+\chapter*{Abstract} % Star (*) prevents it from being numbered "Chapter 1"
+\addcontentsline{toc}{chapter}{Abstract} % Manually adds it to the ToC
+
+Local governments in developing countries often struggle to address public issues efficiently. These struggles are mainly due to limited transparency, centralized data management, and insufficient citizen participation. E-governance and crowdsourced reporting systems are designed to enhance public engagement. But their effectiveness is limited by issues related to data integrity, user anonymity, content reliability, and trustworthiness.As a solution to the above challenges, we propose a blockchain-based, community-assisted, privacy-preserving reporting framework for local governance. The main objective of the project is to design and prototype a permissioned blockchain-based reporting system. This system will enable citizens to anonymously submit public issue reports and participate in opinion polling. Also, our system will ensure data immutability and transparency. To manage reporting workflows, issue tracking, and community voting in a secure and tamper-resistant manner, the blockchain will use \ac{PoA} mechanism and smart contracts. User identity is decoupled from the report content using a simulated identity and an access control mechanism to preserve the privacy of the users. Large data objects, such as images, are stored off-chain with cryptographic hashes anchored on the blockchain. Additionally, an \ac{AI}-assisted content moderation mechanism will be used to minimize the impact of malicious, low-quality reporting content.  To demonstrate the feasibility of the proposed framework, A web-based \ac{DApp} is developed as a proof of concept within a controlled experimental environment. Through this project, we  aim to deliver a practical and scalable prototype that enhances citizen participation, accountability, and trust in local governance systems.
+
+% Local governments in developing countries often face challenges in efficiently addressing public issues due to limited transparency, centralized data management, and insufficient citizen participation. 
+ 
+ % While e-governance and crowdsourced reporting systems aim to improve public engagement, concerns related to data integrity, user anonymity, content reliability, and trustworthiness continue to limit their effectiveness.
+
+ % To address these challenges, our project proposes a blockchain-based, community-assisted, privacy-preserving reporting framework for local governance.The primary objective of the project is to design and prototype a permissioned blockchain-based reporting system that enables citizens to anonymously submit public issue reports and participate in opinion polling while ensuring data immutability and transparency.
+
+
+ %  The proposed system utilizes a \ac{PoA} consensus mechanism and smart contracts to manage reporting workflows, issue tracking, and community voting in a secure and tamper-resistant manner.
+
+
+ %  To preserve privacy, user identity is decoupled from report content through a simulated identity and access control mechanism, while large data objects such as images are stored off-chain with cryptographic hashes anchored on the blockchain.
+
+ % In addition, the project explores the integration of \ac{AI}-assisted content moderation mechanism to mitigate the impact of malicious or low-quality inputs. A web-based \ac{DApp} is developed as a proof of concept to demonstrate the feasibility of the proposed framework within a controlled experimental environment. 
+
+
+ % Through this work, the project aims to contribute a practical and scalable prototype that enhances citizen participation, accountability, and trust in local governance systems.
+\newpage
+
+% 2. Table of Contents
+\tableofcontents
+\newpage
+
+% 3. List of Figures
+\phantomsection % Ensures the hyperlink jumps to the correct place
+\addcontentsline{toc}{chapter}{List of Figures} % Add to ToC
+\listoffigures
+\newpage
+
+% 4. List of Tables
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables} % Add to ToC
+\listoftables
+\newpage
+
+% 5. Acronyms
+\phantomsection
+\addcontentsline{toc}{chapter}{Acronyms} % Add to ToC
+\acuseall
+\printacronyms
+\newpage
+
+\renewcommand{\thepage}{\arabic{page}} % Start page numbering in arabic
+\setcounter{page}{1} % start page numbering from 1
+
+\include{chapters/introduction}
+\include{chapters/literature-review/lit-review}
+\include{chapters/methodology}
+\include{chapters/timeline-and-requirements}
+% \include{chapters/conclusion}
+
+% References
+\renewcommand{\bibname}{References}
+\bibliographystyle{ieeetr}
+\addcontentsline{toc}{chapter}{References} % Add to table of contents
+\bibliography{bibliography,references}
+%\printbibliography
+\end{document}

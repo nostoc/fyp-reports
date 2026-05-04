@@ -1,0 +1,65 @@
+\chapter{Literature Review}
+
+This chapter reviews existing literature related to digital citizen reporting systems and the application of blockchain technology in local governance. The reviewed studies cover e-governance platforms, blockchain-enabled governance solutions, permissioned blockchain architectures, consensus mechanisms, decentralized storage techniques, and blockchain-based complaint management systems. These works provide the necessary background to understand the technological context and design considerations relevant to the proposed community-assisted reporting system.
+
+\section{Digital Citizen Reporting and e-Governance Systems}
+
+Electronic governance (e-governance) refers to the use of information and communication technologies to deliver government services, facilitate information exchange, and support interactions between government and citizens (G2C), businesses (G2B), government agencies (G2G), and employees (G2E). Through e-governance platforms, citizens can access public services, submit complaints, and participate in governance processes more efficiently \cite{goyal2021egovernance}.
+
+Digital citizen reporting systems represent a practical implementation of e-governance initiatives. Platforms such as FixMyStreet enable citizens to report issues related to infrastructure, sanitation, traffic, and public safety using web or mobile interfaces. Prior studies indicate that such crowdsourced reporting systems improve administrative efficiency, enhance civic participation, and increase transparency by enabling direct communication between citizens and local authorities \cite{oliveira2020smartcities}.
+
+Despite these benefits, most existing citizen reporting systems rely on centralized server-based architectures. Centralized control introduces limitations such as susceptibility to data tampering, lack of transparent audit trails, and reliance on institutional trust. Additionally, mandatory identity disclosure in many platforms discourages citizens from reporting sensitive or controversial issues. These limitations motivate the exploration of decentralized architectures that can improve transparency and accountability while preserving user privacy.
+
+\section{Blockchain for Local Governance Applications}
+
+Blockchain technology has been increasingly explored as a transformative tool for e-governance due to its ability to provide an immutable, transparent, and decentralized ledger for public data. The immutability of blockchain records enables verifiable audit trails, making the technology suitable for governance applications where trust and accountability are critical \cite{hamill2018blockchain,goswami2020egovernance}.
+
+Several real-world case studies demonstrate the applicability of blockchain in local governance contexts. Blockchain-based land registry systems, such as the pilot implemented in Cook County, Illinois, aim to reduce property fraud by consolidating historical records into a verifiable digital format. Similarly, initiatives in Delaware explore the use of smart contracts to automate business filings and enable real-time asset tracking, improving regulatory compliance and oversight \cite{goswami2020egovernance}.
+
+Beyond administrative efficiency, blockchain has also been applied to citizen-centric services such as secure digital identity management. Estonia’s e-Estonia initiative integrates blockchain technology across taxation, healthcare, and electronic voting systems to provide a mathematically verifiable audit trail for government data. Comparable approaches have been adopted in projects such as MyPass in Austin and the World Food Programme’s Building Blocks initiative, which use blockchain to manage encrypted identity and transaction records for vulnerable populations \cite{hamill2018blockchain}.
+
+Despite these advancements, existing literature highlights challenges associated with blockchain adoption in governance, including scalability constraints, performance overheads, privacy concerns related to identity data, and the need for legislative and institutional reforms. These factors necessitate careful selection of blockchain architectures and consensus mechanisms, particularly for systems intended for frequent citizen interaction.
+
+\section{Blockchain-Based Citizen Reporting and Complaint Management Systems}
+
+The application of blockchain technology to citizen reporting and complaint management systems has gained attention as a means of addressing transparency, data integrity, and trust issues present in traditional centralized platforms. Research indicates that centralized complaint registries often represent single points of failure, leading to administrative opacity, delayed responses, and public mistrust.
+
+Pratheeba et al. propose a blockchain-based police complaint management system that integrates a modular architecture consisting of security, blockchain, web interface, and hybrid cloud storage components \cite{mohan2025police}. The system employs cryptographic hash linking to ensure immutability of complaint records and utilizes RSA-based encryption to restrict access to authorized personnel. Additionally, Natural Language Processing (NLP) techniques are incorporated to automatically categorize complaints based on priority, improving administrative efficiency. A hybrid cloud strategy is adopted to balance scalability with access control for sensitive data.
+
+Manjula et al. present a decentralized complaint management framework featuring a three-tier architecture composed of a web-based presentation layer, a business logic layer, and a blockchain-backed data layer \cite{zhai2022trust}. The system introduces a role-based access control mechanism involving multiple stakeholders, including citizens, law enforcement authorities, and judicial bodies. Notable features of this framework include immutable storage of multimedia evidence, intelligent complaint assignment based on jurisdiction and workload, and automatic escalation mechanisms when resolution deadlines are exceeded. Experimental evaluations report significant reductions in complaint processing time and successful detection of data tampering through blockchain verification.
+
+While these systems demonstrate the effectiveness of blockchain in improving transparency and efficiency in complaint management, they are often domain-specific, primarily focused on law enforcement, and rely on customized or simulated blockchain implementations. Furthermore, limited attention is given to broader community participation, privacy-preserving reporting, and scalable multimedia storage. These limitations highlight the need for more generalized, modular reporting frameworks that can support diverse local governance use cases.
+
+The reviewed literature indicates that digital citizen reporting platforms and blockchain-based governance systems offer significant potential for improving transparency, accountability, and citizen engagement. However, existing solutions frequently rely on centralized architectures or domain-specific blockchain implementations, limiting scalability, privacy, and community participation. Blockchain-based complaint management systems demonstrate measurable efficiency gains but often lack flexible architectures suitable for broader local governance contexts.
+
+These observations motivate the development of a community-assisted, blockchain-based reporting system that integrates permissioned blockchain technology, smart contracts, decentralized multimedia storage, and supporting off-chain services to address the identified limitations in existing systems.
+
+\section{Justification for Permissioned Blockchain and Proof-of-Authority Consensus}
+
+Blockchains can be classified into permissionless (public) and permissioned (private or consortium) networks. Permissionless blockchains such as Bitcoin and Ethereum allow unrestricted participation but suffer from high transaction costs, limited throughput, and unpredictable latency due to resource-intensive consensus mechanisms. These characteristics make them unsuitable for local governance reporting systems, which require predictable performance and minimal transaction costs for citizens \cite{zhai2022trust}.
+
+Permissioned blockchains provide a more suitable alternative for governance applications. In such systems, participating nodes and validators are pre-approved entities, typically government institutions or trusted authorities. This structure aligns with local governance models, where accountability and controlled participation are essential. Among permissioned consensus mechanisms, Proof-of-Authority (PoA) has been identified as an efficient solution for applications that rely on trusted validators. PoA offers low latency, high throughput, and reduced computational overhead compared to Proof-of-Work and Proof-of-Stake mechanisms \cite{mohan2025police}.
+
+Based on the reviewed literature, PoA is well-suited for citizen reporting systems where validators represent recognized institutions and system performance is a priority. Therefore, the proposed project adopts a permissioned blockchain architecture with PoA consensus to ensure efficiency, scalability, and institutional accountability.
+
+\section{Smart Contracts for Reporting Workflows}
+
+Smart contracts are self-executing programs deployed on a blockchain that automatically enforce predefined rules without centralized control. In governance systems, smart contracts have been used to manage voting processes, issue tracking, and access control policies \cite{goswami2020egovernance}. Their deterministic execution ensures consistency and transparency across all participants.
+
+In the context of citizen reporting, smart contracts can automate report submission, status updates, community voting, and issue resolution workflows. Literature indicates that smart contract-based automation reduces manual intervention, prevents unauthorized modifications, and enhances procedural transparency. The proposed system utilizes smart contracts to manage the lifecycle of reports and opinion polls, ensuring that governance processes remain transparent and tamper-resistant.
+
+\section{Off-Chain Storage for Multimedia Evidence Using IPFS}
+
+Citizen reports often include multimedia evidence such as images or videos to support reported issues. Storing such large data objects directly on a blockchain is impractical due to high storage costs and scalability limitations. Consequently, many blockchain-based systems adopt hybrid architectures that combine on-chain metadata with off-chain data storage \cite{ipfsdocs}.
+
+The InterPlanetary File System (IPFS) is a decentralized storage solution that enables content-addressed file storage using cryptographic hashes. By storing the hash of a file on the blockchain, data integrity can be ensured while keeping the actual content off-chain. Several studies recommend IPFS for blockchain applications due to its scalability, decentralization, and compatibility with immutable ledger systems \cite{kader2024spam}.
+
+Based on these findings, the proposed project adopts IPFS for off-chain storage of multimedia evidence while anchoring cryptographic hashes on the blockchain. This approach ensures storage efficiency, data integrity, and system scalability.
+
+\section{AI-Based Content Moderation and Trustworthiness Evaluation}
+
+Open citizen reporting platforms are vulnerable to spam, misinformation, and malicious submissions. Recent studies explore the use of AI-based content moderation techniques to improve the reliability of crowdsourced systems by filtering inappropriate content and prioritizing relevant reports \cite{mohammadi2025ai}.
+
+In anonymous reporting environments, trustworthiness evaluation mechanisms are essential. Literature on crowdsourced systems suggests that trust can be inferred from behavioral patterns, community consensus, and historical contributions rather than explicit identity disclosure. While complex trust models exist, many studies emphasize the practicality of simple and interpretable trust scoring mechanisms, particularly for prototype-level systems \cite{zhai2022trust}.
+
+Accordingly, the proposed system incorporates AI-assisted content moderation and basic trustworthiness evaluation as off-chain components. This design choice aligns with existing research and avoids unnecessary computational overhead on the blockchain.

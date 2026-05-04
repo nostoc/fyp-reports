@@ -1,0 +1,39 @@
+\section{AI-Based Content Moderation in Civic Reporting}
+
+Since blockchain is inheritably immutable its introduce a unique challenge for content moderation in a civic reporting system. In a centralized platforms, administrators can remove or edit inappropriate content. But in a decentralized blockchain based system data cannot be altered once confirmed \cite{tencentcloud2025moderation}. While immutability strengthens transparency and accountability, it also raises the risk of permanently storing harmful, illegal, or misleading content. Therefore the literature focuses the need for pre moderation strategies to prevent unsuitable content from being recorded on chain or to limit its visibility after publication \cite{dzone2026blockchainai}.
+
+\subsection{Need for Automated Content Moderation}
+
+Civic reporting platforms are susceptible to several forms of misuse that can compromise system reliability and public trust. Automated spam submissions, the submission of malicious or legally sensitive content, and deliberate dissemination of false or misleading reports are some of the common issues \cite{wani2024ai}, \cite{gosztonyi2024theory}, \cite{kolluri2025aipowered}. Manual moderation is impractical for above situations. Since the reporting system is large latency, human bias, and operational costs can occur. Furthermore it reintroduces the centralized control structure that blockchain system is aim to minimize. 
+
+Therefore the literature supports AI assisted moderation as a scalable and  efficient approach for filtering content before its permanently recorded. It maintain the acceptable levels of decentralization \cite{mohammadi2025ai}, \cite{goundar2025blockchain}.
+
+\subsection{Architectural Approaches for AI Blockchain Integration}
+
+Due to the computational and storage limitations of blockchain platforms, AI-based moderation cannot be performed directly on chain. Off chain processing combined with on chain verification identified by existing researches as most practical approach\cite{goundar2025blockchain}, \cite{kader2024enhancing}.  
+
+In this approach, reported content is first analyzed by AI models hosted off chain infrastructure or decentralized compute networks. The outcome of this analysis is a validation decision or a trust score. This outcome then submitted to the blockchain as a cryptographic proof or oracle response. Next the smart contracts verify those results before accepting the report. It will ensure that only the content meeting predefined policies are recorded on chain. BlockCITE is a example framework demonstrate how this separation preserves blockchain integrity while avoiding excessive on chain computation \cite{li2025blockcite}.
+
+\subsection{\ac{AI} Oracles and Decentralized Oracle Networks}
+
+Oracles are trusted intermediaries that connect on chain and off chain. In here the \ac{AI} oracles provides the computational results to smart contracts. Instead of simply retrieving external data to the blockchain, \ac{AI} oracle perform content classification and verification tasks. Then it returns the structured results to the blockchain \cite{kava2024aipowered}, \cite{zintusart2025empirical}.  
+
+There can be a risk of oracle bias or failure. To minimize the risk a decentralized oracle networks aggregate outputs from multiple independent \ac{AI} nodes and determine consensus outcomes. This model reduces reliance on a single \ac{AI} system. Therefore it improves te robustness by requiring agreement among multiple validators\cite{zintusart2025empirical}, \cite{codezeros2025aipowered}.
+
+\subsection{Techniques for Content Analysis}
+
+\ac{AI}-based moderation techniques vary based on the type of submitted content. \ac{NLP} models are widely used to detect spam, hate speech and misinformation for text based reports. Studies report high accuracy when combining deep learning models with semantic embeddings. It makes them suitable for filtering large volumes of text submissions prior to blockchain recording \cite{wani2024ai}.  
+
+For image based reports computer vision models are used to identify inappropriate contents. However recent advances in generative AI increase the risk of fabricated images. This literature proposes a hybrid verification pipeline that combine cryptographic provenance mechanisms with \ac{AI}-based image analysis. This ensue that the submitted media is both authentic and contextually valid \cite{prasad2024blockchain}.
+
+\subsection{Hybrid Human AI Moderation Models}
+
+AI enable the scalable moderation. But it may struggle with contextual interpretation and edge cases. Because of that many studies advocate hybrid moderation models. In those models AI performs initial filtering and prioritization, while human reviewers handle disputed or ambiguous cases \cite{mohammadi2025ai}, \cite{kumar2025hybrid}. 
+
+Decentralized community based moderation further complement this approach. The models using community annotation systems, allow users or designated validators to challenge AI decisions during predefined review periods. In Addition to that dispute resolution handled by transparent governance mechanisms \cite{dzone2026blockchainai}, \cite{kae2025research}. Therefore these strategies reduce the reliance on central authority while maintain the accountability.
+
+\subsection{Ethical Considerations and Content Permanence}
+
+Ethical concerns are crucial when implementing systems by integrating AI driven moderation systems. The algorithmic bias and the accountability are the highlights in the literature. Biased training data can lead to unfair rejection of legitimate reports\cite{chase2024ai}. To minimize this risk explainable AI mechanisms are recommended. This enable users to understand the moderation decision and resubmit corrected reports \cite{mounika2024integrated}. 
+
+Finally, the issue of “toxic immutability” remains a critical challenge for blockch\\ain-based systems. To resolve this issue its suggested that to use a off chain storage systems like IPFS. If the content is later identified as illegal or harmful, it can removed from the off chain storage. But can preserve the immutable audit trail by recording it on the blockchain\cite{prasad2024blockchain}. The transparency, legal compliance and ethical responsibility can be balanced by this approach.

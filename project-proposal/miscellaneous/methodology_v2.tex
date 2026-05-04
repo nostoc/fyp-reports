@@ -1,0 +1,61 @@
+\section{System Integration and Testing}
+\label{sec:system_integration_and_testing}
+
+The successful deployment of the proposed blockchain-based reporting service requires a rigorous, multi-layered testing strategy. Given the immutable nature of blockchain ledgers, the testing methodology prioritizes defect prevention through a structured framework that encompasses the entire system lifecycle, from individual unit verification to system-wide integration.
+
+\subsection{Testing Governance and Roles}
+To ensure comprehensive coverage and objective validation, the testing process is governed by a structured allocation of responsibilities among the project team. Specific Quality Assurance (QA) roles have been mapped to development responsibilities to ensure that each subsystem—blockchain, frontend, AI, and backend—receives dedicated scrutiny.
+
+\begin{table}[h!]
+\centering
+\caption{Allocation of Testing Roles and Responsibilities}
+\label{tab:testing_roles}
+\begin{tabular}{|l|p{4cm}|p{7cm}|}
+\hline
+\textbf{Role Designation} & \textbf{Primary Responsibility} & \textbf{Specific Testing Duties \& Scope} \\ \hline
+\textbf{Test Lead} & Overall QA Strategy & Defines the Master Test Plan; orchestrates end-to-end integration tests; manages the CI pipeline. \\ \hline
+\textbf{Blockchain Engineer} & Smart Contract Validation & Writes unit tests for Solidity contracts; performs gas optimization analysis; conducts security audits. \\ \hline
+\textbf{AI Specialist} & Content Moderation & Curates training/testing datasets; evaluates AI model performance (Precision/Recall/F1); validates the AI filtering logic. \\ \hline
+\textbf{Frontend Tester} & DApp Experience & Conducts UI/UX testing; verifies wallet integration (MetaMask) and transaction signing flows. \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Data Acquisition and Synthetic Data Generation}
+The project employs a dual-strategy for data acquisition: utilizing verifiable real-world datasets for AI training and generating synthetic datasets for blockchain stress analysis.
+
+\begin{itemize}
+    \item \textbf{Real-World Datasets:} For AI content moderation, the system utilizes the \textit{Urban Civic Issues Image Dataset (QR4Change)} for pothole and garbage detection, supplemented by the \textit{Road Damage Detection} and \textit{Garbage Classification V2} datasets. These provide a robust mix of positive and negative samples to ensure high classification accuracy.
+    \item \textbf{Synthetic Data Generation:} A Python-based module using the \textit{Faker} library will be developed to programmatically create realistic user reports. This allows for large-scale testing of the blockchain's throughput and latency without compromising user privacy or relying on manual entry.
+\end{itemize}
+
+\subsection{Testing Levels}
+The testing process follows a hierarchical approach:
+\begin{itemize}
+    \item \textbf{Unit Testing:} Individual modules, such as smart contract functions and AI inference scripts, are tested in isolation using frameworks like Hardhat and PyTest.
+    \item \textbf{Integration Testing:} Focuses on the communication between the DApp, the PoA blockchain, and off-chain IPFS storage.
+    \item \textbf{User Acceptance Testing (UAT):} A controlled group of simulated users will interact with the DApp to evaluate usability and functional flow within a local governance context.
+\end{itemize}
+
+\section{Performance Evaluation}
+\label{sec:performance_evaluation}
+
+The performance evaluation aims to quantify the efficiency, scalability, and reliability of the proposed framework within a controlled experimental environment.
+
+\subsection{Evaluation Metrics}
+The system will be evaluated based on the following Key Performance Indicators (KPIs):
+
+\begin{itemize}
+    \item \textbf{Blockchain Throughput and Latency:} Measured in Transactions Per Second (TPS) and average block confirmation time on the PoA network.
+    \item \textbf{Gas Consumption Analysis:} Evaluation of the computational cost for smart contract operations (e.g., report submission, voting) to ensure economic feasibility.
+    \item \textbf{AI Moderation Accuracy:} Measured using Precision, Recall, and F1-score to determine the effectiveness of the content filtering mechanism.
+    \item \textbf{Storage Efficiency:} The time taken to upload and retrieve media files from IPFS compared to traditional storage methods.
+\end{itemize}
+
+\subsection{Evaluation Environment and Protocols}
+Evaluations will be conducted on a private Ethereum-compatible network configured with a Proof of Authority (PoA) consensus mechanism. Key evaluation protocols include:
+
+\begin{itemize}
+    \item \textbf{Load Testing:} Utilizing the synthetic data generation module to flood the network with transactions at increasing rates to identify the system's breaking point.
+    \item \textbf{Consensus Resilience Test:} Verifying the network's ability to maintain block production during validator node failures, ensuring high availability.
+    \item \textbf{AI Robustness Test:} Evaluating model performance against "Challenge Sets" containing noisy or rotated images to ensure reliability in diverse real-world conditions.
+\end{itemize}
