@@ -1,13 +1,109 @@
 \chapter{ Implementation Progress}\label{cha:implementation}
 
 \section{Permissioned Blockchain Setup}
+\begin{enumerate}
+    \item Geth PoA network configured
+    \item Validator nodes set up
+    \item RPC communication established
+\end{enumerate}
+
 \section{Smart Contract Development}
+
+\begin{enumerate}
+    \item reporting contract implemented
+    \item ticket validation functions
+    \item state transition logic partially implemented
+\end{enumerate}
+
 \section{Identity \& Access Control }
+
+\begin{enumerate}
+    \item simulated GovID verification API
+    \item ticket batch generation
+    \item citizen pseudonymous keypair generation
+\end{enumerate}
+
 \section{IPFS Off-chain Storage}
+\begin{enumerate}
+    \item IPFS node configured
+    \item media upload and CID retrieval tested
+\end{enumerate}
 \section{AI-Based Content Moderation}
+
+\subsection{Oracle Service Architecture}
+Describe:
+
+\begin{enumerate}
+    \item relayer sends report to oracle service
+    \item multiple oracle workers independently analyze content
+    \item aggregator determines final moderation decision
+\end{enumerate}
+
+
+Mention:
+
+\begin{enumerate}
+    \item Oracle 1: toxicity classifier
+    \item Oracle 2: hate/spam detection
+    \item Oracle 3: rule-based relevance analysis
+\end{enumerate}
+
+\subsection{Moderation Workflow}
+
+Describe:
+\begin{enumerate}
+    \item Relayer receives signed report payload.
+    \item Relayer validates citizen signature and ticket.
+    \item Relayer forwards report content to oracle service.
+    \item Oracle workers independently classify report.
+    \item Votes are aggregated.
+    \item Accepted reports uploaded to IPFS.
+    \item Metadata anchored on blockchain.
+\end{enumerate}
+
+\subsection{Integrity and Security Mechanisms}
+
+Write about:
+
+\begin{enumerate}
+    \item citizen payload hashing
+    \item digital signatures
+    \item ticket validation
+    \item oracle result hashing
+    \item oracle signatures
+    \item IPFS CID verification
+    \item blockchain immutability
+\end{enumerate}
+
+\subsection{Current Progress}
+
+Example:
+\begin{enumerate}
+    \item HTTP moderation API implemented
+    \item text moderation prototype completed
+    \item oracle worker structure implemented
+    \item majority voting logic under development
+    \item image moderation integration planned
+    \item blockchain event listener integration in progress
+\end{enumerate}
 
 \section{Web-based DApp Development}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%% END OF FILE
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{enumerate}
+    \item login interface
+    \item report submission form
+    \item blockchain read functions
+    \item relayer communication
+\end{enumerate}
+
+\section{Current Integration Status}
+
+Explain:
+\begin{enumerate}
+    \item DApp $\Leftrightarrow$ GovID working
+    \item DApp $\Leftrightarrow$ Relayer working
+    \item AI oracle standalone prototype working
+    \item full integration in progress
+\end{enumerate}
+
+
