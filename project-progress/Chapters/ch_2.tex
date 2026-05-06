@@ -1,4 +1,4 @@
-\chapter{System Design}\label{cha:report}
+\chapter{System Architecture and Design}\label{cha:report}
 
 All groups should submit a complete but fairly concise report on the project. This very same document is also written in the format expected by the DEIE under UGPs.
 
@@ -60,6 +60,28 @@ The foundational data layer consists of custom smart contracts deployed on a pri
     \item \textbf{Smart Contracts:} The smart contracts act as the decentralized state machine of the application. They are designed to encapsulate the business logic of the reporting lifecycle. They verify the integrity of the data submitted by the relayer, map the IPFS CIDs to the citizen's public key, manage the transition of issue statuses (e.g., reported, resolved), and serve as the direct, read-only data source for the frontend DApp.
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%% END OF FILE
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Report Submission Workflow}
+
+Include:
+\begin{enumerate}
+    \item citizen authentication
+    \item payload signing
+    \item oracle moderation
+    \item IPFS upload
+    \item blockchain anchoring
+\end{enumerate}
+
+Add sequence diagram here.
+
+\section{Security and Privacy Considerations}
+
+Discuss:
+
+\begin{enumerate}
+    \item pseudonymous identity,
+    \item digital signatures,
+    \item ticket validation,
+    \item hash integrity,
+    \item off-chain storage,
+    \item oracle voting.
+\end{enumerate}
