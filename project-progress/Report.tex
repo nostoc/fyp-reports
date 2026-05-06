@@ -122,7 +122,9 @@
 % Title Page
 \include{Front_matters/cover}
 
-\renewcommand{\thepage}{\roman{page}} % Start page numbering in roman
+\pagenumbering{roman} % Start page numbering in roman
+\setcounter{page}{1}
+\pagestyle{romanstyle}
 
 % Abstract, Acknowledgements, Preface, list of tables, list of figures and Acronyms
 \input{Front_matters/abstract}
@@ -148,10 +150,18 @@ Local governments in developing countries often struggle to address public issue
 
 %%%%%%%%%%%%%%%%%%%%%%% The main matters %%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{Chapters/ch_1}
+\cleardoublepage
+\pagenumbering{arabic} % Start page numbering in arabic
+\setcounter{page}{1}
+\pagestyle{arabicstyle}
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyhead[R]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
 
-\renewcommand{\thepage}{\arabic{page}} % Start page numbering in arabic 
-\setcounter{page}{1} % start page numbering from 1
+\input{Chapters/ch_1}
 
 \input{Chapters/ch_2}
 \input{Chapters/ch_3}
