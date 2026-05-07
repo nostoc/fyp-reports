@@ -12,21 +12,17 @@ Cryptography plays a significant role in blockchain systems. To generate unique 
 
 \section{Permissioned Blockchain and PoA}
 
-Explain:
+Bitcoin and Ethereum are permissionless blockchains, where anyone can participate as a node and validate transactions. In contrast, permissioned blockchains restrict participation to a predefined set of entities. These entities, often referred to as validator nodes. They are responsible for validating transactions and maintaining the integrity of the blockchain. 
 
-permissioned networks,
-validator nodes,
-Proof-of-Authority.
+While permissionless blockchains rely on consensus mechanisms like Proof of Work or Proof of Stake, the Proof of Authority (PoA) consensus mechanism is specially designed for permissioned blockchains. In here instead of relying on computationally expensive mining or staking process the validator nodes in the permissioned blockchain are validating blocks. Therefore this approach is a reputation and indetity-based mechanism, where the authority of the validators is based on their identity and reputation within the network. This allows for faster transaction processing and lower energy consumption compared to traditional consensus mechanisms, making it suitable for enterprise applications and private networks.
 
-Mention why suitable for governance.
+In the context of local governance perspective, such system requires predictable performance, immutability, transparency and accountability. PoA consensus running in a permissioned blockchain is well suited for this requirements because validators identities are known and they controlled by trusted entities. With addition to that, PoA eliminates the need for economic incentives. This make it more efficient and practical for local governance applications. 
 
 \section{Smart Contracts}
 
-Explain:
+Smart contracts are first introduced by Ethereum blockchain. They are self-executing contracts with the terms of the agreement directly written into code. In a blockchain based governance systems smart contract can be used to eliminate centralized administrative control. It can automate workflows that would traditionally require human intervention. Therefore this reduce the reliance on intermediaries, hence improve the transparancy and trusthworthiness.
 
-Ethereum contracts,
-Solidity,
-workflow automation.
+The proposed system uses Solidity based smart contracts deployed on a private permissioned PoA blockchain.
 
 \section{Decentralized Applications (DApps)}
 
@@ -46,13 +42,9 @@ off-chain architecture.
 
 \section{Zero-Knowledge and Identity Concepts}
 
-Explain:
+Zero-knowledge proofs allow a user to prove that they possess sensitive information without actually revaling the information itself. 
 
-pseudonymous identity,
-identity decoupling,
-ticket-based authentication.
-
-No need deep ZKP mathematics.
+The identity decoupling is critical requirment because citizens may hesitate to report sensitive problems they have if their identity is linked to the submitted report. Therefore we decouple identity of the citizen by using public-private key pair associated with the citizen. By leveraging this approach the blockchain ledger will record only pseudonymous identifiers, authorization tickets and cryptographic proofs. This ensure no sensitive personal information is ever oublically exposed.
 
 \section{AI-based Content Moderation}
 
