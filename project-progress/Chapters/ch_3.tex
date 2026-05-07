@@ -78,17 +78,12 @@ The implementation of IPFS off-chain storage in the system involves several stag
 \subsection{AI-based Moderation System Implementation}
 
 
-% Balanced coverage only.
-
-% Subsections:
-
-% Oracle Architecture
-% Oracle Workers
-% Aggregation Logic
-% Moderation Workflow
-% Security Mechanisms
-
-% Do NOT over-expand this section.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Images/Chapter_3/oracle-architecture.png}
+    \caption{Oracle network architecture for AI moderation.}
+    \label{fig:oracle-architecture}
+\end{figure}
 
 
 The AI moderation subsystem is designed as an off-chain oracle network. The moderation process is performed off-chain and the result is returened to the reporting workflow. The oracle network consists of three independent oracle workers and one aggregator. The aggregator forwards the moderation request to all oracle workers, collects their decisions, applies a voting rule, signs the final decision, and returns the result to the relayer. This architecture is demonstrated in Figure~\ref{fig:oracle-architecture}. The oracle 1 focuses on detecting toxic, abusive, threaening, or harmful language. It analyzes the submitted report using a predefined moderation strategy and returns a vote. The oracle 2 focuses on spam detection. It checks for promotional content, repeated characters, and extremely short descriptions. The third oracle focuses on civic relevance. It checks whether the report is related to local governance issues such as roads, garbage, water, drainage, public infrastructure, and community facilities. 
@@ -99,12 +94,6 @@ To ensure integrity of the moderation results, several mechanisms are used. The 
 
 
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{Images/Chapter_3/oracle-architecture.png}
-    \caption{Oracle network architecture for AI moderation.}
-    \label{fig:oracle-architecture}
-\end{figure}
 
 
 
