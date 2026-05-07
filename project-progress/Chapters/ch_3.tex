@@ -94,17 +94,24 @@ The implementation of IPFS off-chain storage in the system involves several stag
 \subsection{AI-based Moderation System Implementation}
 
 
-Balanced coverage only.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Images/Chapter_3/oracle-architecture.png}
+    \caption{Oracle network architecture for AI moderation.}
+    \label{fig:oracle-architecture}
+\end{figure}
 
-Subsections:
 
-Oracle Architecture
-Oracle Workers
-Aggregation Logic
-Moderation Workflow
-Security Mechanisms
+The AI moderation subsystem is designed as an off-chain oracle network. The moderation process is performed off-chain and the result is returened to the reporting workflow. The oracle network consists of three independent oracle workers and one aggregator. The aggregator forwards the moderation request to all oracle workers, collects their decisions, applies a voting rule, signs the final decision, and returns the result to the relayer. This architecture is demonstrated in Figure~\ref{fig:oracle-architecture}. The oracle 1 focuses on detecting toxic, abusive, threaening, or harmful language. It analyzes the submitted report using a predefined moderation strategy and returns a vote. The oracle 2 focuses on spam detection. It checks for promotional content, repeated characters, and extremely short descriptions. The third oracle focuses on civic relevance. It checks whether the report is related to local governance issues such as roads, garbage, water, drainage, public infrastructure, and community facilities. 
 
-Do NOT over-expand this section.
+The oracle aggregator combines the decisions of the three oracle workers. Each oracle returns either ACCEPT or REJECT. The current aggregation logic uses a two out of three (2/3) majority rule. The final moderation result includes the final decision, confidence score, report hash, oracle votes, decision hash, and aggregator signature. 
+
+To ensure integrity of the moderation results, several mechanisms are used. The aggregator computes a hash of the submitted report payload. The final moderation result and oracle votes are combined and hashed to crate the decision hash. Also, the aggregator sign the decision hash using its private key. 
+
+
+
+
+
 
 \subsection{Web-based DApp Development}
 The decentralized application (DApp) serves as the primary gateway for citizens to interact with the local governance system. It is built using a modern web stack comprising Next.js and React for the frontend interface, Tailwind CSS for responsive styling, and Ethers.js for cryptographic operations. The architecture is designed to abstract blockchain complexities away from the end-user while maintaining strict privacy and security guarantees.
@@ -133,15 +140,15 @@ The query interface acts as a community feed where citizens can view, filter, an
     \item \textbf{State Management and Navigation:} The interface employs React state hooks to allow real-time filtering of issues by category (e.g., Infrastructure, Parks \& Rec, Safety). Furthermore, a persistent Floating Action Button (FAB) is implemented to provide users with seamless access to the report submission workflow at any time.
 \end{itemize}
 
-\subsection{Deployment Environment}
+% \subsection{Deployment Environment}
 
-Very important.
+% Very important.
 
-Discuss:
+% Discuss:
 
-VPS infrastructure,
-Ubuntu server,
-Docker containers,
-service distribution.
+% VPS infrastructure,
+% Ubuntu server,
+% Docker containers,
+% service distribution.
 
-Include deployment diagram.
+% Include deployment diagram.
