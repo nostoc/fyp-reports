@@ -1,12 +1,14 @@
 \chapter{Background}
 
 \section{Blockchain Technology}
-Explain:
 
-blocks,
-transactions,
-immutability,
-consensus.
+
+Blockchain is a distributed, digital, append-only ledger technology. It enables data to be stored in immutable and transparent manner across multiple nodes in a network. Unlike centralized systems, blockchain systems maintain a syncronized copy of the ledger among all authorized participants. This approach reduces the dependency on a single intermediary controlling authority. Each block in the blockchain contains a set of validated transactions, a timestamp, and a cryptographic hash of the previous block. This hash-chaining mechanism ensures that any alteration to previous recorded data becomes immediately detectable.
+
+Immutability is a key characteristic in blockchain technology. It is computationally impractical to alter or delete a transaction after it is confirmed and appened to the blockchain. The immutable property is significantly important in governance-related systems, because integrity and transparency are a must. 
+
+
+Cryptography plays a significant role in blockchain systems. To generate unique digital fingerprints of data, hash functions are used. To verify ownership and authenticity of transactions, digital signatures are used. By using above cryptographic methods, blockchain systems gurantee integirty, authenticity and non-repudiation of data. 
 
 \section{Permissioned Blockchain and PoA}
 
@@ -46,19 +48,29 @@ The identity decoupling is critical requirment because citizens may hesitate to 
 
 \section{AI-based Content Moderation}
 
-Explain:
+Citizen reporting platforms are vulnerable to spam Submissions, abusive content, misinformation, and malicious reports. Due to immutability of blockchain records, permanently storing harmful content presents significant ethical and operational concerns. Therefore, content moderation techniques are required before reports are recorded on-chain. 
 
-NLP moderation,
-toxicity detection,
-decentralized moderation idea.
+AI techniques are widely used for automated content moderation. Natural Language Processing (NLP) techniques are used in text moderation tasks such as:toxicity detection, hate speech detection, spam filtering, and sentiment Analysis. For image moderation, computer vision and deep learning approaches are mostly used. Convolutional Neural Networks (CNNs) and transformer-based vision models can classify images based on categories like: explicit content, graphic violence, hate symbols, and unrelated media. 
 
-\section{Docker and Containerized Deployment}
 
-Explain:
 
-containers,
-service isolation,
-deployment architecture.
 
-This helps justify oracle deployment.
+
+
+
+
+
+
+
+
+
+% \section{Docker and Containerized Deployment}
+
+% Explain:
+
+% containers,
+% service isolation,
+% deployment architecture.
+
+% This helps justify oracle deployment.
 
