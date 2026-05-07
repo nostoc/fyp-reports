@@ -57,9 +57,16 @@ transparency.
 
 
 \subsection{Permissioned Blockchain Implementation}
-Geth PoA Network Setup
-Validator Node Configuration
-RPC Communication
+
+\begin{sloppypar}
+The core infrastructure of the proposed system is the private permissioned blockchain network. The implementation focused on setting up a secure and efficient environment tailored for local governance applications.
+\end{sloppypar}
+
+\begin{itemize}
+    \item {Geth PoA Network Setup:} A private permissioned Ethereum-compatible network was initialized using the Go Ethereum client. The network was configured to operate in proof-of-authority consensus mode, specifically using the Clique algorithm. This enabled faster block confirmation and lower energy consumption compared to traditional proof-of-work systems. A custom genesis file was created to define network parameters, including the initial set of authorized signers and the chain ID.
+    \item {Validator Node Configuration:} Minimum of three full nodes were required to act as an validator. The 3 nodes are deployed in a personal vps infrastructure. Each node is configured with a unique cryptographic identity and their addresses were added to the list of authorized sealers within the consensus engine to manage transaction validation authority.
+    \item {Network Security Measures:} To communicate with the blockchain network, secure Remote Procedure Call (RPC) endpoint was established only for node1. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
+\end{itemize}
 
 \subsection{Smart Contract Implementation}
 Report Contract
@@ -67,9 +74,18 @@ Ticket Validation
 State Transition Logic
 
 \subsection{Identity and Access Control Implementation}
-GovID Simulator
-Ticket Batch Generation
-Citizen Keypair Generation
+
+To satisfy the project's requirement for privacy-preserving accountability, an identity decoupling mechanism was successfully developed. This subsystem ensures that citizens can interact with the blockchain anonymously while remaining verified by an off-chain authority. The implementation was structured into three main components
+
+\begin{itemize}
+    \item {GovID Simulator:} An off-chain simulated identity server was developed and deployed to a personal Virtual Private Server (VPS). This service acts as the trusted authority for verifying real-world identities. A dedicated API endpoint (/api/govid/verify-citizen) was implemented to securely authenticate users via their National Identity Number (govId) and a password, bridging the gap between traditional web authentication and decentralized access.
+    \item {Citizen Keypair generation:} To completely decouple a user's real identity from their on-chain footprint, the identity server does not store or transmit blockchain addresses. Instead, upon successful authentication, the simulator generates and returns a secure, 256-bit citizenSeed. This cryptographic seed is then used by the client-side DApp to deterministically generate an anonymous public-private keypair, allowing the citizen to interact securely with smart contracts without exposing personal data.
+    \item {Ticket Batch Generation:} To facilitate multiple secure, anonymous report submissions over time, the simulator implements a batch authorization protocol. During authentication, the server generates a structured ticketBatch (currently configured to issue 10 tickets per request). Each ticket contains a unique ticketId (a cryptographic hash) and a signature signed by the Identity Authority's private key. Citizens use these single-use tickets to authorize their transactions on-chain. The smart contract validates the authority's signature on the ticket, granting access without ever knowing which specific citizen is submitting the report.
+\end{itemize}
+
+\subsection{Backend Relayer Implementation}
+The backend relayer serves as a critical middleware component that bridges the frontend DApp with the blockchain network and external services. It is responsible for handling report submissions, managing interactions with IPFS for off-chain storage, and orchestrating AI-based content moderation before anchoring data on the blockchain.
+
 \subsection{IPFS Off-chain Storage Integration}
 
 
