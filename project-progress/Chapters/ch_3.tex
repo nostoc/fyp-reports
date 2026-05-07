@@ -3,39 +3,138 @@
 \section{Methodology}
 
 \subsection{Research Methodology}
-Explain:
+% Explain:
 
-prototype-oriented approach,
-modular architecture,
-experimental evaluation.
+% prototype-oriented approach,
+% modular architecture,
+% experimental evaluation.
+This project follows a design-oriented and prototype-based research methodology. The main objective is to design, implement, and evaluate a blockchain-based, community-assisted, privacy-preserving reporting framework for local governance. The system is developed as a functional prototype within a controlled experimental environment rather than as a large-scale production deployment.
+
+The research approach is based on identifying the limitations of existing centralized citizen reporting platforms and designing a decentralized alternative that improves transparency, integrity, anonymity, and trustworthiness. The project combines several technologies, including a private permissioned blockchain, smart contracts, a simulated identity verification mechanism, off-chain storage, AI-assisted content moderation, and a web-based decentralized application.
+
+The system is developed using an incremental and modular development approach. Each major subsystem is designed and implemented independently before being integrated into the complete reporting workflow. This reduces complexity and allows each team member to focus on a specific technical component while maintaining compatibility with the overall architecture. \\
+The major system components are:
+
+\begin{enumerate}
+    \item Web-based DApp
+    \item ZKP GovID simulator
+    \item Backend relayer
+    \item AI moderation oracle service
+    \item IPFS off-chain storage
+    \item Smart contracts
+    \item Private permissioned PoA blockchain
+\end{enumerate}
+
+Each subsystem is first implemented and tested individually. After subsystem-level validation, the components are connected through defined APIs, blockchain interfaces, and data formats. The final integration focuses on the end-to-end report submission scenario, where a citizen submits a report through the DApp, the report is validated and moderated, the content is stored off-chain, and the final metadata is recorded on-chain.
+
+This approach follows the phased methodology described in the project proposal, where requirement analysis, system design, blockchain implementation, smart contract development, identity integration, IPFS integration, AI moderation, DApp development, testing, and evaluation are carried out incrementally.
+
+
+
+
 
 \subsection{System Requirements Analysis}
-Functional Requirements
-Non-functional Requirements
+\subsubsection{Functional Requirements}
+
+The functional requirements define the main services that the system must provide. 
+\begin{enumerate}
+    \item Citizen authentication:
+A citizen should be able to authenticate using the simulated GovID identity service.
+    \item Ticket issuance:
+After successful verification, the identity service should issue a citizen seed and a batch of one-time ticket IDs.
+    \item Report creation:
+A citizen should be able to create a report containing text, category, location, timestamp, and optional media. 
+\item  Payload signing:
+The DApp should sign the report payload using the citizen’s private key before sending it to the relayer.
+\item Relayer verification:
+The backend relayer should verify the ticket, citizen signature, payload hash, and file constraints.
+\item AI moderation:
+The report content should be analyzed by AI moderation services before blockchain submission.
+\item Off-chain storage:
+Accepted report content and media files should be uploaded to IPFS.
+\item Blockchain submission:
+The relayer should submit accepted report metadata to the reporting smart contract.
+\item Report retrieval:
+The DApp should allow citizens and authorized users to read submitted reports and their statuses from the blockchain.
+\item Government action workflow:
+The system should support future integration of government-side actions such as issue review, resolution updates, and closure.
+
+\end{enumerate}
+
+
+\subsubsection{Non-functional Requirements}
+
+The system also has several non-functional requirements. 
+
+\begin{enumerate}
+    \item Security:
+The system should use hashing, digital signatures, ticket validation, role-based access control, and secure API communication.
+    \item Privacy:
+Citizen identities should be decoupled from on-chain report records.
+    \item Integrity:
+Report payloads, IPFS content, oracle decisions, and blockchain records should be tamper-evident.
+    \item Availability:
+The deployed services should remain accessible during testing and demonstration.
+    \item Performance:
+The system should process reports within reasonable time under prototype workloads.
+    \item Maintainability:
+The system should be modular and containerized to simplify deployment and debugging.
+    \item Auditability:
+Important workflow decisions should be logged and anchored through hashes or blockchain events.
+
+\end{enumerate}
 
 \subsection{Proposed System Architecture}
 
-Introduce:
+\subsubsection{Overall System Architecture}
 
-layered architecture,
-overall system design.
+The proposed system uses a hybrid decentralized architecture that combines on-chain and off-chain components. The blockchain is responsible for storing immutable metadata, workflow states, and references to report content. Computationally intensive and large-data operations are handled off-chain through the relayer, AI moderation service, and IPFS. The overall architecture of the system is shown in the Figure~\ref{fig:overall-architecture}
 
-Insert:
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Images/Chapter_3/overall-architecture.png}
+    \caption{Oracle network architecture for AI moderation.}
+    \label{fig:overall-architecture}
+\end{figure}
 
-overall architecture diagram.
+The DApp acts as the citizen-facing interface. The ZKP GovID simulator handles identity verification and ticket issuance. The backend relayer verifies signed report submissions and coordinates communication between AI moderation, IPFS, and smart contracts. The AI moderation service evaluates report content before storage and blockchain submission. IPFS stores large report data and media evidence, while the smart contracts manage the report lifecycle on the private PoA blockchain.
+
+This architecture supports the main project goal of preserving citizen anonymity while maintaining report integrity and transparency. The use of a relayer also improves usability because citizens do not need to directly manage gas payments or manually submit blockchain transactions.
+
+\subsubsection{Layered Architecture}
+
+The system can be divided into five major layers.
+
+\begin{enumerate}
+    \item  Presentation layer:
+This layer consists of the DApp used by citizens and government officials. It provides interfaces for login, report submission, report viewing, and future government-side actions.
+    \item Identity and authentication layer:
+This layer consists of the ZKP GovID simulator. It verifies citizens and issues citizen seeds and ticket batches. This separates real identity verification from on-chain activity.
+    \item Middleware orchestration layer:
+The backend relayer acts as the coordination layer. It receives signed report payloads, performs validations, calls AI moderation services, uploads accepted content to IPFS, and submits blockchain transactions.
+    \item Off-chain services layer:
+This layer includes the AI moderation service and IPFS storage. These components handle tasks that are unsuitable for direct blockchain execution.
+    \item Blockchain layer:
+This layer consists of the smart contracts and the private PoA blockchain. It stores immutable metadata, report states, content hashes, IPFS CIDs, and workflow events.
+
+\end{enumerate}
+
 
 \subsection{Proposed Workflow}
 
-Explain:
+\subsubsection{Citizen Authentication and Identity Workflow}
+\subsubsection*{Report Submission Workflow}
 
-authentication,
-report creation,
-moderation,
-blockchain anchoring.
 
-Insert:
 
-workflow diagram.
+% authentication,
+% report creation,
+% moderation,
+% blockchain anchoring.
+
+% Insert:
+
+% workflow diagram.
 
 \subsection{Project Plan and Timeline}
 
@@ -46,12 +145,38 @@ implementation phases.
 
 \subsection{Expected Outcomes}
 
-Examples:
+The expected outcome of the project is a working prototype of a privacy-preserving, blockchain-based citizen reporting system for local governance.
 
-anonymous reporting,
-immutable records,
-decentralized moderation,
-transparency.
+The system is expected to achieve the following outcomes:
+
+\begin{enumerate}
+    \item  Anonymous civic reporting:
+Citizens can submit reports without directly revealing their real-world identity on-chain.
+    \item Tamper-evident records:
+Report metadata, hashes, and workflow states are recorded on a private blockchain.
+    \item Improved report reliability:
+AI-assisted moderation helps detect spam, abuse, and irrelevant submissions before blockchain anchoring.
+    \item Scalable storage:
+Large report content and media evidence are stored in IPFS, while blockchain stores only metadata and references.
+    \item Usable blockchain interaction:
+The relayer pattern removes the need for citizens to directly manage gas fees or blockchain transactions.
+    \item Modular deployment:
+The system is designed as a collection of independently deployable components.
+    \item 
+Governance transparency:
+The blockchain provides an auditable record of report submission and status changes.
+ 
+\end{enumerate}
+
+
+Through these outcomes, the prototype demonstrates the feasibility of combining blockchain, privacy-preserving identity mechanisms, off-chain storage, AI-assisted moderation, and web-based DApp interfaces to support transparent and accountable local governance reporting.
+
+% Examples:
+
+% anonymous reporting,
+% immutable records,
+% decentralized moderation,
+% transparency.
 
 \section{Implementation}
 
