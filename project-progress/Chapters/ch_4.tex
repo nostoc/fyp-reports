@@ -105,8 +105,20 @@ Very important according to coordinator.
 
 \section{Comparison with Existing Systems}
 
-Examples:
+To demonstrate the advantages and novel contributions of the proposed community-assisted reporting framework, it is essential to compare its architecture and features against existing solutions in the domain of e-governance and citizen reporting.
 
-centralized systems,
-traditional moderation,
-public blockchain approaches.
+\subsection{Centralized Reporting Platforms}
+Traditional crowdsourced reporting systems, such as FixMyStreet and SeeClickFix, have successfully established user-friendly interfaces with intuitive reporting workflows and clear feedback loops. However, as identified in the literature, these platforms rely entirely on centralized server architectures. This centralization creates single points of failure and makes the systems susceptible to data tampering and unauthorized modifications. Furthermore, centralized platforms often require mandatory identity disclosure, which can discourage citizen participation, especially when reporting sensitive issues or criticizing local authorities. 
+In contrast, the proposed system leverages a permissioned blockchain to ensure data immutability and absolute transparency. By employing Zero-Knowledge Proofs (ZKP) and identity decoupling, the proposed framework guarantees citizen anonymity while maintaining mathematical accountability, a feature completely absent in conventional centralized systems.
+
+\subsection{Traditional Content Moderation}
+Existing governance platforms typically rely on manual content moderation by human administrators to filter out spam or abusive content. While effective for small-scale operations, manual moderation introduces significant transaction latency, high operational costs, and the potential for human bias. Most importantly, it reintroduces centralized control over what public information is allowed to be published.
+The proposed system addresses these limitations by integrating an AI-based off-chain moderation oracle. By automating the filtering of textual and visual content using machine learning models before the data is permanently recorded on-chain, the system achieves scalable, unbiased, and rapid moderation while preserving the decentralized ethos of the platform.
+
+\subsection{Public Blockchain Approaches}
+While some theoretical governance models propose using public, permissionless blockchains (such as the Ethereum mainnet) to achieve maximum decentralization, these architectures are poorly suited for frequent local governance interactions. Public blockchains suffer from high transaction latency, limited throughput, and unpredictable, fluctuating gas fees that the user must pay. 
+The proposed framework overcomes these usability challenges by utilizing a private, permissioned blockchain running a Proof-of-Authority (PoA) consensus mechanism. This architecture provides predictable, high-performance transaction processing. Additionally, it eliminates the financial burden on citizens through the use of a backend relayer network (meta-transactions), offering a seamless, "gasless" experience.
+
+\subsection{Domain-Specific Blockchain Solutions}
+Recent literature highlights several blockchain-based complaint management systems, but these are primarily tailored for highly specific domains such as law enforcement (e.g., police complaint registries). These systems often focus narrowly on administrative efficiency, restrict access entirely to authorized personnel, and frequently lack robust mechanisms for handling large multimedia evidence.
+Unlike these isolated solutions, the proposed framework introduces a generalized, community-assisted approach. It actively encourages public participation through opinion polling and community upvoting. Furthermore, it efficiently manages large multimedia files (e.g., images of infrastructure damage) through decentralized off-chain storage via IPFS, seamlessly linking cryptographic hashes back to the immutable blockchain ledger.
