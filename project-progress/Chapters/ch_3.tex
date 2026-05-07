@@ -43,7 +43,8 @@ Include:
 
 Gantt chart,
 implementation phases.
-5.6 Expected Outcomes
+
+\subsection{Expected Outcomes}
 
 Examples:
 
@@ -77,6 +78,7 @@ Integrity Verification
 
 \subsection{AI-based Moderation System Implementation}
 
+
 Balanced coverage only.
 
 Subsections:
@@ -90,9 +92,32 @@ Security Mechanisms
 Do NOT over-expand this section.
 
 \subsection{Web-based DApp Development}
-User Authentication Interface
-Report Submission Interface
-Blockchain Query Interface
+The decentralized application (DApp) serves as the primary gateway for citizens to interact with the local governance system. It is built using a modern web stack comprising Next.js and React for the frontend interface, Tailwind CSS for responsive styling, and Ethers.js for cryptographic operations. The architecture is designed to abstract blockchain complexities away from the end-user while maintaining strict privacy and security guarantees.
+
+\subsubsection{User Authentication Interface}
+The authentication interface is designed to verify citizen eligibility without compromising personal privacy.
+\begin{itemize}
+    \item \textbf{GovID Verification Integration:} The interface securely collects the citizen's GovID credentials and interfaces with an external GovID Simulator API. This abstracts the process of verifying a citizen's real-world identity against a centralized registry.
+    \item \textbf{Cryptographic Credential Generation:} Upon successful identity verification, the system retrieves a batch of Zero-Knowledge Proof (ZKP) tickets and a unique `citizenSeed`. 
+    \item \textbf{Local State Management:} Using the `ethers.js` library, a localized Citizen Wallet is derived from the seed. A custom React Context (\texttt{CitizenContext}) is utilized to manage the session state, ensuring that the generated private keys and ZKP tickets remain strictly on the client-side device and are never exposed to external servers. The UI incorporates dynamic feedback mechanisms to indicate the generation of cryptographic proofs to the user.
+\end{itemize}
+
+\subsubsection{Report Submission Interface}
+The report submission module allows authenticated citizens to report civic issues anonymously.
+\begin{itemize}
+    \item \textbf{Form Design and Data Handling:} Developed with a mobile-first approach, the form captures issue descriptions and optional photographic evidence using standard \texttt{FormData} structures to support multipart uploads.
+    \item \textbf{Anonymous Cryptographic Signing:} To guarantee anonymity and prevent spam, each submission consumes a single ZKP ticket from the user's allocated batch. The payload (consisting of the issue description and the ZKP ticket ID) is hashed using Keccak-256 and subsequently signed using the citizen's locally stored ECDSA private key.
+    \item \textbf{Meta-Transaction Relaying:} Instead of submitting transactions directly to the blockchain and incurring gas fees, the frontend dispatches the signed payload, image, and ZKP metadata to a NestJS Backend Relayer. The relayer handles the intermediate steps: uploading the evidence to IPFS, requesting AI moderation, and finally submitting the transaction to the Geth blockchain network on behalf of the user.
+\end{itemize}
+
+\subsubsection{Blockchain Query Interface}
+The query interface acts as a community feed where citizens can view, filter, and track the status of reported issues.
+\begin{itemize}
+    \item \textbf{Mobile-First Feed Architecture:} Implemented as a single-column, scrollable interface inspired by modern social media platforms (e.g., Reddit). This design choice prioritizes readability and user engagement on mobile devices.
+    \item \textbf{Dynamic Issue Cards:} Data retrieved from the blockchain is formatted into interactive cards. Each card displays critical metadata including categorical status badges (e.g., PENDING VALIDATION, OPEN, RESOLVED), community upvotes, truncated descriptions, timestamps, and image thumbnails.
+    \item \textbf{State Management and Navigation:} The interface employs React state hooks to allow real-time filtering of issues by category (e.g., Infrastructure, Parks \& Rec, Safety). Furthermore, a persistent Floating Action Button (FAB) is implemented to provide users with seamless access to the report submission workflow at any time.
+\end{itemize}
+
 \subsection{Deployment Environment}
 
 Very important.

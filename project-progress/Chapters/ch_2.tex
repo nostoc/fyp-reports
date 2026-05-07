@@ -1,12 +1,14 @@
 \chapter{Background}
 
 \section{Blockchain Technology}
-Explain:
 
-blocks,
-transactions,
-immutability,
-consensus.
+
+Blockchain is a distributed, digital, append-only ledger technology. It enables data to be stored in immutable and transparent manner across multiple nodes in a network. Unlike centralized systems, blockchain systems maintain a syncronized copy of the ledger among all authorized participants. This approach reduces the dependency on a single intermediary controlling authority. Each block in the blockchain contains a set of validated transactions, a timestamp, and a cryptographic hash of the previous block. This hash-chaining mechanism ensures that any alteration to previous recorded data becomes immediately detectable.
+
+Immutability is a key characteristic in blockchain technology. It is computationally impractical to alter or delete a transaction after it is confirmed and appened to the blockchain. The immutable property is significantly important in governance-related systems, because integrity and transparency are a must. 
+
+
+Cryptography plays a significant role in blockchain systems. To generate unique digital fingerprints of data, hash functions are used. To verify ownership and authenticity of transactions, digital signatures are used. By using above cryptographic methods, blockchain systems gurantee integirty, authenticity and non-repudiation of data. 
 
 \section{Permissioned Blockchain and PoA}
 
@@ -24,11 +26,12 @@ The proposed system uses Solidity based smart contracts deployed on a private pe
 
 \section{Decentralized Applications (DApps)}
 
-Explain:
+Decentralized Applications (DApps) are software applications that operate on a decentralized network, such as a blockchain, rather than being hosted on centralized servers. Unlike traditional web applications that rely on centralized databases and backend infrastructure, DApps utilize smart contracts to handle backend logic and state management. This shift from traditional Web2 to Web3 architecture ensures that application data is immutable, transparent, and resistant to single points of failure or centralized control.
 
-frontend blockchain interaction,
-Web3 concepts,
-relayers/meta-transactions.
+In a typical DApp architecture, the frontend provides the user interface, while the core logic is distributed across the blockchain network. To interact with the blockchain, the frontend utilizes Web3 provider libraries, such as Web3.js or Ethers.js. These libraries enable the application to communicate with blockchain nodes via Remote Procedure Calls (RPC). Through this connection, the frontend can query the blockchain to read the current state of smart contracts or construct new transactions. When a user wishes to modify the blockchain state, they must cryptographically sign the transaction using their digital wallet's private key, ensuring authenticity and authorization.
+
+A significant challenge in traditional DApp adoption is the requirement for users to pay transaction fees, commonly known as "gas," using the native cryptocurrency of the network. This creates a barrier to entry for regular users who may not possess or understand cryptocurrency. To address this usability issue, modern DApps employ meta-transactions and relayers. A meta-transaction allows a user to cryptographically sign their intent to execute a transaction off-chain without broadcasting it themselves. This signed message is then sent to an intermediary service known as a relayer. The relayer, which holds a balance of the network's cryptocurrency, wraps the user's signed message in a standard blockchain transaction, submits it to the network on behalf of the user, and pays the associated gas fees. This approach provides a seamless, "gasless" user experience while maintaining the security and non-repudiation guarantees of cryptographic signatures, making blockchain applications more accessible to the general public.
+
 
 \section{InterPlanetary File System (IPFS)}
 
@@ -46,19 +49,29 @@ The identity decoupling is critical requirment because citizens may hesitate to 
 
 \section{AI-based Content Moderation}
 
-Explain:
+Citizen reporting platforms are vulnerable to spam Submissions, abusive content, misinformation, and malicious reports. Due to immutability of blockchain records, permanently storing harmful content presents significant ethical and operational concerns. Therefore, content moderation techniques are required before reports are recorded on-chain. 
 
-NLP moderation,
-toxicity detection,
-decentralized moderation idea.
+AI techniques are widely used for automated content moderation. Natural Language Processing (NLP) techniques are used in text moderation tasks such as:toxicity detection, hate speech detection, spam filtering, and sentiment Analysis. For image moderation, computer vision and deep learning approaches are mostly used. Convolutional Neural Networks (CNNs) and transformer-based vision models can classify images based on categories like: explicit content, graphic violence, hate symbols, and unrelated media. 
 
-\section{Docker and Containerized Deployment}
 
-Explain:
 
-containers,
-service isolation,
-deployment architecture.
 
-This helps justify oracle deployment.
+
+
+
+
+
+
+
+
+
+% \section{Docker and Containerized Deployment}
+
+% Explain:
+
+% containers,
+% service isolation,
+% deployment architecture.
+
+% This helps justify oracle deployment.
 
