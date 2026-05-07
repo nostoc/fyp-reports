@@ -56,8 +56,7 @@ The end-to-end testing workflow was executed as follows:
 
 \begin{enumerate}
     \item \textbf{Citizen Authentication and Key Generation:} The test commenced with a simulated citizen authenticating via the external GovID simulator. Upon successful verification, the system successfully generated a batch of Zero-Knowledge Proof (ZKP) tickets and derived the local ECDSA wallet, demonstrating the proper functioning of the identity decoupling mechanism.
-    
-    % TODO: Insert screenshot of the authentication interface or successful login state here.
+
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.45\textwidth]{Images/Chapter 4/2.png}
@@ -67,8 +66,6 @@ The end-to-end testing workflow was executed as follows:
     \end{figure}
     
     \item \textbf{Report Submission and Cryptographic Signing:} The authenticated user submitted a test report containing a text description (e.g., "Pothole on Main Street") and a sample image. The DApp successfully consumed a ZKP ticket, hashed the payload, and signed it using the local private key before transmitting the multipart form data to the backend relayer.
-    
-    % TODO: Insert screenshot of the report submission form here.
 
     \begin{figure}[H]
         \centering
@@ -78,13 +75,11 @@ The end-to-end testing workflow was executed as follows:
     
     \item \textbf{Off-chain Storage and AI Moderation Routing:} Upon receiving the payload, the backend relayer processed the test data. The visual evidence was routed to the IPFS integration module, successfully generating a Content Identifier (CID). Simultaneously, the text and image data were evaluated by the AI moderation service, which validated the report as legitimate, non-abusive content.
     
-    % TODO: Insert screenshot of backend terminal logs showing IPFS CID generation and AI approval here.
     
     \item \textbf{Blockchain Recording via Meta-Transaction:} Following AI approval, the backend relayer formatted the data—including the IPFS CID, issue description, and the cryptographic proofs—and submitted a meta-transaction to the smart contract on the Geth PoA network. The transaction was successfully mined by the validator nodes, securely anchoring the report to the immutable ledger without requiring the citizen to pay gas fees.
     
     \item \textbf{Frontend Verification:} Finally, the DApp's query interface was refreshed to retrieve the latest blockchain state. The newly submitted report appeared in the community feed with its corresponding status badge, upvote count, and image thumbnail, confirming that the entire decentralized pipeline executed flawlessly.
     
-    % TODO: Insert screenshot of the community feed displaying the successfully recorded test report here.
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.45\textwidth]{Images/Chapter 4/4.png}
