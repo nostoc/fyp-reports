@@ -1,92 +1,72 @@
-\chapter{System Architecture and Design}\label{cha:report}
+\chapter{Background}
 
-All groups should submit a complete but fairly concise report on the project. This very same document is also written in the format expected by the DEIE under UGPs.
+\section{Blockchain Technology}
+Explain:
 
-\section{Overall Architecture}\label{sec:overall-architecture}
+blocks,
+transactions,
+immutability,
+consensus.
 
-During this reporting period, the team finalized the system design and established a multi-tiered, decentralized architecture for the community-assisted reporting system. We designed this structure to balance the immutability and transparency of blockchain technology with the usability and privacy expectations of modern public-facing applications. Because a primary challenge in decentralized e-governance systems is the usability barrier introduced by cryptographic key management, transaction latency, and gas fees, the implemented architecture integrates a relayer-based meta-transaction pattern alongside an advanced identity decoupling mechanism to mitigate these issues while preserving data integrity.
+\section{Permissioned Blockchain and PoA}
 
-The established architecture is logically divided into five distinct, interconnected layers:
+Explain:
 
-\begin{itemize}
-    \item \textbf{User and Presentation Layer:} The primary interface for system interaction is a responsive, web-based Decentralized Application (DApp). This layer abstracts the underlying blockchain complexities from the citizens. It is responsible for capturing user inputs (textual descriptions and multimedia evidence), interfacing with the identity layer for authentication, and performing local cryptographic signing of payloads before transmitting them to the backend infrastructure. It also allows users to query the blockchain directly to read historical reporting data without intermediary interference.
+permissioned networks,
+validator nodes,
+Proof-of-Authority.
 
-    \item \textbf{Identity and Authentication Layer:} To ensure civic participation without the fear of retaliation or privacy loss, user identity must be decoupled from the report content. This layer utilizes a Zero-Knowledge Proof (ZKP) GovID Simulator. Instead of tying on-chain actions to a physical identity (e.g., a National Identity Card), the simulator authenticates the user off-chain and issues an ephemeral \texttt{citizenSeed} and a batch of single-use ticket IDs. This allows the frontend to generate device-independent cryptographic key pairs, ensuring the citizen remains completely anonymous on the public ledger while still preventing spam or Sybil attacks.
+Mention why suitable for governance.
 
-    \item \textbf{Middleware Orchestration Layer (Backend Relayer):} Operating as the core integration hub, the Backend Relayer facilitates meta-transactions. Rather than forcing citizens to pay transaction fees or interact directly with the blockchain consensus mechanisms, the relayer receives the cryptographically signed reports from the DApp. It verifies the provided ticket IDs and signatures, orchestrates the necessary off-chain validation (AI moderation) and storage (IPFS), and ultimately executes the state-changing transaction on the blockchain on behalf of the citizen.
+\section{Smart Contracts}
 
-    \item \textbf{Off-Chain Services Layer (AI and Storage):} Due to the inherent computational and storage constraints of distributed ledgers, heavy processing is delegated to off-chain environments.
-    \begin{itemize}
-        \item \textbf{AI Oracle Network:} An off-chain decentralized network consisting of three separate AI nodes evaluates the textual and visual content of the report to filter out malicious or inappropriate submissions before they are permanently recorded.
-        \item \textbf{Decentralized Storage:} Large data objects, specifically images, are uploaded to the InterPlanetary File System (IPFS). IPFS returns a cryptographic Content Identifier (CID) hash, which guarantees the data's integrity.
-    \end{itemize}
+Explain:
 
-    \item \textbf{Blockchain and Smart Contract Layer:} The foundational data layer is a private, permissioned Ethereum-compatible blockchain utilizing a Proof-of-Authority (PoA) consensus mechanism. This setup ensures high throughput, low latency, and deterministic finality suitable for governance applications. Smart contracts deployed on this network enforce the core business logic—such as report submission, state tracking, and opinion polling—and store the immutable metadata alongside the IPFS CIDs.
-\end{itemize}
+Ethereum contracts,
+Solidity,
+workflow automation.
 
-By decoupling these layers, the architecture successfully achieves a modular design that ensures citizen anonymity, automates content moderation, and provides a seamless, Web2-like user experience backed by Web3 security guarantees.
+\section{Decentralized Applications (DApps)}
 
+Explain:
 
-\section{High-Level Architectural Diagram}\label{sec:high-level-architectural-diagram}
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{Images/Chapter\space 2/high-level-architecture.png}
-    \caption{High-level architecture of the community-assisted reporting system.}
-    \label{fig:high-level-architecture}
-\end{figure}
-\section{Component Descriptions}\label{sec:component-descriptions}
+frontend blockchain interaction,
+Web3 concepts,
+relayers/meta-transactions.
 
-To satisfy the functional and non-functional requirements of the system, the architecture relies on several distinct components. The following sections detail the design rationale and structural responsibilities of each primary module.
+\section{InterPlanetary File System (IPFS)}
 
-\subsection{Frontend Decentralized Application (DApp)}
-The DApp serves as the primary gateway for citizens to interact with the reporting system. From a design perspective, it is structured to provide a traditional Web2 user experience while functioning as a Web3 client under the hood. Its core architectural responsibility is to act as a secure, client-side cryptographic engine. Rather than relying on a backend server to manage user wallets, the DApp was designed to locally generate unique public-private key pairs based on the seed provided by the identity layer. It locally signs the report payload (text and image hashes) before transmission, ensuring that a user's private key never leaves their device, thereby preserving strict data sovereignty and security.
+Explain:
 
-\subsection{ZKP GovID Simulator}
-The ZKP GovID Simulator handles identity and access control without compromising citizen anonymity. The fundamental design decision here was to explicitly decouple a citizen's physical, real-world identity (e.g., National Identity Card) from their on-chain digital footprint. The simulator mimics Zero-Knowledge Proof principles: it verifies the user's credentials against a simulated national database and, upon success, issues an ephemeral \texttt{citizenSeed} alongside a batch of single-use ticket IDs. This design ensures that authorized citizens can submit valid reports, but neither the government nor the public can link multiple reports back to the same physical individual.
+CID,
+decentralized storage,
+off-chain architecture.
 
-\subsection{Backend Relayer}
-The Backend Relayer is engineered as the middleware orchestrator of the system. The primary design rationale for introducing a relayer was to abstract the complexities of blockchain interactions—specifically gas fees and transaction broadcasting—away from the end-user. The relayer operates by receiving the cryptographically signed payload and the single-use ticket ID from the DApp. It structurally validates the ticket, coordinates the off-chain AI moderation and IPFS storage, and ultimately pays the gas fees to submit the transaction to the smart contract. Because the payload is signed by the citizen's local private key, the relayer is cryptographically restricted from altering the report's content, ensuring it remains a trustless intermediary.
+\section{Zero-Knowledge and Identity Concepts}
 
-\subsection{AI Oracle Network}
-Because blockchain environments are ill-suited for computationally heavy tasks, the AI-based content moderation module was designed as an off-chain service. To prevent a single point of failure and to mitigate the risk of biased moderation, this component was architected as a decentralized oracle network consisting of three separate AI nodes. When the relayer submits report data, these nodes independently evaluate the textual and visual content for malicious or inappropriate material. The system requires a consensus among the nodes before returning a validation response, ensuring that only verified, policy-compliant content is allowed to proceed to the permanent ledger.
+Explain:
 
-\subsection{IPFS Off-chain Storage Node}
-Storing large data objects natively on a blockchain is prohibitively expensive and degrades system performance. To resolve this, the InterPlanetary File System (IPFS) was integrated into the architecture as the decentralized storage layer for multimedia evidence. When a citizen submits a photo of a public issue, the relayer routes the file to the IPFS node. IPFS uses content addressing to generate a unique Content Identifier (CID) cryptographic hash. The design ensures that only this lightweight CID is stored on the blockchain, preserving an immutable, verifiable link to the off-chain image without bloating the ledger state.
+pseudonymous identity,
+identity decoupling,
+ticket-based authentication.
 
-\subsection{Reporting Smart Contracts and PoA Blockchain}
-The foundational data layer consists of custom smart contracts deployed on a private, permissioned blockchain network. 
-\begin{itemize}
-    \item \textbf{Permissioned PoA Blockchain:} A Proof-of-Authority (PoA) consensus mechanism was selected over public Proof-of-Work or Proof-of-Stake models. This design choice aligns with the requirements of local governance, offering deterministic finality, high transaction throughput, and controlled validator participation (restricted to trusted government or NGO nodes), which secures the network against malicious external actors.
-    \item \textbf{Smart Contracts:} The smart contracts act as the decentralized state machine of the application. They are designed to encapsulate the business logic of the reporting lifecycle. They verify the integrity of the data submitted by the relayer, map the IPFS CIDs to the citizen's public key, manage the transition of issue statuses (e.g., reported, resolved), and serve as the direct, read-only data source for the frontend DApp.
-\end{itemize}
+No need deep ZKP mathematics.
 
-\section{Report Submission Workflow}
+\section{AI-based Content Moderation}
 
-Include:
-\begin{enumerate}
-    \item citizen authentication
-    \item payload signing
-    \item oracle moderation
-    \item IPFS upload
-    \item blockchain anchoring
-\end{enumerate}
+Explain:
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{Images/Chapter\space 2/reporting-sequence-diagram.png}
-    \caption{Sequence diagram for the report submission workflow.}
-    \label{fig:reporting-sequence-diagram}
-\end{figure}
+NLP moderation,
+toxicity detection,
+decentralized moderation idea.
 
-\section{Security and Privacy Considerations}
+\section{Docker and Containerized Deployment}
 
-Discuss:
+Explain:
 
-\begin{enumerate}
-    \item pseudonymous identity,
-    \item digital signatures,
-    \item ticket validation,
-    \item hash integrity,
-    \item off-chain storage,
-    \item oracle voting.
-\end{enumerate}
+containers,
+service isolation,
+deployment architecture.
+
+This helps justify oracle deployment.
+
