@@ -35,12 +35,7 @@ A significant challenge in traditional DApp adoption is the requirement for user
 
 \section{InterPlanetary File System (IPFS)}
 
-Explain:
-
-CID,
-decentralized storage,
-off-chain architecture.
-
+The InterPlanetary File System (IPFS) is a peer-to-peer network protocol designed for storing and sharing files in a decentralized manner. Unlike the traditional web, where files are identified and accessed through server-based addresses such as URLs, IPFS locates files based on their content. This content-addressed approach improves resilience, reduces dependence on centralized servers, and provides an efficient off-chain storage mechanism for blockchain-based applications. A fundamental concept in IPFS is the Content Identifier (CID), which is a cryptographic hash generated from the content of a file. If the file content changes, the CID also changes, ensuring strong integrity guarantees because users can verify that the retrieved content exactly matches the expected CID. Since identical content generates the same CID, IPFS also supports deduplication and immutable references. In the IPFS network, data can be hosted by any node that chooses to store or pin the content, allowing files to be retrieved from multiple peers using their CID. This decentralized storage model increases availability, improves fault tolerance, and reduces reliance on a single server, although long-term persistence depends on nodes continuing to pin the data. In blockchain-based systems, IPFS is commonly used as an off-chain storage layer because storing large files directly on-chain is costly and inefficient. Instead, applications store only CIDs and essential metadata on the blockchain, while the actual content remains in IPFS. Users can then retrieve the file through its CID and verify its authenticity using cryptographic hashing. Overall, IPFS provides a scalable and cost-effective decentralized storage solution that combines content integrity, distributed hosting, and efficient off-chain data management.
 \section{Zero-Knowledge and Identity Concepts}
 
 Zero-knowledge proofs allow a user to prove that they possess sensitive information without actually revaling the information itself. 
