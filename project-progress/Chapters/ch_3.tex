@@ -72,9 +72,8 @@ Ticket Batch Generation
 Citizen Keypair Generation
 \subsection{IPFS Off-chain Storage Integration}
 
-File Upload Workflow
-CID Retrieval
-Integrity Verification
+
+The implementation of IPFS off-chain storage in the system involves several stages that enable secure, decentralized, and efficient file management. When a user uploads a file through the application interface, the backend service communicates with the IPFS network and adds the file to IPFS. During this process, IPFS automatically generates a unique Content Identifier (CID), which is a cryptographic hash derived from the file content. This CID acts as a permanent and tamper-proof reference to the uploaded file because any modification to the content results in a completely different CID. Instead of storing the entire file directly on the blockchain, the system stores only the CID along with relevant metadata such as file type, uploader information, and timestamps in the application database or on-chain record. This design significantly reduces blockchain storage costs and improves scalability while still allowing users to verify file integrity through the CID. The actual file remains stored in a decentralized manner across the IPFS network, where multiple nodes may pin and host the content. When a file needs to be accessed, the system retrieves it from IPFS using the associated CID, and the network locates and delivers the file from available peers while ensuring data integrity. Within the project codebase, the integration is primarily implemented through the \texttt{ipfsService.js} and \texttt{ipfsController.js} modules. The service layer is responsible for handling communication with the IPFS node, including file uploads and retrieval operations, while the controller layer manages API requests and responses related to IPFS functionality. Additional middleware components are used for file validation, request handling, and error management to ensure reliable operation. Overall, this implementation demonstrates how IPFS can be effectively integrated as an off-chain storage solution that combines decentralized hosting, content verification, reduced on-chain storage requirements, and improved system efficiency.
 
 \subsection{AI-based Moderation System Implementation}
 
