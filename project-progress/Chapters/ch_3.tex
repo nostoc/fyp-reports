@@ -154,8 +154,6 @@ When a citizen initiates a civic issue report, the system executes the following
     \item Once the nullifier is marked as consumed, the smart contract successfully anchors the report to the ledger, initializing it in the Pending Validation state to await community consensus.
 \end{enumerate}
 
-
-
 % authentication,
 % report creation,
 % moderation,
@@ -167,12 +165,118 @@ When a citizen initiates a civic issue report, the system executes the following
 
 \subsection{Project Plan and Timeline}
 
-\section{Project Timeline}
 
-The project is planned to be completed over two academic semesters following
-a structured and incremental development approach as shown in Figure \ref{fig:ganttchart}. The timeline allocates
-sufficient time for system design, implementation, testing, evaluation to ensure the successful completion of the proposed objectives.
+\subsubsection{Project Plan}
 
+The project plan is organized according to the main implementation phases of the system. Each phase focuses on a specific part of the proposed framework and contributes to the final integrated prototype. Table~\ref{tab:project_plan} summarizes the major phases, key activities, expected outputs, and current progress status.
+
+\begin{longtable}{|p{3.2cm}|p{5.2cm}|p{4.2cm}|p{2.2cm}|}
+\caption{Project plan and current progress}
+\label{tab:project_plan} \\
+\hline
+\textbf{Phase} & \textbf{Main Activities} & \textbf{Expected Output} & \textbf{Current Status} \\
+\hline
+\endfirsthead
+
+\multicolumn{4}{c}{\textit{Table~\ref{tab:project_plan} continued}} \\
+\hline
+\textbf{Phase} & \textbf{Main Activities} & \textbf{Expected Output} & \textbf{Current Status} \\
+\hline
+\endhead
+
+\hline
+\multicolumn{4}{r}{\textit{Continued on next page}} \\
+\endfoot
+
+\hline
+\endlastfoot
+
+Background Study and Literature Review
+& Study existing e-governance systems, blockchain-based reporting platforms, PoA consensus, IPFS, AI moderation, and DApp usability.
+& Identification of research gap and technical foundation.
+& Completed \\
+\hline
+
+Requirement Analysis
+& Define functional and non-functional requirements for citizens, government officials, relayer, blockchain, storage, and moderation components.
+& Requirement specification and use-case understanding.
+& Completed \\
+\hline
+
+System Design
+& Design overall architecture, component interactions, report submission workflow, identity model, and deployment architecture.
+& High-level system design and workflow diagrams.
+& Completed \\
+\hline
+
+Permissioned Blockchain Setup
+& Configure private Geth blockchain, PoA consensus, validator nodes, and RPC access.
+& Working private permissioned blockchain network.
+& In Progress \\
+\hline
+
+Smart Contract Development
+& Implement report creation, report state management, access control, ticket validation, and event emission.
+& Reporting smart contract for managing issue lifecycle.
+& In Progress \\
+\hline
+
+Identity and Access Control
+& Implement simulated GovID verification, citizen seed generation, ticket batch generation, and pseudonymous key generation.
+& Privacy-preserving identity and access control mechanism.
+& Partially Completed \\
+\hline
+
+Backend Relayer Development
+& Implement payload validation, citizen signature verification, ticket validation, oracle communication, IPFS upload, and smart contract transaction submission.
+& Middleware service connecting DApp, oracle, IPFS, and blockchain.
+& In Progress \\
+\hline
+
+AI Oracle Moderation Service
+& Implement three oracle workers, aggregator, voting logic, decision hashing, and containerized VPS deployment.
+& Deployed AI moderation service for text-based report validation.
+& Completed for Text Moderation \\
+\hline
+
+IPFS Off-chain Storage Integration
+& Upload report content and media to IPFS, retrieve CIDs, and verify file integrity using hashes.
+& Off-chain storage mechanism for report evidence.
+& In Progress \\
+\hline
+
+Web-based DApp Development
+& Develop citizen login, report submission, report viewing, category selection, and future government-side interfaces.
+& User-facing web application.
+& In Progress \\
+\hline
+
+Subsystem Testing
+& Test DApp, smart contracts, AI oracle service, GovID simulator, IPFS, and relayer independently.
+& Verified subsystem behavior.
+& In Progress \\
+\hline
+
+System Integration and Evaluation
+& Integrate all components and test the full report submission workflow from DApp to blockchain.
+& Functional end-to-end prototype and evaluation results.
+& Pending \\
+\hline
+
+Final Demonstration
+& Prepare final system demo, report, and presentation.
+& Demonstrable prototype and final documentation.
+& Pending \\
+\hline
+
+\end{longtable}
+\clearpage
+
+\subsubsection{Project Timeline}
+
+The project is planned to be completed over two academic semesters using an incremental development approach. The work is divided into several phases, starting from background study and requirement analysis, followed by system design, subsystem implementation, integration, testing, and final evaluation.
+
+The timeline shown in Figure~\ref{fig:ganttchart} was prepared to guide the development process and to allocate sufficient time for each major component of the system. Since this is a progress report, some implementation activities are still ongoing. At the current stage, the main focus is on completing subsystem implementation and moving toward full system integration for the report submission workflow.
 
 \begin{sidewaysfigure}[!p]
     \centering
@@ -212,45 +316,36 @@ sufficient time for system design, implementation, testing, evaluation to ensure
         \gantttitle{JULY}{4}
         \gantttitle{AUG}{2} \\
         \gantttitlelist[title label font=\color{black}\scriptsize]{1,...,37}{1} \\
+% --- METHODOLOGY-ALIGNED TASKS ---
 
-        % --- METHODOLOGY-ALIGNED TASKS ---
+\ganttbar{\ganttlabel{Grouping \& Project Selection}}{1}{2} \\
+\ganttbar{\ganttlabel{Background Study}}{2}{4} \\
+\ganttbar{\ganttlabel{Literature Review}}{4}{8} \\
+\ganttbar{\ganttlabel{Requirement Analysis}}{7}{10} \\
+\ganttbar{\ganttlabel{Project Proposal Preparation}}{9}{10} \\
+\ganttbar{\ganttlabel{Proposal Evaluation}}{10}{11} \\
 
-        \ganttbar{\ganttlabel{Grouping \& Project Selection}}{1}{2} \\
-        \ganttbar{\ganttlabel{Background Study}}{2}{4} \\
-        \ganttbar{\ganttlabel{Literature Review}}{4}{8} \\
-        \ganttbar{\ganttlabel{Requirement Analysis}}{7}{10} \\
-        \ganttbar{\ganttlabel{Project Proposal Preparation}}{9}{10} \\
-        \ganttbar{\ganttlabel{Proposal Evaluation}}{10}{11} \\
+\ganttbar{\ganttlabel{Complete System Design}}{11}{15} \\
 
-        \ganttbar{\ganttlabel{Complete System Design}}{11}{15} \\
+\ganttbar{\ganttlabel{Permissioned Blockchain Setup}}{15}{20} \\
+\ganttbar{\ganttlabel{Smart Contract Development}}{18}{25} \\
+\ganttbar{\ganttlabel{Identity \& Access Control Implementation}}{19}{24} \\
+\ganttbar{\ganttlabel{Backend Relayer Development}}{20}{27} \\
+\ganttbar{\ganttlabel{IPFS Off-chain Storage Integration}}{22}{28} \\
+\ganttbar{\ganttlabel{AI Oracle Moderation Service}}{16}{24} \\
 
-        \ganttbar{\ganttlabel{Permissioned Blockchain Setup}}{15}{20} \\
-        \ganttbar{\ganttlabel{Smart Contract Development}}{18}{24} \\
-        \ganttbar{\ganttlabel{Identity \& Access Control Integration}}{19}{23} \\
-        \ganttbar{\ganttlabel{\ac{IPFS} Integration}}{22}{26} \\
-        \ganttbar{\ganttlabel{AI-Based Content Moderation Integration}}{16}{21} \\
+\ganttbar{\ganttlabel{Web-based \ac{DApp} Development}}{18}{30} \\
 
-        \ganttbar{\ganttlabel{Web-based \ac{DApp} Development}}{18}{30} \\
+\ganttbar{\ganttlabel{Subsystem Testing}}{25}{31} \\
+\ganttbar{\ganttlabel{End-to-End Report Submission Integration}}{29}{34} \\
 
-        \ganttbar{\ganttlabel{Subsystem Testing}}{26}{30} \\
-        \ganttbar{\ganttlabel{System Integration \& End-to-End Testing}}{30}{34} \\
-
-        \ganttbar{\ganttlabel{Performance Evaluation}}{34}{36} \\
-        \ganttbar{\ganttlabel{Final Demonstration}}{36}{37}
-
+\ganttbar{\ganttlabel{Performance and Functional Evaluation}}{33}{36} \\
+\ganttbar{\ganttlabel{Final Demonstration}}{36}{37}
     \end{ganttchart}
     }
     \caption{Project Timeline Gantt Chart}
     \label{fig:ganttchart}
 \end{sidewaysfigure}
-
-
-
-
-% Include:
-
-% Gantt chart,
-% implementation phases.
 
 \subsection{Expected Outcomes}
 
@@ -324,11 +419,7 @@ A fundamental challenge in anonymous decentralized systems is preventing Sybil a
 
 \begin{figure}[!htbp]
     \centering
-<<<<<<< HEAD
-    \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter 3/state-transition-diagram-2.png}
-=======
     \includegraphics[width=\textwidth]{Images/Chapter 3/state-transition-diagram-3.png}
->>>>>>> 793e637b1da12c32c9216985c852ab58b12cf780
     \caption{State transition diagram for the civic reporting system.}
     \label{fig:state-transition}
 \end{figure}
@@ -388,8 +479,15 @@ The implementation utilizes the NestJS framework to provide a robust and highly 
     \item Gasless Blockchain Submission: As the final step, the relayer formats a transaction containing the IPFS CID and the ZKP ticket (which serves as a Sybil-resistant submissionNullifier). The relayer signs and dispatches this transaction to the Reporting.sol smart contract. By paying the network gas fees from its own wallet, the relayer enables a completely frictionless, gasless experience for the end-user.
 \end{enumerate}
 \subsection{IPFS Off-chain Storage Integration}
+The system employs IPFS as the off-chain storage layer to manage large data objects, including citizen-submitted report images and structured report metadata. Rather than recording full file content on the blockchain, only the Content Identifier (CID) produced by IPFS is stored on-chain. The CID is a cryptographic hash uniquely representing the exact content of a file, such that any modification to the file produces an entirely different CID. This content-addressing mechanism ensures tamper-evident storage while significantly reducing on-chain data overhead and improving overall system scalability.
 
-The implementation of IPFS off-chain storage in the proposed system enables secure, decentralized, and efficient management of files through the use of Content Identifiers (CIDs) and distributed storage mechanisms. When a user uploads a file through the application interface, the backend service communicates with the IPFS network and adds the file to IPFS. During this process, IPFS automatically generates a unique CID based on the cryptographic hash of the file content. This CID serves as a permanent and tamper-proof reference to the uploaded file because any modification to the content results in a completely different CID. Instead of storing the entire file directly on the blockchain, only the CID and related metadata, such as file type, uploader information, and timestamps, are stored in the application database or on-chain record. This approach significantly reduces blockchain storage costs and improves scalability while still allowing files to be verified and retrieved through their associated CIDs. The actual file remains stored in a decentralized manner across the IPFS network, where multiple nodes may pin and host the content to ensure availability and fault tolerance. When a file is requested, the system retrieves it from IPFS using the CID, and the network locates the content among participating peers and delivers it while preserving integrity. Within the project architecture, the integration is managed through backend services responsible for communication with the IPFS node, while controller components handle API requests related to file uploads and retrieval operations. Additional middleware components are incorporated for file validation, request processing, and error handling to ensure reliable system functionality. The overall workflow involves uploading a file to IPFS, generating and storing the CID with metadata, and later retrieving the file from the network using the CID whenever access is required. Through this implementation, IPFS provides a reliable off-chain storage solution that combines decentralized hosting, strong integrity verification, reduced on-chain storage requirements, and efficient file management.
+To demonstrate the decentralized nature of IPFS within the prototype environment, three IPFS nodes are deployed across three separate machines and connected as peers within a private controlled network. When a file is uploaded and pinned on the primary node, the two peer nodes retrieve and independently pin the same content, ensuring redundant availability across all three machines. This peer network operates entirely within the controlled laboratory environment and does not connect to the public IPFS network, which is consistent with the defined project scope.
+
+The off-chain storage integration is implemented as a dedicated backend service positioned between the DApp frontend and the IPFS node cluster, structured using a layered architecture of route definitions, controller components, utility modules, and middleware layers. A content moderation step is executed before any file is committed to IPFS storage, where every submission passes through an AI-assisted moderation module and only approved content is uploaded and assigned a CID. At the current stage of development, the moderation module has been integrated into the service architecture and is prepared to connect to the AI moderation service once that component is completed.
+
+The upload workflow follows a two-stage sequence. In the first stage, the submitted image passes through moderation, is uploaded to the primary IPFS node, pinned across peer nodes, and its CID is returned. In the second stage, the complete report metadata comprising the title, description, category, geographic location, pseudonymous reporter identifier, and the image CID is packaged as a structured JSON object and uploaded to IPFS, producing a metadata CID. The DApp then forwards only this metadata CID to the smart contract, which records it permanently on the blockchain as an immutable on-chain anchor. During retrieval, the metadata CID is read from the blockchain and used to fetch the full report data from IPFS, with the embedded image CID used separately to retrieve the associated image.
+
+The system further incorporates a CID verification mechanism to confirm that a CID is resolvable before it is submitted to the blockchain, and a pin management mechanism to handle content removal where necessary. Removing a pin from the local nodes allows garbage collection to reclaim storage while the on-chain CID record is preserved as an immutable audit trail, directly addressing the toxic immutability challenge identified in the literature.
 
 \subsection{AI-based Moderation System Implementation}
 
