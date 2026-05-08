@@ -1,25 +1,85 @@
-\chapter{Testing / Experimentation / Validation / Verification}
+\chapter{Testing, Experimentation, and Validation}
 
-This chapter MUST look research-oriented.
+This chapter outlines the proposed methodology for the testing, experimentation, and validation of the decentralized reporting framework. Given the distributed nature of the system—which integrates off-chain cryptographic services, AI moderation, and on-chain smart contracts—a rigorous experimental setup will be established to evaluate performance, security, and functional correctness.
 
 \section{Experimental Setup}
+\label{subsec:experimental-setup}
 
-Describe:
+To accurately simulate a real-world deployment of the permissioned blockchain and its ancillary microservices, the experimental environment has been hosted on a cloud-based infrastructure utilizing containerization technologies.
 
-VPS specs,
-blockchain environment,
-Docker setup,
-software versions,
-datasets.
+\subsection{Hardware Infrastructure}
+The testing environment was deployed across two identical Virtual Private Server (VPS) instances to simulate a distributed network architecture and evaluate inter-service communication latency. The hardware specifications for each VPS are as follows:
+\begin{enumerate}
+    \item Compute: 4 vCPU Cores
+    \item Memory: 8 GB RAM
+    \item Storage: 75 GB SSD
+    \item Network: High-bandwidth cloud uplink
+\end{enumerate}
+Server 1 acts as the primary operational node, hosting the core citizen-facing applications, middleware, and the blockchain ledger. Server 2 is strictly dedicated to hosting the computationally intensive AI moderation ensemble and the future decentralized storage layer. This isolation prevents resource monopolization and ensures accurate performance profiling of the blockchain consensus mechanism.
 
+\subsection{Software and Deployment Environment}
+To ensure reproducibility and consistency across test iterations, the entire software stack was containerized using Docker. 
+\begin{enumerate}
+    \item Orchestration and CI/CD: Deployment and lifecycle management of the containers are handled by Dokploy, a self-hosted Platform-as-a-Service (PaaS) solution installed on both servers. 
+    \item Automated Deployment: Continuous Integration and Continuous Deployment (CI/CD) pipelines were established via GitHub webhooks. Dokploy was configured to monitor the develop branch of the project repository. Upon receiving a trigger, it automatically pulls the latest source code, builds the respective Dockerfiles for the microservices, and deploys the updated containers.
+\end{enumerate}
+
+\subsection{Blockchain Configuration (Server 1)}
+The on-chain environment consists of a private, permissioned Proof-of-Authority (PoA) blockchain.
+\begin{enumerate}
+    \item Client Software: The network was initialized using Go-Ethereum (Geth) version 1.13.15.
+    \item Consensus Engine: The Clique PoA consensus algorithm was utilized to ensure deterministic block times and eliminate the computational overhead of Proof-of-Work, which closely aligns with the operational model of a government-backed consortium chain.
+    \item Node Topology: A 3-node cluster was deployed via a unified docker-compose.yml configuration. These nodes serve as the designated Authority (Sealer) nodes representing various governance entities.
+\end{enumerate}
+
+\subsection{Application and Services Topology}
+The testing setup evaluates the interaction between the following primary subsystems distributed across the two servers:
+
+Deployed on Server 1 (Core Operations):
+\begin{enumerate}
+    \item ZKP-GovID Simulator: A Node.js service simulating the issuance of government-backed Zero-Knowledge Proof tickets.
+    \item Frontend DApp: A Next.js application providing the citizen interface.
+    \item Backend Relayer: A NestJS-based middleware component responsible for off-chain cryptographic validation, routing, and gasless blockchain transaction submission.
+    \item Smart Contracts: Compiled using the Hardhat development environment utilizing Solidity version 0.8.20.
+\end{enumerate}
+
+Deployed on Server 2 (Storage and AI Oracle):
+\begin{enumerate}
+    \item AI Moderation Ensemble: A multi-node AI oracle architecture designed for robust spam and content filtering. This consists of three distinct AI algorithm nodes running concurrently to analyze incoming media and text. These nodes are governed by a central Aggregator Node that acts as the single entry point and determines the final moderation verdict based on algorithmic consensus.
+    \item IPFS Node: A dedicated InterPlanetary File System (IPFS) node that will be deployed in the subsequent testing phase to handle the distributed, off-chain storage of all civic report multimedia (images) and heavy metadata, returning immutable Content Identifiers (CIDs) to the backend relayer.
+\end{enumerate}
 
 \section{Testing Methodology}
+\label{subsec:testing-methodology}
 
-Explain:
+To ensure the reliability, security, and performance of the decentralized reporting framework, a comprehensive, multi-tiered testing methodology will be employed. This approach systematically validates the architecture from isolated components up to the complete end-to-end user workflow.
 
-subsystem testing,
-integration testing,
-functional testing.
+\subsection{Subsystem Testing}
+Subsystem testing will focus on isolating individual architectural components to verify their internal logic, cryptographic integrity, and algorithmic correctness prior to network integration.
+
+\begin{enumerate}
+    \item Smart Contract Validation: The core reporting smart contract will undergo rigorous unit testing using the Hardhat development framework. Automated tests will be written to validate the logic of the Finite State Machine, ensuring that community voting thresholds trigger correct status changes and that role-based access controls prevent unauthorized authority actions.
+    \item Backend Relayer Verification: The middleware will be tested using a dedicated testing suite. The primary focus will be validating the cryptographic verification algorithms, ensuring that both the Zero-Knowledge Proof tickets from the simulator and the citizen signatures are correctly authenticated or systematically rejected when malformed.
+    \item AI Oracle Evaluation: The AI moderation ensemble will be tested in isolation using a curated dataset of synthetic civic reports. This dataset will include a mixture of valid public issues, explicit spam, and manipulated imagery to evaluate the accuracy, false-positive rate, and consensus latency of the multi-node aggregator.
+\end{enumerate}
+
+\subsection{Integration Testing}
+Once individual subsystems are validated, integration testing will be conducted to evaluate the communication interfaces, network latency, and data flow between the distributed microservices across the two virtual private servers.
+
+\begin{enumerate}
+    \item Relayer and Off-Chain Services: Tests will verify the backend relayer's ability to seamlessly orchestrate the initial validation pipeline. This includes measuring the successful routing of payloads to the AI Oracle ensemble, the handling of timeout exceptions, and the successful uploading of multimedia to the IPFS node to retrieve immutable Content Identifiers.
+    \item Relayer and Blockchain Interface: Integration scripts will simulate the relayer dispatching transactions to the private Proof-of-Authority blockchain network. This phase will verify the gasless submission mechanics, ensuring the relayer accurately wraps the Content Identifiers and ticket nullifiers into valid transactions that are accepted by the network nodes.
+    \item Frontend to Middleware Communication: API integration tests will confirm that the decentralized application securely formats and transmits the cryptographic payloads, including the user description and attached media, to the relayer over encrypted channels.
+\end{enumerate}
+
+\subsection{Functional Testing}
+Functional testing will evaluate the entire integrated system against the defined operational requirements from an end-user perspective, simulating both real-world usage and adversarial conditions.
+
+\begin{enumerate}
+    \item End-to-End User Journeys: Automated scripts will simulate complete, valid report lifecycles. This entails a simulated citizen generating a ticket, submitting a valid issue via the frontend, passing AI moderation, anchoring on the blockchain, and successfully progressing through the community validation and authority resolution states.
+    \item Sybil Resistance and Replay Attack Mitigation: The framework will be subjected to adversarial functional tests. Scripts will intentionally attempt to submit multiple reports using identical ticket nullifiers to verify that the smart contract successfully rejects duplicate entries and maintains the one-ticket-one-vote invariant.
+    \item Cryptographic Forgery Attempts: The system will be tested by injecting payloads with manipulated descriptions or mismatched signatures. This will ensure the backend relayer systematically drops tampered requests before they can interact with the off-chain storage or consume blockchain resources.
+\end{enumerate}
 
 \section{Blockchain Performance Testing}
 
@@ -201,9 +261,9 @@ The end-to-end testing workflow was executed as follows:
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/2.png}
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/screen 1.png}
         \hfill
-        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/1.png}
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/screen.png}
         \caption{Citizen Authentication Interfaces}
     \end{figure}
     
