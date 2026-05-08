@@ -209,33 +209,34 @@ The Report Contract is engineered using a Separation of Concerns principle. To m
 A fundamental challenge in anonymous decentralized systems is preventing Sybil attacks and duplicate submissions. This framework utilizes a dual-layer validation mechanism based on Zero-Knowledge Proof (ZKP) tickets.
 \begin{enumerate}
     \item Off-Chain Cryptographic Validation: Before a transaction reaches the blockchain, the backend relayer intercepts the payload. Using ethers.js, it verifies that the zkpTicketId possesses a valid cryptographic signature from the official Government Authority. It subsequently verifies the citizen's signature against the payload hash to ensure data integrity during transmission.
-    \item On-Chain Nullifier Tracking: Once validated off-chain, the zkpTicketId is passed to the smart contract as a submissionNullifier. The contract maintains a mapping(bytes32 => bool) public submissionNullifiers. Upon successful report creation, this nullifier is marked as used. Any subsequent attempt to submit a report using the same ticket will systematically fail, cryptographically guaranteeing that one authorized ticket equates to exactly one unique report.
+    \item On-Chain Nullifier Tracking: Once validated off-chain, the zkpTicketId is passed to the smart contract as a submissionNullifier. The contract maintains a mapping of public submissionNullifiers. Upon successful report creation, this nullifier is marked as used. Any subsequent attempt to submit a report using the same ticket will systematically fail, cryptographically guaranteeing that one authorized ticket equates to exactly one unique report.
 \end{enumerate}
 
 \subsubsection{State Transition Logic (Finite State Machine)}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{Images/Chapter 3/state-transition-diagram-2.png}
+    \includegraphics[width=\textwidth]{Images/Chapter 3/state-transition-diagram-3.png}
     \caption{State transition diagram for the civic reporting system.}
     \label{fig:state-transition}
 \end{figure}
 
-To enforce accountability and prevent unilateral dismissals of civic issues by authorities, the contract implements a strict Finite State Machine (FSM). Every submitted report strictly adheres to a 7-stage lifecycle managed via an on-chain enum:
+To enforce accountability and prevent unilateral dismissals of civic issues by authorities, the contract implements a strict Finite State Machine (FSM). Every submitted report strictly adheres to an 8-stage lifecycle managed via an on-chain enum:
 \begin{enumerate}
     \item Pending Validation: Initial state awaiting community confirmation of legitimacy.
     \item Community Rejected: Terminal state for spam or invalid issues.
     \item Open: Validated by citizens and actively awaiting government action.
+    \item In Progress: The authority has officially acknowledged the issue and is actively executing physical repairs or resolution steps.
     \item Pending Rejection Review: The authority dismissed the issue, triggering a community appeal phase.
-    \item Pending Verification: The authority marked the issue as completed, triggering a mandatory community verification vote.
+    \item Pending Verification: The authority marked the active work as completed, triggering a mandatory community verification vote.
     \item Closed: Terminal state indicating a successfully verified resolution or an accepted rejection.
-    \item Reopened: The community rejected the authority's fix, forcing further action.
+    \item Reopened: The community rejected the authority's fix, forcing the issue back to the authority for rework.
 \end{enumerate}
 
 A report must traverse these specific states driven by a combination of authority actions and community consensus thresholds.
 \begin{enumerate}
     \item Community-Driven Transitions: When a report is submitted, it enters the Pending Validation state. The transition to the Open state (making it visible for government action) only occurs automatically via the \_changeStatus() internal function once community upvotes reach the predefined VALIDATION\_THRESHOLD. Conversely, reaching the REJECTION\_THRESHOLD moves it to the terminal Community Rejected state.
-    \item Authority-Driven Transitions: Authorities can only interact with reports in the Open or Reopened states. An authority calling markAsSolved() shifts the state to Pending Verification, while calling rejectIssue() shifts it to Pending Rejection Review.
+    \item Authority-Driven Transitions: Authorities can only interact with reports in the Open, Reopened, or In Progress states. An authority calling startWork() shifts an Open or Reopened issue to the In Progress state, providing transparency to citizens that action is underway. From the In Progress state, calling markAsSolved() shifts the report to Pending Verification. Additionally, calling rejectIssue() from the Open or In Progress states shifts it to Pending Rejection Review.
     \item Consensus Verification: The FSM mandates that authority actions are never final until verified by the community. If an authority marks an issue as solved, the community must vote to verify the physical fix. Achieving the verification threshold transitions the report to the terminal Closed state. If the community rejects the fix, the state transitions to Reopened, forcing the authority to address the issue again.
 \end{enumerate}
 
