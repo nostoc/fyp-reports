@@ -80,12 +80,27 @@ To satisfy the project's requirement for privacy-preserving accountability, an i
 \begin{itemize}
     \item {GovID Simulator:} An off-chain simulated identity server was developed and deployed to a personal Virtual Private Server (VPS). This service acts as the trusted authority for verifying real-world identities. A dedicated API endpoint (/api/govid/verify-citizen) was implemented to securely authenticate users via their National Identity Number (govId) and a password, bridging the gap between traditional web authentication and decentralized access.
     \item {Citizen Keypair generation:} To completely decouple a user's real identity from their on-chain footprint, the identity server does not store or transmit blockchain addresses. Instead, upon successful authentication, the simulator generates and returns a secure, 256-bit citizenSeed. This cryptographic seed is then used by the client-side DApp to deterministically generate an anonymous public-private keypair, allowing the citizen to interact securely with smart contracts without exposing personal data.
-    \item {Ticket Batch Generation:} To facilitate multiple secure, anonymous report submissions over time, the simulator implements a batch authorization protocol. During authentication, the server generates a structured ticketBatch (currently configured to issue 10 tickets per request). Each ticket contains a unique ticketId (a cryptographic hash) and a signature signed by the Identity Authority's private key. Citizens use these single-use tickets to authorize their transactions on-chain. The smart contract validates the authority's signature on the ticket, granting access without ever knowing which specific citizen is submitting the report.
+    \item {Ticket Batch Generation:} To facilitate multiple secure, anonymous report submissions over time, the simulator implements a batch authorization protocol. During authentication, the server generates a structured ticketBatch (currently configured to issue 10 tickets per request). Each ticket contains a unique ticketId (a cryptographic hash) and a signature signed by the Identity Authority's private key. Citizens use these single-use tickets to authorize their transactions on-chain. The backend relayer validates the authority's signature on the ticket, granting access without ever knowing which specific citizen is submitting the report.
 \end{itemize}
 
 \subsection{Backend Relayer Implementation}
 The backend relayer serves as a critical middleware component that bridges the frontend DApp with the blockchain network and external services. It is responsible for handling report submissions, managing interactions with IPFS for off-chain storage, and orchestrating AI-based content moderation before anchoring data on the blockchain.
 
+The implementation utilizes the NestJS framework to provide a robust and highly modular RESTful API. The core workflow of the relayer executes the following deterministic pipeline for each incoming citizen report.
+
+\begin{enumerate}
+    \item Cryptographic Verification: The relayer receives the payload via a POST /report endpoint. Utilizing the ethers.js library, it performs a strict dual-signature validation:
+    \begin{enumerate}
+        \item It verifies the ZKP Govid Simulator ticket signature against the dynamically fetched Government Authority public key to ensure the user is an authorized citizen.
+        \item It reconstructs the payload hash (binding the description and ticket ID) and verifies the citizen's signature to prevent data tampering in transit.
+    \end{enumerate}
+    
+    \item AI Content Moderation: To prevent on-chain spam, toxic immutability of blockchains and ensure platform integrity, the relayer routes the submitted text and media to the AI Oracle moderation service. This service acts as an automated filter, analyzing the content for appropriateness and returning a validation verdict before any storage operations occur.
+    
+    \item Decentralized Storage (IPFS): To maintain a highly efficient and cost-effective blockchain state, heavy multimedia files and detailed text are offloaded to the InterPlanetary File System (IPFS). The relayer manages the file buffers via multer, processes the upload, and retrieves an immutable Content Identifier (CID).
+    
+    \item Gasless Blockchain Submission: As the final step, the relayer formats a transaction containing the IPFS CID and the ZKP ticket (which serves as a Sybil-resistant submissionNullifier). The relayer signs and dispatches this transaction to the Reporting.sol smart contract. By paying the network gas fees from its own wallet, the relayer enables a completely frictionless, gasless experience for the end-user.
+\end{enumerate}
 \subsection{IPFS Off-chain Storage Integration}
 
 File Upload Workflow
