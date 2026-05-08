@@ -15,7 +15,7 @@ The testing environment was deployed across two identical Virtual Private Server
     \item Storage: 75 GB SSD
     \item Network: High-bandwidth cloud uplink
 \end{enumerate}
-Server 1 acts as the primary operational node, hosting the core citizen-facing applications, middleware, and the blockchain ledger. Server 2 is strictly dedicated to hosting the computationally intensive AI moderation ensemble and the future decentralized storage layer. This isolation prevents resource monopolization and ensures accurate performance profiling of the blockchain consensus mechanism.
+Server 1 acts as the primary operational node, hosting the core citizen-facing applications, middleware, and the blockchain ledger. Server 2 is strictly dedicated to hosting the computationally intensive AI moderation ensemble and the IPFS storage layer. This isolation prevents resource monopolization and ensures accurate performance profiling of the blockchain consensus mechanism.
 
 \subsection{Software and Deployment Environment}
 To ensure reproducibility and consistency across test iterations, the entire software stack was containerized using Docker. 
@@ -33,7 +33,7 @@ The on-chain environment consists of a private, permissioned Proof-of-Authority 
 \end{enumerate}
 
 \subsection{Application and Services Topology}
-The testing setup evaluates the interaction between the following primary subsystems distributed across the two servers:
+The testing setup evaluates the interaction between the following primary subsystems distributed across the two servers.\\
 
 Deployed on Server 1 (Core Operations):
 \begin{enumerate}
@@ -99,11 +99,143 @@ ticket validation.
 
 \section{AI Moderation Testing}
 
-Metrics:
+% Metrics:
 
-moderation response time,
-classification correctness,
-voting consistency.
+% moderation response time,
+% classification correctness,
+% voting consistency.
+
+AI moderation testing evaluates whether the moderation subsystem correctly classifies submitted report content as acceptable or unacceptable. At the current stage, the implemented AI moderation service focuses mainly on text-based moderation. Image moderation is planned as a future extension.
+
+The objectives of AI moderation testing are:
+
+\begin{itemize}
+    \item to verify that the oracle aggregator API is accessible,
+    \item to verify that all three oracle workers respond correctly,
+    \item to test valid civic report acceptance,
+    \item to test spam and abusive content rejection,
+    \item to verify majority voting behavior,
+    \item to verify generation of report hash, decision hash, and signature.
+\end{itemize}
+
+The AI moderation service is deployed on an Ubuntu VPS 2 using Dokploy and Docker containers. The deployment includes:
+
+\begin{itemize}
+    \item Government Oracle container,
+    \item International Oracle container,
+    \item NGO Oracle container,
+    \item Oracle Aggregator container.
+\end{itemize}
+
+The backend relayer communicates only with the aggregator API. The aggregator communicates with the three oracle workers using internal container networking.
+
+\subsection{API Availability Test}
+
+The test cases used for testing moderation API availability are shown in the Table ~\ref{tab:ai_api_tests}
+\begin{table}[h!]
+\centering
+\caption{AI moderation API availability tests}
+\begin{tabular}{|p{2cm}|p{6cm}|p{5cm}|p{2cm}|}
+\hline
+\textbf{Test ID} & \textbf{Test} & \textbf{Expected Result} & \textbf{Status} \\
+\hline
+AI-T01 & Call aggregator health endpoint & Service returns running status & Passed \\
+\hline
+AI-T02 & Check oracle worker availability & Aggregator identifies available oracle workers & Passed \\
+\hline
+AI-T03 & Send request without API key & Request rejected & Passed \\
+\hline
+AI-T04 & Send request with valid API key & Request processed successfully & Passed \\
+\hline
+\end{tabular}
+\label{tab:ai_api_tests}
+\end{table}
+
+\subsection{Moderation Classification Tests}
+
+The test cases used for testing moderation classification are shown in Table ~\ref{tab:ai_classification_tests}
+
+\begin{table}[h!]
+\centering
+\caption{AI moderation classification tests}
+\begin{tabular}{|p{2cm}|p{4cm}|p{6cm}|p{4cm}|}
+\hline
+\textbf{Test ID} & \textbf{Input Type} & \textbf{Example Input} & \textbf{Expected Decision} \\
+\hline
+AI-T05 & Valid civic report & ``There is a large pothole near the public school.'' & ACCEPT \\
+\hline
+AI-T06 & Spam content & ``BUY NOW FREE MONEY CLICK HERE.'' & REJECT \\
+\hline
+AI-T07 & Toxic content & Text containing abusive or threatening phrases & REJECT / REVIEW \\
+\hline
+AI-T08 & Ambiguous report & ``Bad situation near town.'' & REVIEW \\
+\hline
+AI-T09 & Category mismatch & Garbage issue submitted under road damage category & REVIEW \\
+\hline
+AI-T10 & Empty report & Empty text field & Reject request / validation error \\
+\hline
+\end{tabular}
+\label{tab:ai_classification_tests}
+\end{table}
+
+\subsection{Oracle Voting Validation}
+
+The oracle moderation system uses a three-node voting mechanism. Each oracle returns either one of the votes, \texttt{ACCEPT} or \texttt{REJECT}.
+
+The aggregator applies majority-based decision logic.
+
+
+\begin{table}[h!]
+\centering
+\caption{Oracle voting validation}
+\begin{tabular}{|p{8cm}|p{6cm}|}
+\hline
+\textbf{Oracle Votes} & \textbf{Expected Final Decision} \\
+\hline
+ACCEPT, ACCEPT, ACCEPT & ACCEPT \\
+\hline
+ACCEPT, ACCEPT, REJECT & ACCEPT \\
+\hline
+REJECT, REJECT, ACCEPT & REJECT \\
+\hline
+REJECT, REJECT, REJECT & REJECT \\
+\hline
+\end{tabular}
+\label{tab:oracle_voting_validation}
+\end{table}
+
+\subsection{Response Structure Validation}
+
+Each successful oracle response should include the fields shown in Table~\ref{tab:oracle_response_fields}.
+
+\begin{table}[h!]
+\centering
+\caption{Oracle aggregator response fields}
+\begin{tabular}{|p{5cm}|p{9cm}|}
+\hline
+\textbf{Field} & \textbf{Purpose} \\
+\hline
+\texttt{final\_decision} & Final moderation result \\
+\hline
+\texttt{final\_confidence} & Aggregated confidence value \\
+\hline
+\texttt{report\_hash} & Hash of submitted report payload \\
+\hline
+\texttt{decision\_hash} & Hash of final moderation decision \\
+\hline
+\texttt{oracle\_votes} & Individual oracle outputs \\
+\hline
+\texttt{aggregator\_signature} & Signature of decision hash \\
+\hline
+\end{tabular}
+\label{tab:oracle_response_fields}
+\end{table}
+
+The presence of \texttt{report\_hash}, \texttt{decision\_hash}, and \texttt{aggregator\_signature} supports auditability and tamper-evidence in the moderation process.
+\vspace{4cm}
+
+The AI content moderation service was successfully deployed as separate containers on a VPS. Preliminary API testing confirms that the aggregator can receive moderation requests, communicate with the oracle workers, collect votes, and return an aggregated decision. This validates the feasibility of the decentralized oracle moderation approach at prototype level.
+
 
 \section{IPFS Storage Testing}
 
