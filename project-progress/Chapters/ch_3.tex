@@ -194,10 +194,50 @@ The core infrastructure of the proposed system is the private permissioned block
     \item {Network Security Measures:} To communicate with the blockchain network, secure Remote Procedure Call (RPC) endpoint was established only for node1. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
 \end{itemize}
 
-\subsection{Smart Contract Implementation}
-Report Contract
-Ticket Validation
-State Transition Logic
+\subsection{Smart Contract Architecture and Logic}
+
+The core on-chain logic of the decentralized reporting framework is governed by the Reporting.sol smart contract. This contract is designed to be highly gas-efficient, acting primarily as a state machine and a cryptographic ledger rather than a data storage layer. The implementation is divided into three critical functional domains as The Report Contract structure, Ticket Validation, and State Transition Logic.
+
+\subsubsection{The Report Contract}
+The Report Contract is engineered using a Separation of Concerns principle. To mitigate the prohibitive gas costs associated with storing large multimedia files on the blockchain, the contract only stores essential metadata. 
+\begin{enumerate}
+    \item Data Structure: Each civic issue is stored in a Report struct containing a unique integer ID, the IPFS Content Identifier (CID) pointing to off-chain media, voting counters, the assigned authority address, and its current lifecycle state.
+    \item Role-Based Access Control (RBAC): Utilizing OpenZeppelin's AccessControl, the contract explicitly defines operational boundaries. The RELAYER\_ROLE is restricted to the backend server, allowing it to submit reports and relay votes on behalf of citizens. The AUTHORITY\_ROLE is granted to recognized government or NGO nodes, granting them permission to update an issue's status to solved or rejected.
+\end{enumerate}
+
+\subsubsection{Ticket Validation and Sybil Resistance}
+A fundamental challenge in anonymous decentralized systems is preventing Sybil attacks and duplicate submissions. This framework utilizes a dual-layer validation mechanism based on Zero-Knowledge Proof (ZKP) tickets.
+\begin{enumerate}
+    \item Off-Chain Cryptographic Validation: Before a transaction reaches the blockchain, the backend relayer intercepts the payload. Using ethers.js, it verifies that the zkpTicketId possesses a valid cryptographic signature from the official Government Authority. It subsequently verifies the citizen's signature against the payload hash to ensure data integrity during transmission.
+    \item On-Chain Nullifier Tracking: Once validated off-chain, the zkpTicketId is passed to the smart contract as a submissionNullifier. The contract maintains a mapping(bytes32 => bool) public submissionNullifiers. Upon successful report creation, this nullifier is marked as used. Any subsequent attempt to submit a report using the same ticket will systematically fail, cryptographically guaranteeing that one authorized ticket equates to exactly one unique report.
+\end{enumerate}
+
+\subsubsection{State Transition Logic (Finite State Machine)}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Images/Chapter 3/state-transition-diagram-2.png}
+    \caption{State transition diagram for the civic reporting system.}
+    \label{fig:state-transition}
+\end{figure}
+
+To enforce accountability and prevent unilateral dismissals of civic issues by authorities, the contract implements a strict Finite State Machine (FSM). Every submitted report strictly adheres to a 7-stage lifecycle managed via an on-chain enum:
+\begin{enumerate}
+    \item Pending Validation: Initial state awaiting community confirmation of legitimacy.
+    \item Community Rejected: Terminal state for spam or invalid issues.
+    \item Open: Validated by citizens and actively awaiting government action.
+    \item Pending Rejection Review: The authority dismissed the issue, triggering a community appeal phase.
+    \item Pending Verification: The authority marked the issue as completed, triggering a mandatory community verification vote.
+    \item Closed: Terminal state indicating a successfully verified resolution or an accepted rejection.
+    \item Reopened: The community rejected the authority's fix, forcing further action.
+\end{enumerate}
+
+A report must traverse these specific states driven by a combination of authority actions and community consensus thresholds.
+\begin{enumerate}
+    \item Community-Driven Transitions: When a report is submitted, it enters the Pending Validation state. The transition to the Open state (making it visible for government action) only occurs automatically via the \_changeStatus() internal function once community upvotes reach the predefined VALIDATION\_THRESHOLD. Conversely, reaching the REJECTION\_THRESHOLD moves it to the terminal Community Rejected state.
+    \item Authority-Driven Transitions: Authorities can only interact with reports in the Open or Reopened states. An authority calling markAsSolved() shifts the state to Pending Verification, while calling rejectIssue() shifts it to Pending Rejection Review.
+    \item Consensus Verification: The FSM mandates that authority actions are never final until verified by the community. If an authority marks an issue as solved, the community must vote to verify the physical fix. Achieving the verification threshold transitions the report to the terminal Closed state. If the community rejects the fix, the state transitions to Reopened, forcing the authority to address the issue again.
+\end{enumerate}
 
 \subsection{Identity and Access Control Implementation}
 
@@ -206,12 +246,34 @@ To satisfy the project's requirement for privacy-preserving accountability, an i
 \begin{itemize}
     \item {GovID Simulator:} An off-chain simulated identity server was developed and deployed to a personal Virtual Private Server (VPS). This service acts as the trusted authority for verifying real-world identities. A dedicated API endpoint (/api/govid/verify-citizen) was implemented to securely authenticate users via their National Identity Number (govId) and a password, bridging the gap between traditional web authentication and decentralized access.
     \item {Citizen Keypair generation:} To completely decouple a user's real identity from their on-chain footprint, the identity server does not store or transmit blockchain addresses. Instead, upon successful authentication, the simulator generates and returns a secure, 256-bit citizenSeed. This cryptographic seed is then used by the client-side DApp to deterministically generate an anonymous public-private keypair, allowing the citizen to interact securely with smart contracts without exposing personal data.
-    \item {Ticket Batch Generation:} To facilitate multiple secure, anonymous report submissions over time, the simulator implements a batch authorization protocol. During authentication, the server generates a structured ticketBatch (currently configured to issue 10 tickets per request). Each ticket contains a unique ticketId (a cryptographic hash) and a signature signed by the Identity Authority's private key. Citizens use these single-use tickets to authorize their transactions on-chain. The smart contract validates the authority's signature on the ticket, granting access without ever knowing which specific citizen is submitting the report.
+    \item {Ticket Batch Generation:} To facilitate multiple secure, anonymous report submissions over time, the simulator implements a batch authorization protocol. During authentication, the server generates a structured ticketBatch (currently configured to issue 10 tickets per request). Each ticket contains a unique ticketId (a cryptographic hash) and a signature signed by the Identity Authority's private key. Citizens use these single-use tickets to authorize their transactions on-chain. The backend relayer validates the authority's signature on the ticket, granting access without ever knowing which specific citizen is submitting the report.
 \end{itemize}
 
 \subsection{Backend Relayer Implementation}
 The backend relayer serves as a critical middleware component that bridges the frontend DApp with the blockchain network and external services. It is responsible for handling report submissions, managing interactions with IPFS for off-chain storage, and orchestrating AI-based content moderation before anchoring data on the blockchain.
 
+The implementation utilizes the NestJS framework to provide a robust and highly modular RESTful API. The core workflow of the relayer executes the following deterministic pipeline for each incoming citizen report.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Images/Chapter 3/backend-relayer-impl.png}
+    \caption{Backend relayer workflow architecture.}
+    \label{fig:backend-relayer-impl}
+\end{figure}
+
+\begin{enumerate}
+    \item Cryptographic Verification: The relayer receives the payload via a POST /report endpoint. Utilizing the ethers.js library, it performs a strict dual-signature validation:
+    \begin{enumerate}
+        \item It verifies the ZKP Govid Simulator ticket signature against the dynamically fetched Government Authority public key to ensure the user is an authorized citizen.
+        \item It reconstructs the payload hash (binding the description and ticket ID) and verifies the citizen's signature to prevent data tampering in transit.
+    \end{enumerate}
+    
+    \item AI Content Moderation: To prevent on-chain spam, toxic immutability of blockchains and ensure platform integrity, the relayer routes the submitted text and media to the AI Oracle moderation service. This service acts as an automated filter, analyzing the content for appropriateness and returning a validation verdict before any storage operations occur.
+    
+    \item Decentralized Storage (IPFS): To maintain a highly efficient and cost-effective blockchain state, heavy multimedia files and detailed text are offloaded to the InterPlanetary File System (IPFS). The relayer manages the file buffers via multer, processes the upload, and retrieves an immutable Content Identifier (CID).
+    
+    \item Gasless Blockchain Submission: As the final step, the relayer formats a transaction containing the IPFS CID and the ZKP ticket (which serves as a Sybil-resistant submissionNullifier). The relayer signs and dispatches this transaction to the Reporting.sol smart contract. By paying the network gas fees from its own wallet, the relayer enables a completely frictionless, gasless experience for the end-user.
+\end{enumerate}
 \subsection{IPFS Off-chain Storage Integration}
 
 The implementation of IPFS off-chain storage in the proposed system enables secure, decentralized, and efficient management of files through the use of Content Identifiers (CIDs) and distributed storage mechanisms. When a user uploads a file through the application interface, the backend service communicates with the IPFS network and adds the file to IPFS. During this process, IPFS automatically generates a unique CID based on the cryptographic hash of the file content. This CID serves as a permanent and tamper-proof reference to the uploaded file because any modification to the content results in a completely different CID. Instead of storing the entire file directly on the blockchain, only the CID and related metadata, such as file type, uploader information, and timestamps, are stored in the application database or on-chain record. This approach significantly reduces blockchain storage costs and improves scalability while still allowing files to be verified and retrieved through their associated CIDs. The actual file remains stored in a decentralized manner across the IPFS network, where multiple nodes may pin and host the content to ensure availability and fault tolerance. When a file is requested, the system retrieves it from IPFS using the CID, and the network locates the content among participating peers and delivers it while preserving integrity. Within the project architecture, the integration is managed through backend services responsible for communication with the IPFS node, while controller components handle API requests related to file uploads and retrieval operations. Additional middleware components are incorporated for file validation, request processing, and error handling to ensure reliable system functionality. The overall workflow involves uploading a file to IPFS, generating and storing the CID with metadata, and later retrieving the file from the network using the CID whenever access is required. Through this implementation, IPFS provides a reliable off-chain storage solution that combines decentralized hosting, strong integrity verification, reduced on-chain storage requirements, and efficient file management.
