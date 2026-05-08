@@ -81,21 +81,75 @@ Functional testing will evaluate the entire integrated system against the define
     \item Cryptographic Forgery Attempts: The system will be tested by injecting payloads with manipulated descriptions or mismatched signatures. This will ensure the backend relayer systematically drops tampered requests before they can interact with the off-chain storage or consume blockchain resources.
 \end{enumerate}
 
-\section{Blockchain Performance Testing}
+\subsection{Blockchain Performance Testing}
+\label{subsec:blockchain-performance-testing}
 
-Metrics:
+To quantitatively evaluate the viability and scalability of the proposed decentralized reporting framework, a series of performance benchmarking experiments will be conducted on the 3-node Proof-of-Authority network. These stress tests will be executed using automated benchmarking tools, such as Hyperledger Caliper or custom Node.js scripting, to simulate concurrent user interactions. The evaluation will focus on three primary Key Performance Indicators as transaction throughput, transaction latency, and block confirmation times.
 
-latency,
-throughput,
-block confirmation.
+\subsubsection{Transaction Throughput Testing}
+The throughput experiment will measure the maximum capacity of the blockchain network to process high volumes of simultaneous civic reports.
 
-\section{Smart Contract Validation}
+\begin{enumerate}
+    \item Experiment Design: The testing suite will generate a progressively increasing load of concurrent report submissions and voting transactions sent to the backend relayer. This mimics a real-world scenario of mass reporting during a localized civic emergency, such as a natural disaster.
+    \item Significance: High throughput is essential to prevent network congestion, avoid memory pool overflows, and ensure the relayer does not become a bottleneck during peak usage.
+    \item Metrics and Parameters: The primary metric is Transactions Per Second, calculated by dividing the total number of successfully committed transactions by the total duration of the stress test. Secondary parameters include the transaction success-to-failure ratio and the CPU utilization on Server 1.
+    \item Thresholds and State-of-the-Art Comparison: Public mainnet blockchains like Ethereum traditionally process between 15 and 30 Transactions Per Second. The benchmark for this permissioned Proof-of-Authority configuration is set at a minimum threshold of 100 Transactions Per Second. Achieving this will demonstrate a highly scalable environment that significantly outperforms traditional public ledgers for civic applications.
+\end{enumerate}
 
-Test:
+\subsubsection{Transaction Latency Testing}
+The latency experiments will evaluate the responsiveness of the reporting system from the perspective of the backend relayer and the end-user.
 
-report creation,
-state transitions,
-ticket validation.
+\begin{enumerate}
+    \item Experiment Design: High-precision timestamps will be recorded at the exact moment the relayer dispatches the signed transaction to the blockchain and compared against the timestamp of the finalized block that incorporates that specific transaction.
+    \item Significance: Low transaction latency ensures a seamless user experience. Extended delays could lead to timeout errors within the middleware interface and cause desynchronization between the off-chain IPFS storage and the on-chain smart contract state.
+    \item Metrics and Parameters: The core metrics evaluated will be the Average Transaction Latency measured in seconds, and the 95th percentile latency to account for network outliers under heavy load conditions.
+    \item Thresholds and State-of-the-Art Comparison: While public Proof-of-Stake networks currently target latency periods of 12 seconds or more, the configured Proof-of-Authority consensus mechanism eliminates complex cryptographic puzzles. The expected benchmark for this project is an average latency of under 5 seconds per transaction, representing a substantial optimization over standard public blockchain networks.
+\end{enumerate}
+
+\subsubsection{Block Confirmation and Finality Testing}
+This phase of testing will analyze the deterministic nature of the Clique consensus engine across the three designated authority nodes.
+
+\begin{enumerate}
+    \item Experiment Design: Network monitoring tools will track the block propagation times across the node topology and measure the block generation intervals during both idle periods and extreme stress-testing phases.
+    \item Significance: Rapid and deterministic block confirmation is critical for the Finite State Machine implemented in the reporting contract. It ensures that community votes and authority state transitions are registered instantly without the risk of chain reorganizations, forks, or orphaned blocks.
+    \item Metrics and Parameters: The primary parameters are Average Block Time measured in seconds and Time to Finality, which measures the duration required for a transaction to become mathematically irreversible.
+    \item Thresholds and State-of-the-Art Comparison: Traditional probabilistic finality in legacy networks can take minutes to resolve. For this 3-node Proof-of-Authority setup, the block time parameter is explicitly configured in the genesis block to a fixed interval of 5 seconds. Consequently, the benchmark for absolute finality is expected to be achieved within 1 to 2 blocks, or 5 to 10 seconds. This matches the state-of-the-art performance observed in modern enterprise consortium blockchains.
+\end{enumerate}
+
+\subsection{Smart Contract Validation}
+\label{subsec:smart-contract-validation}
+
+To ensure the logical correctness, security, and gas efficiency of the decentralized reporting framework, a comprehensive validation suite will be executed against the core Solidity smart contract. This testing phase will utilize the Hardhat development environment paired with the Chai assertion library to simulate complex on-chain interactions. The validation process is categorized into three critical domains as ticket validation, report creation logic, and state transition integrity.
+
+\subsubsection{Ticket Validation and Sybil Resistance}
+This phase will empirically test the cryptographic nullifier tracking system to ensure the network is impervious to Sybil attacks and duplicate reporting.
+
+\begin{enumerate}
+    \item Experiment Design: Automated test scripts will simulate the submission of civic reports using valid, backend-signed Zero-Knowledge Proof tickets. Immediately following a successful submission, the script will intentionally attempt a replay attack by submitting a secondary report utilizing the exact same ticket nullifier. Additional tests will attempt to inject malformed or mathematically invalid nullifier hashes.
+    \item Significance: Validating the nullifier mapping is critical to preserving the one-citizen-one-vote invariant. If a malicious actor could bypass this check, they could artificially inflate the severity of an issue or spam the government authority with duplicate tasks.
+    \item Metrics and Parameters: The primary metric evaluated will be the Transaction Revert Rate under adversarial conditions, alongside the specific Gas Cost required to execute the nullifier validation logic.
+    \item Thresholds and Benchmarks: The acceptable benchmark for this mechanism is a strict 100 percent transaction revert rate for all duplicate or malformed ticket submissions. Furthermore, the gas overhead for checking the nullifier mapping must remain highly optimized to ensure the relayer is not subjected to excessive network fees.
+\end{enumerate}
+
+\subsubsection{Report Creation and Access Control}
+These experiments will validate the initialization of civic issues on the blockchain, ensuring that data is stored efficiently and that only authorized entities can write to the ledger.
+
+\begin{enumerate}
+    \item Experiment Design: The test suite will generate transactions attempting to call the report creation function from various network addresses. One address will be properly provisioned with the Relayer Role, while the others will represent unauthorized standard user wallets. The test will verify that only the relayer can anchor the IPFS Content Identifier and initial voting metadata to the chain.
+    \item Significance: This verifies the Separation of Concerns architecture, ensuring the smart contract acts exclusively as a secure state machine rather than a vulnerable, open-access database.
+    \item Metrics and Parameters: The parameters assessed include Role-Based Access Control execution accuracy and the Initial State Mapping accuracy. The computational cost will be measured in total execution gas.
+    \item Thresholds and Benchmarks: Any creation attempt by an address lacking the designated relayer permissions must revert immediately. Additionally, to outperform state-of-the-art public reporting contracts that store heavy string data, the gas cost for report creation must remain minimized, relying entirely on the lightweight CID.
+\end{enumerate}
+
+\subsubsection{State Transition and Finite State Machine Logic}
+The most rigorous testing phase will evaluate the strict 8-stage lifecycle of a civic report to guarantee that government authorities and citizens interact within predefined boundaries.
+
+\begin{enumerate}
+    \item Experiment Design: A simulated environment will recreate the complete lifecycle of multiple reports. Tests will incrementally cast community votes to verify that an issue automatically transitions from Pending Validation to Open upon reaching the required mathematical threshold. Subsequently, simulated authority nodes will invoke state-changing functions such as starting work, marking as solved, or rejecting the issue. Finally, the suite will attempt unauthorized state bypasses, such as an authority attempting to manually force an issue into the Closed state without the mandatory community Pending Verification phase.
+    \item Significance: The Finite State Machine is the core accountability mechanism of the project. Validating this logic ensures that authorities cannot unilaterally dismiss public issues and that community consensus dictates the final resolution of every report.
+    \item Metrics and Parameters: The primary metric is Code Coverage, specifically targeting statement, branch, and function coverage within the smart contract. Secondary metrics include State Transition Accuracy under edge-case voting scenarios.
+    \item Thresholds and Benchmarks: The testing benchmark mandates 100 percent branch and statement coverage for all state transition functions. The system must yield zero successful unauthorized state bypasses, enforcing absolute adherence to the 8-stage consensus lifecycle.
+\end{enumerate}
 
 \section{AI Moderation Testing}
 
