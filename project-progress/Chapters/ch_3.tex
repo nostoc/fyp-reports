@@ -127,7 +127,7 @@ This layer consists of the smart contracts and the private PoA blockchain. It st
 The proposed architecture operationalizes the decentralized reporting framework through a series of distinct, cryptographically secure workflows. These workflows ensure that civic participation remains entirely anonymous to the public and the smart contract, while simultaneously guaranteeing that only verified citizens can submit legitimate data.
 
 \subsubsection{Citizen Authentication and Identity Workflow}
-The authentication workflow bridges real-world civic identity with anonymous on-chain participation without exposing Personally Identifiable Information (PII) to the blockchain network. This is achieved through the integration of the ZKP-GovID Simulator, which acts as the centralized trust anchor for identity verification. The workflow is shown in Figure~\ref{fig:authentication_workflow}.
+The authentication workflow bridges real-world civic identity with anonymous on-chain participation without exposing Personally Identifiable Information (\ac{PII}) to the blockchain network. This is achieved through the integration of the ZKP-GovID Simulator, which acts as the centralized trust anchor for identity verification. The workflow is shown in Figure~\ref{fig:authentication_workflow}.
 
 \begin{figure}[p]
     \centering
@@ -166,8 +166,8 @@ When a citizen initiates a civic issue report, the system executes the following
     \item The application transmits the complete payload, including the raw text, media files, government-signed ticket, and the citizen's signature, to the backend relayer via a secure HTTP request.
     \item The backend relayer performs a strict dual-layer cryptographic verification. First, it fetches the Government Authority public key to verify the authenticity of the ticket. Second, it verifies the citizen's signature against the payload hash to detect any tampering during transit.
     \item If cryptographic verification succeeds, the relayer routes the submitted text and media to the AI moderation ensemble. The centralized aggregator node processes the inputs through its algorithmic nodes to determine if the content is appropriate or malicious spam.
-    \item Upon receiving an approval verdict from the AI oracle, the backend relayer offloads the multimedia files to the InterPlanetary File System (IPFS). The IPFS network returns an immutable Content Identifier (CID) representing the stored files.
-    \item The relayer formulates a blockchain transaction containing only the lightweight IPFS CID and the ticket identifier. To ensure a gasless experience for the citizen, the relayer signs this transaction with its own wallet and pays the necessary network fees.
+    \item Upon receiving an approval verdict from the AI oracle, the backend relayer offloads the multimedia files to \ac{IPFS}. The \ac{IPFS} network returns an immutable \ac{CID} representing the stored files.
+    \item The relayer formulates a blockchain transaction containing only the lightweight \ac{IPFS} \ac{CID} and the ticket identifier. To ensure a gasless experience for the citizen, the relayer signs this transaction with its own wallet and pays the necessary network fees.
     \item The Reporting smart contract receives the transaction. It immediately checks the provided ticket identifier against its internal nullifier mapping to prevent replay attacks and duplicate submissions.
     \item Once the nullifier is marked as consumed, the smart contract successfully anchors the report to the ledger, initializing it in the Pending Validation state to await community consensus.
 \end{enumerate}
@@ -199,7 +199,7 @@ The authority interaction proceeds as follows:
 \begin{enumerate}
     \item The government authority monitors the blockchain state via a dedicated dashboard, filtering for reports that have successfully reached the Open state.
     \item Upon dispatching a physical repair crew to the location, the authority submits a transaction to the smart contract invoking the state change function.
-    \item The smart contract validates the transaction signature against its Role-Based Access Control list to ensure the sender possesses the required authority permissions.
+    \item The smart contract validates the transaction signature against its \ac{RBAC} list to ensure the sender possesses the required authority permissions.
     \item Upon permission validation, the contract updates the report state from Open to In Progress, providing real-time transparency to the observing community.
     \item Once the physical repair is concluded, the authority submits a subsequent transaction to mark the issue as solved.
     \item The smart contract processes this transaction and transitions the report into the Pending Verification state, temporarily halting the authority's involvement until the community responds.
@@ -466,7 +466,7 @@ The core infrastructure of the proposed system is the private permissioned block
 \begin{itemize}
     \item {Geth PoA Network Setup:} A private permissioned Ethereum-compatible network was initialized using the Go Ethereum client. The network was configured to operate in proof-of-authority consensus mode, specifically using the Clique algorithm. This enabled faster block confirmation and lower energy consumption compared to traditional proof-of-work systems. A custom genesis file was created to define network parameters, including the initial set of authorized signers and the chain ID.
     \item {Validator Node Configuration:} Minimum of three full nodes were required to act as an validator. The 3 nodes are deployed in a personal vps infrastructure. Each node is configured with a unique cryptographic identity and their addresses were added to the list of authorized sealers within the consensus engine to manage transaction validation authority.
-    \item {Network Security Measures:} To communicate with the blockchain network, secure Remote Procedure Call (RPC) endpoint was established only for node1. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
+    \item {Network Security Measures:} To communicate with the blockchain network, secure \ac{RPC} endpoint was established only for node1. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
 \end{itemize}
 
 \subsection{Smart Contract Architecture and Logic}
@@ -476,12 +476,12 @@ The core on-chain logic of the decentralized reporting framework is governed by 
 \subsubsection{The Report Contract}
 The Report Contract is engineered using a Separation of Concerns principle. To mitigate the prohibitive gas costs associated with storing large multimedia files on the blockchain, the contract only stores essential metadata. 
 \begin{enumerate}
-    \item Data Structure: Each civic issue is stored in a Report struct containing a unique integer ID, the IPFS Content Identifier (CID) pointing to off-chain media, voting counters, the assigned authority address, and its current lifecycle state.
-    \item Role-Based Access Control (RBAC): Utilizing OpenZeppelin's AccessControl, the contract explicitly defines operational boundaries. The RELAYER\_ROLE is restricted to the backend server, allowing it to submit reports and relay votes on behalf of citizens. The AUTHORITY\_ROLE is granted to recognized government or NGO nodes, granting them permission to update an issue's status to solved or rejected.
+    \item Data Structure: Each civic issue is stored in a Report struct containing a unique integer ID, the IPFS \ac{CID} pointing to off-chain media, voting counters, the assigned authority address, and its current lifecycle state.
+    \item Role-Based Access Control (\ac{RBAC}): Utilizing OpenZeppelin's AccessControl, the contract explicitly defines operational boundaries. The RELAYER\_ROLE is restricted to the backend server, allowing it to submit reports and relay votes on behalf of citizens. The AUTHORITY\_ROLE is granted to recognized government or NGO nodes, granting them permission to update an issue's status to solved or rejected.
 \end{enumerate}
 
 \subsubsection{Ticket Validation and Sybil Resistance}
-A fundamental challenge in anonymous decentralized systems is preventing Sybil attacks and duplicate submissions. This framework utilizes a dual-layer validation mechanism based on Zero-Knowledge Proof (ZKP) tickets.
+A fundamental challenge in anonymous decentralized systems is preventing Sybil attacks and duplicate submissions. This framework utilizes a dual-layer validation mechanism based on Zero-Knowledge Proof (\ac{ZKP}) tickets.
 \begin{enumerate}
     \item Off-Chain Cryptographic Validation: Before a transaction reaches the blockchain, the backend relayer intercepts the payload. Using ethers.js, it verifies that the zkpTicketId possesses a valid cryptographic signature from the official Government Authority. It subsequently verifies the citizen's signature against the payload hash to ensure data integrity during transmission.
     \item On-Chain Nullifier Tracking: Once validated off-chain, the zkpTicketId is passed to the smart contract as a submissionNullifier. The contract maintains a mapping of public submissionNullifiers. Upon successful report creation, this nullifier is marked as used. Any subsequent attempt to submit a report using the same ticket will systematically fail, cryptographically guaranteeing that one authorized ticket equates to exactly one unique report.
@@ -496,7 +496,7 @@ A fundamental challenge in anonymous decentralized systems is preventing Sybil a
     \label{fig:state-transition}
 \end{figure}
 
-To enforce accountability and prevent unilateral dismissals of civic issues by authorities, the contract implements a strict Finite State Machine (FSM). Every submitted report strictly adheres to an 8-stage lifecycle managed via an on-chain enum:
+To enforce accountability and prevent unilateral dismissals of civic issues by authorities, the contract implements a strict Finite State Machine (\ac{FSM}). Every submitted report strictly adheres to an 8-stage lifecycle managed via an on-chain enum:
 \begin{enumerate}
     \item Pending Validation: Initial state awaiting community confirmation of legitimacy.
     \item Community Rejected: Terminal state for spam or invalid issues.
@@ -520,7 +520,7 @@ A report must traverse these specific states driven by a combination of authorit
 To satisfy the project's requirement for privacy-preserving accountability, an identity decoupling mechanism was successfully developed. This subsystem ensures that citizens can interact with the blockchain anonymously while remaining verified by an off-chain authority. The implementation was structured into three main components
 
 \begin{itemize}
-    \item {GovID Simulator:} An off-chain simulated identity server was developed and deployed to a personal Virtual Private Server (VPS). This service acts as the trusted authority for verifying real-world identities. A dedicated API endpoint (/api/govid/verify-citizen) was implemented to securely authenticate users via their National Identity Number (govId) and a password, bridging the gap between traditional web authentication and decentralized access.
+    \item {GovID Simulator:} An off-chain simulated identity server was developed and deployed to a personal Virtual Private Server (\ac{VPS}). This service acts as the trusted authority for verifying real-world identities. A dedicated API endpoint (/api/govid/verify-citizen) was implemented to securely authenticate users via their National Identity Number (govId) and a password, bridging the gap between traditional web authentication and decentralized access.
     \item {Citizen Keypair generation:} To completely decouple a user's real identity from their on-chain footprint, the identity server does not store or transmit blockchain addresses. Instead, upon successful authentication, the simulator generates and returns a secure, 256-bit citizenSeed. This cryptographic seed is then used by the client-side DApp to deterministically generate an anonymous public-private keypair, allowing the citizen to interact securely with smart contracts without exposing personal data.
     \item {Ticket Batch Generation:} To facilitate multiple secure, anonymous report submissions over time, the simulator implements a batch authorization protocol. During authentication, the server generates a structured ticketBatch (currently configured to issue 10 tickets per request). Each ticket contains a unique ticketId (a cryptographic hash) and a signature signed by the Identity Authority's private key. Citizens use these single-use tickets to authorize their transactions on-chain. The backend relayer validates the authority's signature on the ticket, granting access without ever knowing which specific citizen is submitting the report.
 \end{itemize}
@@ -546,12 +546,12 @@ The implementation utilizes the NestJS framework to provide a robust and highly 
     
     \item AI Content Moderation: To prevent on-chain spam, toxic immutability of blockchains and ensure platform integrity, the relayer routes the submitted text and media to the AI Oracle moderation service. This service acts as an automated filter, analyzing the content for appropriateness and returning a validation verdict before any storage operations occur.
     
-    \item Decentralized Storage (IPFS): To maintain a highly efficient and cost-effective blockchain state, heavy multimedia files and detailed text are offloaded to the InterPlanetary File System (IPFS). The relayer manages the file buffers via multer, processes the upload, and retrieves an immutable Content Identifier (CID).
+    \item Decentralized Storage (\ac{IPFS}): To maintain a highly efficient and cost-effective blockchain state, heavy multimedia files and detailed text are offloaded to \ac{IPFS}. The relayer manages the file buffers via multer, processes the upload, and retrieves an immutable \ac{CID}.
     
     \item Gasless Blockchain Submission: As the final step, the relayer formats a transaction containing the IPFS CID and the ZKP ticket (which serves as a Sybil-resistant submissionNullifier). The relayer signs and dispatches this transaction to the Reporting.sol smart contract. By paying the network gas fees from its own wallet, the relayer enables a completely frictionless, gasless experience for the end-user.
 \end{enumerate}
 \subsection{IPFS Off-chain Storage Integration}
-The system employs IPFS as the off-chain storage layer to manage large data objects, including citizen-submitted report images and structured report metadata. Rather than recording full file content on the blockchain, only the Content Identifier (CID) produced by IPFS is stored on-chain. The CID is a cryptographic hash uniquely representing the exact content of a file, such that any modification to the file produces an entirely different CID. This content-addressing mechanism ensures tamper-evident storage while significantly reducing on-chain data overhead and improving overall system scalability.
+The system employs \ac{IPFS} as the off-chain storage layer to manage large data objects, including citizen-submitted report images and structured report metadata. Rather than recording full file content on the blockchain, only the \ac{CID} produced by \ac{IPFS} is stored on-chain. The \ac{CID} is a cryptographic hash uniquely representing the exact content of a file, such that any modification to the file produces an entirely different \ac{CID}. This content-addressing mechanism ensures tamper-evident storage while significantly reducing on-chain data overhead and improving overall system scalability.
 
 To demonstrate the decentralized nature of IPFS within the prototype environment, three IPFS nodes are deployed across three separate machines and connected as peers within a private controlled network. When a file is uploaded and pinned on the primary node, the two peer nodes retrieve and independently pin the same content, ensuring redundant availability across all three machines. This peer network operates entirely within the controlled laboratory environment and does not connect to the public IPFS network, which is consistent with the defined project scope.
 
@@ -590,7 +590,7 @@ The decentralized application (DApp) serves as the primary gateway for citizens 
 The authentication interface is designed to verify citizen eligibility without compromising personal privacy.
 \begin{itemize}
     \item \textbf{GovID Verification Integration:} The interface securely collects the citizen's GovID credentials and interfaces with an external GovID Simulator API. This abstracts the process of verifying a citizen's real-world identity against a centralized registry.
-    \item \textbf{Cryptographic Credential Generation:} Upon successful identity verification, the system retrieves a batch of Zero-Knowledge Proof (ZKP) tickets and a unique `citizenSeed`. 
+    \item \textbf{Cryptographic Credential Generation:} Upon successful identity verification, the system retrieves a batch of \ac{ZKP} tickets and a unique `citizenSeed`. 
     \item \textbf{Local State Management:} Using the `ethers.js` library, a localized Citizen Wallet is derived from the seed. A custom React Context (\texttt{CitizenContext}) is utilized to manage the session state, ensuring that the generated private keys and ZKP tickets remain strictly on the client-side device and are never exposed to external servers. The UI incorporates dynamic feedback mechanisms to indicate the generation of cryptographic proofs to the user.
 \end{itemize}
 
