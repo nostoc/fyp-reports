@@ -147,6 +147,28 @@ The step-by-step authentication process executes as follows:
     \item The generated batch of signed tickets, along with a citizen seed value, is returned to the decentralized application and stored securely in the local browser environment. These tickets function as anonymous, verifiable hall-passes for future platform interactions.
 \end{enumerate}
 
+\subsubsection{Overall System Lifecycle Workflow}
+The overall system workflow synthesizes the individual operational pipelines into a singular, comprehensive lifecycle of a civic issue. It maps the entire trajectory of a report from its initial conception by a citizen to its final, verified resolution by a government authority. This macro-level view highlights the continuous interplay between off-chain middleware, decentralized storage, the artificial intelligence oracle, and the on-chain finite state machine. The complete lifecycle is illustrated in Figure~\ref{fig:overall_workflow}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/overall_reporting_workflow.png}
+    \caption{Overall lifecycle workflow of a civic issue within the decentralized framework.}
+    \label{fig:overall_workflow}
+\end{figure}
+
+The progression of a civic report executes sequentially as follows:
+\begin{enumerate}
+    \item The lifecycle initiates with the citizen authenticating their real-world identity through the centralized simulator to securely acquire a batch of anonymous cryptographic tickets.
+    \item Utilizing an acquired ticket, the citizen constructs and submits a civic issue report accompanied by a cryptographic signature.
+    \item The backend relayer intercepts the payload, routing it through the AI moderation ensemble to filter malicious content, and subsequently uploads the approved media to the decentralized storage network.
+    \item The relayer formulates the blockchain transaction and anchors the lightweight metadata to the smart contract, placing the report into the initial pending validation state.
+    \item The local community evaluates the pending report. Reaching the rejection threshold terminates the issue, while reaching the validation threshold transitions the report to an open state, formally notifying the government authority.
+    \item The assigned authority acknowledges the validated issue and triggers a state transition to indicate that active, physical repairs are currently in progress.
+    \item Upon concluding the physical intervention, the authority updates the smart contract to mark the issue as solved, which temporarily shifts the report into a pending verification state.
+    \item The community conducts a final, physical review of the repaired site. An acceptance consensus transitions the report to the terminal closed state, whereas a rejection consensus reopens the issue, mandating the authority to rectify the inadequate repair.
+\end{enumerate}
+
 \subsubsection{Report Submission Workflow}
 The report submission workflow represents the core operational pipeline of the framework. It delegates heavy computational tasks, such as content moderation and file storage, to off-chain middleware, ensuring the blockchain remains a lightweight and gas-efficient state machine. The workflow is shown in Figure~\ref{fig:report_submission_workflow}.
 
@@ -173,7 +195,14 @@ When a citizen initiates a civic issue report, the system executes the following
 \end{enumerate}
 
 \subsubsection{Community Consensus and Validation Workflow}
-This workflow outlines the mechanism by which the decentralized community filters out spam and validates the legitimacy of submitted civic issues. It ensures that only genuine reports escalate to the government authorities, thereby optimizing resource allocation.
+This workflow outlines the mechanism by which the decentralized community filters out spam and validates the legitimacy of submitted civic issues. It ensures that only genuine reports escalate to the government authorities, thereby optimizing resource allocation. The workflow is shown in Figure~\ref{fig:community_validation_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/community_validation_workflow.png}
+    \caption{Community Validation Workflow}
+    \label{fig:community_validation_workflow}
+\end{figure}
 
 The validation process executes through the following steps:
 \begin{enumerate}
