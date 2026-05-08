@@ -292,7 +292,7 @@ A fundamental challenge in anonymous decentralized systems is preventing Sybil a
     \item On-Chain Nullifier Tracking: Once validated off-chain, the zkpTicketId is passed to the smart contract as a submissionNullifier. The contract maintains a mapping of public submissionNullifiers. Upon successful report creation, this nullifier is marked as used. Any subsequent attempt to submit a report using the same ticket will systematically fail, cryptographically guaranteeing that one authorized ticket equates to exactly one unique report.
 \end{enumerate}
 
-\subsubsection{State Transition Logic (Finite State Machine)}
+\subsubsection{State Transition Logic}
 
 \begin{figure}[!htbp]
     \centering
