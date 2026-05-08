@@ -15,7 +15,7 @@ The testing environment was deployed across two identical Virtual Private Server
     \item Storage: 75 GB SSD
     \item Network: High-bandwidth cloud uplink
 \end{enumerate}
-Server 1 acts as the primary operational node, hosting the core citizen-facing applications, middleware, and the blockchain ledger. Server 2 is strictly dedicated to hosting the computationally intensive AI moderation ensemble and the future decentralized storage layer. This isolation prevents resource monopolization and ensures accurate performance profiling of the blockchain consensus mechanism.
+Server 1 acts as the primary operational node, hosting the core citizen-facing applications, middleware, and the blockchain ledger. Server 2 is strictly dedicated to hosting the computationally intensive AI moderation ensemble and the IPFS storage layer. This isolation prevents resource monopolization and ensures accurate performance profiling of the blockchain consensus mechanism.
 
 \subsection{Software and Deployment Environment}
 To ensure reproducibility and consistency across test iterations, the entire software stack was containerized using Docker. 
@@ -33,7 +33,7 @@ The on-chain environment consists of a private, permissioned Proof-of-Authority 
 \end{enumerate}
 
 \subsection{Application and Services Topology}
-The testing setup evaluates the interaction between the following primary subsystems distributed across the two servers:
+The testing setup evaluates the interaction between the following primary subsystems distributed across the two servers.\\
 
 Deployed on Server 1 (Core Operations):
 \begin{enumerate}
@@ -153,23 +153,155 @@ The most rigorous testing phase will evaluate the strict 8-stage lifecycle of a 
 
 \section{AI Moderation Testing}
 
-Metrics:
+% Metrics:
 
-moderation response time,
-classification correctness,
-voting consistency.
+% moderation response time,
+% classification correctness,
+% voting consistency.
+
+AI moderation testing evaluates whether the moderation subsystem correctly classifies submitted report content as acceptable or unacceptable. At the current stage, the implemented AI moderation service focuses mainly on text-based moderation. Image moderation is planned as a future extension.
+
+The objectives of AI moderation testing are:
+
+\begin{itemize}
+    \item to verify that the oracle aggregator API is accessible,
+    \item to verify that all three oracle workers respond correctly,
+    \item to test valid civic report acceptance,
+    \item to test spam and abusive content rejection,
+    \item to verify majority voting behavior,
+    \item to verify generation of report hash, decision hash, and signature.
+\end{itemize}
+
+The AI moderation service is deployed on an Ubuntu VPS 2 using Dokploy and Docker containers. The deployment includes:
+
+\begin{itemize}
+    \item Government Oracle container,
+    \item International Oracle container,
+    \item NGO Oracle container,
+    \item Oracle Aggregator container.
+\end{itemize}
+
+The backend relayer communicates only with the aggregator API. The aggregator communicates with the three oracle workers using internal container networking.
+
+\subsection{API Availability Test}
+
+The test cases used for testing moderation API availability are shown in the Table ~\ref{tab:ai_api_tests}
+\begin{table}[h!]
+\centering
+\caption{AI moderation API availability tests}
+\begin{tabular}{|p{2cm}|p{6cm}|p{5cm}|p{2cm}|}
+\hline
+\textbf{Test ID} & \textbf{Test} & \textbf{Expected Result} & \textbf{Status} \\
+\hline
+AI-T01 & Call aggregator health endpoint & Service returns running status & Passed \\
+\hline
+AI-T02 & Check oracle worker availability & Aggregator identifies available oracle workers & Passed \\
+\hline
+AI-T03 & Send request without API key & Request rejected & Passed \\
+\hline
+AI-T04 & Send request with valid API key & Request processed successfully & Passed \\
+\hline
+\end{tabular}
+\label{tab:ai_api_tests}
+\end{table}
+
+\subsection{Moderation Classification Tests}
+
+The test cases used for testing moderation classification are shown in Table ~\ref{tab:ai_classification_tests}
+
+\begin{table}[h!]
+\centering
+\caption{AI moderation classification tests}
+\begin{tabular}{|p{2cm}|p{4cm}|p{6cm}|p{4cm}|}
+\hline
+\textbf{Test ID} & \textbf{Input Type} & \textbf{Example Input} & \textbf{Expected Decision} \\
+\hline
+AI-T05 & Valid civic report & ``There is a large pothole near the public school.'' & ACCEPT \\
+\hline
+AI-T06 & Spam content & ``BUY NOW FREE MONEY CLICK HERE.'' & REJECT \\
+\hline
+AI-T07 & Toxic content & Text containing abusive or threatening phrases & REJECT / REVIEW \\
+\hline
+AI-T08 & Ambiguous report & ``Bad situation near town.'' & REVIEW \\
+\hline
+AI-T09 & Category mismatch & Garbage issue submitted under road damage category & REVIEW \\
+\hline
+AI-T10 & Empty report & Empty text field & Reject request / validation error \\
+\hline
+\end{tabular}
+\label{tab:ai_classification_tests}
+\end{table}
+
+\subsection{Oracle Voting Validation}
+
+The oracle moderation system uses a three-node voting mechanism. Each oracle returns either one of the votes, \texttt{ACCEPT} or \texttt{REJECT}.
+
+The aggregator applies majority-based decision logic.
+
+
+\begin{table}[h!]
+\centering
+\caption{Oracle voting validation}
+\begin{tabular}{|p{8cm}|p{6cm}|}
+\hline
+\textbf{Oracle Votes} & \textbf{Expected Final Decision} \\
+\hline
+ACCEPT, ACCEPT, ACCEPT & ACCEPT \\
+\hline
+ACCEPT, ACCEPT, REJECT & ACCEPT \\
+\hline
+REJECT, REJECT, ACCEPT & REJECT \\
+\hline
+REJECT, REJECT, REJECT & REJECT \\
+\hline
+\end{tabular}
+\label{tab:oracle_voting_validation}
+\end{table}
+
+\subsection{Response Structure Validation}
+
+Each successful oracle response should include the fields shown in Table~\ref{tab:oracle_response_fields}.
+
+\begin{table}[h!]
+\centering
+\caption{Oracle aggregator response fields}
+\begin{tabular}{|p{5cm}|p{9cm}|}
+\hline
+\textbf{Field} & \textbf{Purpose} \\
+\hline
+\texttt{final\_decision} & Final moderation result \\
+\hline
+\texttt{final\_confidence} & Aggregated confidence value \\
+\hline
+\texttt{report\_hash} & Hash of submitted report payload \\
+\hline
+\texttt{decision\_hash} & Hash of final moderation decision \\
+\hline
+\texttt{oracle\_votes} & Individual oracle outputs \\
+\hline
+\texttt{aggregator\_signature} & Signature of decision hash \\
+\hline
+\end{tabular}
+\label{tab:oracle_response_fields}
+\end{table}
+
+The presence of \texttt{report\_hash}, \texttt{decision\_hash}, and \texttt{aggregator\_signature} supports auditability and tamper-evidence in the moderation process.
+\vspace{4cm}
+
+The AI content moderation service was successfully deployed as separate containers on a VPS. Preliminary API testing confirms that the aggregator can receive moderation requests, communicate with the oracle workers, collect votes, and return an aggregated decision. This validates the feasibility of the decentralized oracle moderation approach at prototype level.
+
 
 \section{IPFS Storage Testing}
 
 To evaluate the effectiveness and reliability of the IPFS off-chain storage integration, several testing and validation procedures were conducted focusing on upload performance, retrieval integrity, and CID validation. The upload time was measured for files of different sizes in order to assess the responsiveness of the system and the overhead associated with decentralized storage. During each test, the start and end times of the upload process were recorded, and the total duration was calculated. The results indicated that smaller files were uploaded quickly, while larger files required proportionally more time due to the distributed nature of the IPFS network. Retrieval integrity tests were performed to confirm that files downloaded from IPFS remained identical to the originals. After uploading a file and obtaining its Content Identifier (CID), the same file was retrieved from IPFS using the CID and compared byte-for-byte with the original file. The successful matches demonstrated that IPFS reliably preserves file integrity during both storage and retrieval operations. In addition, CID validation tests were conducted to ensure that the generated CID accurately represented the corresponding file content. For each uploaded file, the CID produced by IPFS was recorded, and after retrieval, the CID was recalculated from the downloaded file and compared against the original value. Matching CIDs confirmed that the content had not been modified and verified the integrity guarantees provided by the IPFS content-addressing mechanism. Overall, these tests demonstrate that the implemented IPFS integration satisfies key requirements for decentralized storage, including efficient file uploads, reliable retrieval, and strong verification through cryptographic content identifiers.
 \section{End-to-End Integration Testing}
 
-To ensure the seamless operation of the entire platform, end-to-end integration testing was conducted by simulating the complete lifecycle of a civic issue report. This testing phase verifies the interoperability between the frontend DApp, the backend relayer, the IPFS storage network, the AI moderation oracle, and the underlying permissioned blockchain.
+To ensure the seamless operation of the entire platform, end-to-end integration testing will be conducted by simulating the complete lifecycle of a civic issue report. This testing phase will verify the interoperability between the frontend DApp, the backend relayer, the IPFS storage network, the AI moderation oracle, and the underlying permissioned blockchain.
 
-The end-to-end testing workflow was executed as follows:
+The end-to-end testing workflow will be executed as follows:
 
 \begin{enumerate}
-    \item \textbf{Citizen Authentication and Key Generation:} The test commenced with a simulated citizen authenticating via the external GovID simulator. Upon successful verification, the system successfully generated a batch of Zero-Knowledge Proof (ZKP) tickets and derived the local ECDSA wallet, demonstrating the proper functioning of the identity decoupling mechanism.
+    \item \textbf{Citizen Authentication and Key Generation:} The test will commence with a simulated citizen authenticating via the external GovID simulator. Upon successful verification, the system is expected to generate a batch of Zero-Knowledge Proof (ZKP) tickets and derive the local ECDSA wallet, thereby validating the correct functioning of the identity decoupling mechanism.
 
     \begin{figure}[H]
         \centering
@@ -179,7 +311,7 @@ The end-to-end testing workflow was executed as follows:
         \caption{Citizen Authentication Interfaces}
     \end{figure}
     
-    \item \textbf{Report Submission and Cryptographic Signing:} The authenticated user submitted a test report containing a text description (e.g., "Pothole on Main Street") and a sample image. The DApp successfully consumed a ZKP ticket, hashed the payload, and signed it using the local private key before transmitting the multipart form data to the backend relayer.
+    \item \textbf{Report Submission and Cryptographic Signing:} The authenticated user will submit a test report containing a text description (e.g., ``Pothole on Main Street'') and a sample image. The DApp will be expected to consume a ZKP ticket, hash the payload, and sign it using the local private key before transmitting the multipart form data to the backend relayer.
 
     \begin{figure}[H]
         \centering
@@ -187,12 +319,11 @@ The end-to-end testing workflow was executed as follows:
         \caption{Report Submission Form}
     \end{figure}
     
-    \item \textbf{Off-chain Storage and AI Moderation Routing:} Upon receiving the payload, the backend relayer processed the test data. The visual evidence was routed to the IPFS integration module, successfully generating a Content Identifier (CID). Simultaneously, the text and image data were evaluated by the AI moderation service, which validated the report as legitimate, non-abusive content.
+    \item \textbf{Off-chain Storage and AI Moderation Routing:} Upon receiving the payload, the backend relayer will process the submitted data. The visual evidence will be routed to the IPFS integration module, and a Content Identifier (CID) will be generated. Simultaneously, the text and image data will be evaluated by the AI moderation service to verify that the report is classified as legitimate, non-abusive content before proceeding to blockchain submission.
     
+    \item \textbf{Blockchain Recording via Meta-Transaction:} Following AI approval, the backend relayer will format the data—including the IPFS CID, issue description, and the cryptographic proofs—and submit a meta-transaction to the smart contract on the Geth PoA network. The transaction is expected to be mined by the validator nodes, securely anchoring the report to the immutable ledger without requiring the citizen to pay any gas fees.
     
-    \item \textbf{Blockchain Recording via Meta-Transaction:} Following AI approval, the backend relayer formatted the data—including the IPFS CID, issue description, and the cryptographic proofs—and submitted a meta-transaction to the smart contract on the Geth PoA network. The transaction was successfully mined by the validator nodes, securely anchoring the report to the immutable ledger without requiring the citizen to pay gas fees.
-    
-    \item \textbf{Frontend Verification:} Finally, the DApp's query interface was refreshed to retrieve the latest blockchain state. The newly submitted report appeared in the community feed with its corresponding status badge, upvote count, and image thumbnail, confirming that the entire decentralized pipeline executed flawlessly.
+    \item \textbf{Frontend Verification:} Finally, the DApp's query interface will be refreshed to retrieve the latest blockchain state. The expected outcome is that the newly submitted report will appear in the community feed with its corresponding status badge, upvote count, and image thumbnail, confirming that the entire decentralized pipeline has executed correctly.
     
     \begin{figure}[H]
         \centering
@@ -204,7 +335,7 @@ The end-to-end testing workflow was executed as follows:
 
 \end{enumerate}
 
-The successful execution of this simulated workflow validates the system architecture and confirms that the individual components interact correctly to provide a secure, anonymous, and user-friendly civic reporting platform.
+The successful execution of this simulated workflow will validate the system architecture and confirm that the individual components interact correctly to provide a secure, anonymous, and user-friendly civic reporting platform.
 
 
 \section{Results and Observations}

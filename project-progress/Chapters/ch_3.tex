@@ -90,9 +90,9 @@ Important workflow decisions should be logged and anchored through hashes or blo
 
 The proposed system uses a hybrid decentralized architecture that combines on-chain and off-chain components. The blockchain is responsible for storing immutable metadata, workflow states, and references to report content. Computationally intensive and large-data operations are handled off-chain through the relayer, AI moderation service, and IPFS. The overall architecture of the system is shown in the Figure~\ref{fig:overall-architecture}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth]{Images/Chapter_3/overall-architecture.png}
+    \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter_3/overall-architecture.png}
     \caption{High Level Architecture Diagram.}
     \label{fig:overall-architecture}
 \end{figure}
@@ -139,10 +139,90 @@ This layer consists of the smart contracts and the private PoA blockchain. It st
 
 \subsection{Project Plan and Timeline}
 
-Include:
+\section{Project Timeline}
 
-Gantt chart,
-implementation phases.
+The project is planned to be completed over two academic semesters following
+a structured and incremental development approach as shown in Figure \ref{fig:ganttchart}. The timeline allocates
+sufficient time for system design, implementation, testing, evaluation to ensure the successful completion of the proposed objectives.
+
+
+\begin{sidewaysfigure}[!p]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    
+    \begin{ganttchart}[
+        vgrid={*1{draw=gridgray}},
+        hgrid={draw=gridgray},
+        y unit chart=0.7cm,
+        x unit=0.4cm,
+        title label font=\color{black},
+        title/.style={draw=gray!50, line width=0.5pt},
+        title height=1,
+        include title in canvas=false,
+        bar/.style={fill=barblue, draw=none},
+        bar height=0.7,
+        group right shift=0,
+        group top shift=0.7,
+        group height=.3,
+        label node/.style={
+            fill=labelgray,
+            draw=gridgray,
+            inner sep=3pt,
+            font=\sffamily\footnotesize
+        }
+        ]{1}{37}
+
+        % --- HEADERS ---
+        \gantttitle{NOV}{3}
+        \gantttitle{DEC}{4}
+        \gantttitle{JAN}{4}
+        \gantttitle{FEB}{4}
+        \gantttitle{MAR}{4}
+        \gantttitle{APR}{4}
+        \gantttitle{MAY}{4}
+        \gantttitle{JUNE}{4}
+        \gantttitle{JULY}{4}
+        \gantttitle{AUG}{2} \\
+        \gantttitlelist[title label font=\color{black}\scriptsize]{1,...,37}{1} \\
+
+        % --- METHODOLOGY-ALIGNED TASKS ---
+
+        \ganttbar{\ganttlabel{Grouping \& Project Selection}}{1}{2} \\
+        \ganttbar{\ganttlabel{Background Study}}{2}{4} \\
+        \ganttbar{\ganttlabel{Literature Review}}{4}{8} \\
+        \ganttbar{\ganttlabel{Requirement Analysis}}{7}{10} \\
+        \ganttbar{\ganttlabel{Project Proposal Preparation}}{9}{10} \\
+        \ganttbar{\ganttlabel{Proposal Evaluation}}{10}{11} \\
+
+        \ganttbar{\ganttlabel{Complete System Design}}{11}{15} \\
+
+        \ganttbar{\ganttlabel{Permissioned Blockchain Setup}}{15}{20} \\
+        \ganttbar{\ganttlabel{Smart Contract Development}}{18}{24} \\
+        \ganttbar{\ganttlabel{Identity \& Access Control Integration}}{19}{23} \\
+        \ganttbar{\ganttlabel{\ac{IPFS} Integration}}{22}{26} \\
+        \ganttbar{\ganttlabel{AI-Based Content Moderation Integration}}{16}{21} \\
+
+        \ganttbar{\ganttlabel{Web-based \ac{DApp} Development}}{18}{30} \\
+
+        \ganttbar{\ganttlabel{Subsystem Testing}}{26}{30} \\
+        \ganttbar{\ganttlabel{System Integration \& End-to-End Testing}}{30}{34} \\
+
+        \ganttbar{\ganttlabel{Performance Evaluation}}{34}{36} \\
+        \ganttbar{\ganttlabel{Final Demonstration}}{36}{37}
+
+    \end{ganttchart}
+    }
+    \caption{Project Timeline Gantt Chart}
+    \label{fig:ganttchart}
+\end{sidewaysfigure}
+
+
+
+
+% Include:
+
+% Gantt chart,
+% implementation phases.
 
 \subsection{Expected Outcomes}
 
@@ -214,9 +294,13 @@ A fundamental challenge in anonymous decentralized systems is preventing Sybil a
 
 \subsubsection{State Transition Logic}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
     \centering
+<<<<<<< HEAD
+    \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter 3/state-transition-diagram-2.png}
+=======
     \includegraphics[width=\textwidth]{Images/Chapter 3/state-transition-diagram-3.png}
+>>>>>>> 793e637b1da12c32c9216985c852ab58b12cf780
     \caption{State transition diagram for the civic reporting system.}
     \label{fig:state-transition}
 \end{figure}
@@ -255,9 +339,9 @@ The backend relayer serves as a critical middleware component that bridges the f
 
 The implementation utilizes the NestJS framework to provide a robust and highly modular RESTful API. The core workflow of the relayer executes the following deterministic pipeline for each incoming citizen report.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth]{Images/Chapter 3/backend-relayer-impl.png}
+    \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter 3/backend-relayer-impl.png}
     \caption{Backend relayer workflow architecture.}
     \label{fig:backend-relayer-impl}
 \end{figure}
@@ -282,9 +366,9 @@ The implementation of IPFS off-chain storage in the proposed system enables secu
 \subsection{AI-based Moderation System Implementation}
 
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth]{Images/Chapter_3/oracle-architecture.png}
+    \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter_3/oracle-architecture.png}
     \caption{Oracle network architecture for AI moderation.}
     \label{fig:oracle-architecture}
 \end{figure}
