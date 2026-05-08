@@ -193,10 +193,50 @@ The core infrastructure of the proposed system is the private permissioned block
     \item {Network Security Measures:} To communicate with the blockchain network, secure Remote Procedure Call (RPC) endpoint was established only for node1. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
 \end{itemize}
 
-\subsection{Smart Contract Implementation}
-Report Contract
-Ticket Validation
-State Transition Logic
+\subsection{Smart Contract Architecture and Logic}
+
+The core on-chain logic of the decentralized reporting framework is governed by the Reporting.sol smart contract. This contract is designed to be highly gas-efficient, acting primarily as a state machine and a cryptographic ledger rather than a data storage layer. The implementation is divided into three critical functional domains as The Report Contract structure, Ticket Validation, and State Transition Logic.
+
+\subsubsection{The Report Contract}
+The Report Contract is engineered using a Separation of Concerns principle. To mitigate the prohibitive gas costs associated with storing large multimedia files on the blockchain, the contract only stores essential metadata. 
+\begin{enumerate}
+    \item Data Structure: Each civic issue is stored in a Report struct containing a unique integer ID, the IPFS Content Identifier (CID) pointing to off-chain media, voting counters, the assigned authority address, and its current lifecycle state.
+    \item Role-Based Access Control (RBAC): Utilizing OpenZeppelin's AccessControl, the contract explicitly defines operational boundaries. The RELAYER\_ROLE is restricted to the backend server, allowing it to submit reports and relay votes on behalf of citizens. The AUTHORITY\_ROLE is granted to recognized government or NGO nodes, granting them permission to update an issue's status to solved or rejected.
+\end{enumerate}
+
+\subsubsection{Ticket Validation and Sybil Resistance}
+A fundamental challenge in anonymous decentralized systems is preventing Sybil attacks and duplicate submissions. This framework utilizes a dual-layer validation mechanism based on Zero-Knowledge Proof (ZKP) tickets.
+\begin{enumerate}
+    \item Off-Chain Cryptographic Validation: Before a transaction reaches the blockchain, the backend relayer intercepts the payload. Using ethers.js, it verifies that the zkpTicketId possesses a valid cryptographic signature from the official Government Authority. It subsequently verifies the citizen's signature against the payload hash to ensure data integrity during transmission.
+    \item On-Chain Nullifier Tracking: Once validated off-chain, the zkpTicketId is passed to the smart contract as a submissionNullifier. The contract maintains a mapping(bytes32 => bool) public submissionNullifiers. Upon successful report creation, this nullifier is marked as used. Any subsequent attempt to submit a report using the same ticket will systematically fail, cryptographically guaranteeing that one authorized ticket equates to exactly one unique report.
+\end{enumerate}
+
+\subsubsection{State Transition Logic (Finite State Machine)}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Images/Chapter 3/state-transition-diagram-2.png}
+    \caption{State transition diagram for the civic reporting system.}
+    \label{fig:state-transition}
+\end{figure}
+
+To enforce accountability and prevent unilateral dismissals of civic issues by authorities, the contract implements a strict Finite State Machine (FSM). Every submitted report strictly adheres to a 7-stage lifecycle managed via an on-chain enum:
+\begin{enumerate}
+    \item Pending Validation: Initial state awaiting community confirmation of legitimacy.
+    \item Community Rejected: Terminal state for spam or invalid issues.
+    \item Open: Validated by citizens and actively awaiting government action.
+    \item Pending Rejection Review: The authority dismissed the issue, triggering a community appeal phase.
+    \item Pending Verification: The authority marked the issue as completed, triggering a mandatory community verification vote.
+    \item Closed: Terminal state indicating a successfully verified resolution or an accepted rejection.
+    \item Reopened: The community rejected the authority's fix, forcing further action.
+\end{enumerate}
+
+A report must traverse these specific states driven by a combination of authority actions and community consensus thresholds.
+\begin{enumerate}
+    \item Community-Driven Transitions: When a report is submitted, it enters the Pending Validation state. The transition to the Open state (making it visible for government action) only occurs automatically via the \_changeStatus() internal function once community upvotes reach the predefined VALIDATION\_THRESHOLD. Conversely, reaching the REJECTION\_THRESHOLD moves it to the terminal Community Rejected state.
+    \item Authority-Driven Transitions: Authorities can only interact with reports in the Open or Reopened states. An authority calling markAsSolved() shifts the state to Pending Verification, while calling rejectIssue() shifts it to Pending Rejection Review.
+    \item Consensus Verification: The FSM mandates that authority actions are never final until verified by the community. If an authority marks an issue as solved, the community must vote to verify the physical fix. Achieving the verification threshold transitions the report to the terminal Closed state. If the community rejects the fix, the state transitions to Reopened, forcing the authority to address the issue again.
+\end{enumerate}
 
 \subsection{Identity and Access Control Implementation}
 
@@ -212,6 +252,13 @@ To satisfy the project's requirement for privacy-preserving accountability, an i
 The backend relayer serves as a critical middleware component that bridges the frontend DApp with the blockchain network and external services. It is responsible for handling report submissions, managing interactions with IPFS for off-chain storage, and orchestrating AI-based content moderation before anchoring data on the blockchain.
 
 The implementation utilizes the NestJS framework to provide a robust and highly modular RESTful API. The core workflow of the relayer executes the following deterministic pipeline for each incoming citizen report.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Images/Chapter 3/backend-relayer-impl.png}
+    \caption{Backend relayer workflow architecture.}
+    \label{fig:backend-relayer-impl}
+\end{figure}
 
 \begin{enumerate}
     \item Cryptographic Verification: The relayer receives the payload via a POST /report endpoint. Utilizing the ethers.js library, it performs a strict dual-signature validation:
