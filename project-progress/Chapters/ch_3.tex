@@ -148,7 +148,16 @@ The step-by-step authentication process executes as follows:
 \end{enumerate}
 
 \subsubsection{Report Submission Workflow}
-The report submission workflow represents the core operational pipeline of the framework. It delegates heavy computational tasks, such as content moderation and file storage, to off-chain middleware, ensuring the blockchain remains a lightweight and gas-efficient state machine.
+The report submission workflow represents the core operational pipeline of the framework. It delegates heavy computational tasks, such as content moderation and file storage, to off-chain middleware, ensuring the blockchain remains a lightweight and gas-efficient state machine. The workflow is shown in Figure~\ref{fig:report_submission_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/report_submission_workflow.png}
+    \caption{Report Submission Workflow}
+    \label{fig:report_submission_workflow}
+\end{figure}
+
+
 
 When a citizen initiates a civic issue report, the system executes the following deterministic pipeline:
 \begin{enumerate}
@@ -177,7 +186,14 @@ The validation process executes through the following steps:
 \end{enumerate}
 
 \subsubsection{Authority Resolution and Action Workflow}
-This workflow defines how authorized government or non-governmental organization nodes interact with the validated civic issues on the blockchain. It establishes the transparency of the physical repair process.
+This workflow defines how authorized government or non-governmental organization nodes interact with the validated civic issues on the blockchain. It establishes the transparency of the physical repair process. The workflow is shown in Figure~\ref{fig:authority_action_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/authority_action_workflow.png}
+    \caption{Authority Resolution and Action Workflow}
+    \label{fig:authority_action_workflow}
+\end{figure}
 
 The authority interaction proceeds as follows:
 \begin{enumerate}
@@ -190,7 +206,15 @@ The authority interaction proceeds as follows:
 \end{enumerate}
 
 \subsubsection{Post-Resolution Verification and Appeal Workflow}
-The final workflow enforces the system's core accountability mechanism. It guarantees that government authorities cannot unilaterally close a report without the community physically confirming that the job was completed satisfactorily.
+The final workflow enforces the system's core accountability mechanism. It guarantees that government authorities cannot unilaterally close a report without the community physically confirming that the job was completed satisfactorily. The workflow is shown in Figure~\ref{fig:post_resolution_verification_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/post_resolution_verification_workflow.png}
+    \caption{Post-Resolution Verification and Appeal Workflow}
+    \label{fig:post_resolution_verification_workflow}
+\end{figure}
+
 
 The verification process executes as follows:
 \begin{enumerate}
