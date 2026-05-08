@@ -154,6 +154,45 @@ When a citizen initiates a civic issue report, the system executes the following
     \item Once the nullifier is marked as consumed, the smart contract successfully anchors the report to the ledger, initializing it in the Pending Validation state to await community consensus.
 \end{enumerate}
 
+\subsubsection{Community Consensus and Validation Workflow}
+This workflow outlines the mechanism by which the decentralized community filters out spam and validates the legitimacy of submitted civic issues. It ensures that only genuine reports escalate to the government authorities, thereby optimizing resource allocation.
+
+The validation process executes through the following steps:
+\begin{enumerate}
+    \item A newly submitted report enters the Pending Validation state on the smart contract and becomes visible on the community feed within the decentralized application.
+    \item A registered citizen physically observes the issue in the real world and decides to corroborate the report.
+    \item The citizen utilizes the application to cast an upvote. To ensure Sybil resistance, the application binds a new, unused Zero-Knowledge ticket from the citizen's local batch to this specific vote and signs the payload.
+    \item The backend relayer intercepts the voting payload, cryptographically verifies the ticket and signature, and submits the vote to the smart contract.
+    \item The smart contract verifies that the ticket nullifier has not been used for this specific voting phase of this specific report.
+    \item The contract increments the vote tally. Once the tally surpasses the predefined validation threshold, the smart contract automatically executes a state transition, moving the report from Pending Validation to the Open state, making it actionable for authorities.
+\end{enumerate}
+
+\subsubsection{Authority Resolution and Action Workflow}
+This workflow defines how authorized government or non-governmental organization nodes interact with the validated civic issues on the blockchain. It establishes the transparency of the physical repair process.
+
+The authority interaction proceeds as follows:
+\begin{enumerate}
+    \item The government authority monitors the blockchain state via a dedicated dashboard, filtering for reports that have successfully reached the Open state.
+    \item Upon dispatching a physical repair crew to the location, the authority submits a transaction to the smart contract invoking the state change function.
+    \item The smart contract validates the transaction signature against its Role-Based Access Control list to ensure the sender possesses the required authority permissions.
+    \item Upon permission validation, the contract updates the report state from Open to In Progress, providing real-time transparency to the observing community.
+    \item Once the physical repair is concluded, the authority submits a subsequent transaction to mark the issue as solved.
+    \item The smart contract processes this transaction and transitions the report into the Pending Verification state, temporarily halting the authority's involvement until the community responds.
+\end{enumerate}
+
+\subsubsection{Post-Resolution Verification and Appeal Workflow}
+The final workflow enforces the system's core accountability mechanism. It guarantees that government authorities cannot unilaterally close a report without the community physically confirming that the job was completed satisfactorily.
+
+The verification process executes as follows:
+\begin{enumerate}
+    \item Citizens in the vicinity of the purportedly resolved issue inspect the physical location to confirm the repair quality.
+    \item Citizens utilize the decentralized application to cast a verification vote (accepting or rejecting the repair), utilizing the same secure, ticket-based nullifier mechanism to ensure one-citizen-one-vote integrity.
+    \item The backend relayer processes and forwards these verification votes to the smart contract.
+    \item If the positive verification votes reach the required threshold, the smart contract transitions the report to the terminal Closed state, permanently archiving the successful resolution.
+    \item Conversely, if the negative votes reach the rejection threshold (indicating a poor or non-existent repair), the smart contract transitions the report to the Reopened state.
+    \item A transition to the Reopened state forces the report back onto the authority's active dashboard, mandating further physical intervention and a repetition of the resolution workflow.
+\end{enumerate}
+
 % authentication,
 % report creation,
 % moderation,
