@@ -138,7 +138,7 @@ These experiments will validate the initialization of civic issues on the blockc
     \item Experiment Design: The test suite will generate transactions attempting to call the report creation function from various network addresses. One address will be properly provisioned with the Relayer Role, while the others will represent unauthorized standard user wallets. The test will verify that only the relayer can anchor the IPFS Content Identifier and initial voting metadata to the chain.
     \item Significance: This verifies the Separation of Concerns architecture, ensuring the smart contract acts exclusively as a secure state machine rather than a vulnerable, open-access database.
     \item Metrics and Parameters: The parameters assessed include Role-Based Access Control execution accuracy and the Initial State Mapping accuracy. The computational cost will be measured in total execution gas.
-    \item Thresholds and Benchmarks: Any creation attempt by an address lacking the designated relayer permissions must revert immediately. Additionally, to outperform state-of-the-art public reporting contracts that store heavy string data, the gas cost for report creation must remain minimized, relying entirely on the lightweight CID.
+    \item Thresholds and Benchmarks: Any creation attempt by an address lacking the designated relayer permissions must revert immediately.
 \end{enumerate}
 
 \subsubsection{State Transition and Finite State Machine Logic}
@@ -161,25 +161,26 @@ The most rigorous testing phase will evaluate the strict 8-stage lifecycle of a 
 
 AI moderation testing evaluates whether the moderation subsystem correctly classifies submitted report content as acceptable or unacceptable. At the current stage, the implemented AI moderation service focuses mainly on text-based moderation. Image moderation is planned as a future extension.
 
+
 The objectives of AI moderation testing are:
 
-\begin{itemize}
-    \item to verify that the oracle aggregator API is accessible,
-    \item to verify that all three oracle workers respond correctly,
-    \item to test valid civic report acceptance,
-    \item to test spam and abusive content rejection,
-    \item to verify majority voting behavior,
-    \item to verify generation of report hash, decision hash, and signature.
-\end{itemize}
+\begin{enumerate}
+    \item to verify that the oracle aggregator API is accessible
+    \item to verify that all three oracle workers respond correctly
+    \item to test valid civic report acceptance
+    \item to test spam and abusive content rejection
+    \item to verify majority voting behavior
+    \item to verify generation of report hash, decision hash, and signature
+\end{enumerate}
 
-The AI moderation service is deployed on an Ubuntu VPS 2 using Dokploy and Docker containers. The deployment includes:
+The AI moderation service is deployed on the server 2 using Dokploy and Docker containers. The deployment includes:
 
-\begin{itemize}
-    \item Government Oracle container,
-    \item International Oracle container,
-    \item NGO Oracle container,
-    \item Oracle Aggregator container.
-\end{itemize}
+\begin{enumerate}
+    \item Government Oracle container
+    \item International Oracle container
+    \item NGO Oracle container
+    \item Oracle Aggregator container
+\end{enumerate}
 
 The backend relayer communicates only with the aggregator API. The aggregator communicates with the three oracle workers using internal container networking.
 
@@ -220,13 +221,9 @@ AI-T05 & Valid civic report & ``There is a large pothole near the public school.
 \hline
 AI-T06 & Spam content & ``BUY NOW FREE MONEY CLICK HERE.'' & REJECT \\
 \hline
-AI-T07 & Toxic content & Text containing abusive or threatening phrases & REJECT / REVIEW \\
+AI-T07 & Toxic content & Text containing abusive or threatening phrases & REJECT \\
 \hline
-AI-T08 & Ambiguous report & ``Bad situation near town.'' & REVIEW \\
-\hline
-AI-T09 & Category mismatch & Garbage issue submitted under road damage category & REVIEW \\
-\hline
-AI-T10 & Empty report & Empty text field & Reject request / validation error \\
+AI-T08 & Empty report & Empty text field & Reject request / validation error \\
 \hline
 \end{tabular}
 \label{tab:ai_classification_tests}
@@ -301,7 +298,7 @@ To ensure the seamless operation of the entire platform, end-to-end integration 
 The end-to-end testing workflow will be executed as follows:
 
 \begin{enumerate}
-    \item \textbf{Citizen Authentication and Key Generation:} The test will commence with a simulated citizen authenticating via the external GovID simulator. Upon successful verification, the system is expected to generate a batch of Zero-Knowledge Proof (ZKP) tickets and derive the local ECDSA wallet, thereby validating the correct functioning of the identity decoupling mechanism.
+    \item Citizen Authentication and Key Generation: The test will commence with a simulated citizen authenticating via the external GovID simulator. Upon successful verification, the system is expected to generate a batch of Zero-Knowledge Proof (ZKP) tickets and derive the local wallet, thereby validating the correct functioning of the identity decoupling mechanism.
 
     \begin{figure}[H]
         \centering
@@ -311,7 +308,7 @@ The end-to-end testing workflow will be executed as follows:
         \caption{Citizen Authentication Interfaces}
     \end{figure}
     
-    \item \textbf{Report Submission and Cryptographic Signing:} The authenticated user will submit a test report containing a text description (e.g., ``Pothole on Main Street'') and a sample image. The DApp will be expected to consume a ZKP ticket, hash the payload, and sign it using the local private key before transmitting the multipart form data to the backend relayer.
+    \item Report Submission and Cryptographic Signing: The authenticated user will submit a test report containing a text description (e.g., ``Pothole on Main Street'') and a sample image. The DApp will be expected to consume a ZKP ticket, hash the payload, and sign it using the local private key before transmitting the multipart form data to the backend relayer.
 
     \begin{figure}[H]
         \centering
@@ -319,11 +316,11 @@ The end-to-end testing workflow will be executed as follows:
         \caption{Report Submission Form}
     \end{figure}
     
-    \item \textbf{Off-chain Storage and AI Moderation Routing:} Upon receiving the payload, the backend relayer will process the submitted data. The visual evidence will be routed to the IPFS integration module, and a Content Identifier (CID) will be generated. Simultaneously, the text and image data will be evaluated by the AI moderation service to verify that the report is classified as legitimate, non-abusive content before proceeding to blockchain submission.
+    \item Off-chain Storage and AI Moderation Routing: Upon receiving the payload, the backend relayer will process the submitted data. The visual evidence will be routed to the IPFS integration module, and a Content Identifier (CID) will be generated. Simultaneously, the text and image data will be evaluated by the AI moderation service to verify that the report is classified as legitimate, non-abusive content before proceeding to blockchain submission.
     
-    \item \textbf{Blockchain Recording via Meta-Transaction:} Following AI approval, the backend relayer will format the data—including the IPFS CID, issue description, and the cryptographic proofs—and submit a meta-transaction to the smart contract on the Geth PoA network. The transaction is expected to be mined by the validator nodes, securely anchoring the report to the immutable ledger without requiring the citizen to pay any gas fees.
+    \item Blockchain Recording via Meta-Transaction: Following AI approval, the backend relayer will format the data, including the IPFS CID, issue description, and the cryptographic proofs. Then submit a meta-transaction to the smart contract on the Geth PoA network. The transaction is expected to be verified by the validator nodes, securely anchoring the report to the immutable ledger without requiring the citizen to pay any gas fees.
     
-    \item \textbf{Frontend Verification:} Finally, the DApp's query interface will be refreshed to retrieve the latest blockchain state. The expected outcome is that the newly submitted report will appear in the community feed with its corresponding status badge, upvote count, and image thumbnail, confirming that the entire decentralized pipeline has executed correctly.
+    \item Frontend Verification: Finally, the DApp's query interface will be refreshed to retrieve the latest blockchain state. The expected outcome is that the newly submitted report will appear in the community feed with its corresponding status badge, upvote count, and image thumbnail, confirming that the entire decentralized pipeline has executed correctly.
     
     \begin{figure}[H]
         \centering
@@ -337,16 +334,6 @@ The end-to-end testing workflow will be executed as follows:
 
 The successful execution of this simulated workflow will validate the system architecture and confirm that the individual components interact correctly to provide a secure, anonymous, and user-friendly civic reporting platform.
 
-
-\section{Results and Observations}
-
-Use:
-
-tables,
-graphs,
-screenshots.
-
-Very important according to coordinator.
 
 \section{Comparison with Existing Systems}
 
