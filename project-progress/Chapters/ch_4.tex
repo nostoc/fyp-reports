@@ -50,12 +50,12 @@ voting consistency.
 To evaluate the effectiveness and reliability of the IPFS off-chain storage integration, several testing and validation procedures were conducted focusing on upload performance, retrieval integrity, and CID validation. The upload time was measured for files of different sizes in order to assess the responsiveness of the system and the overhead associated with decentralized storage. During each test, the start and end times of the upload process were recorded, and the total duration was calculated. The results indicated that smaller files were uploaded quickly, while larger files required proportionally more time due to the distributed nature of the IPFS network. Retrieval integrity tests were performed to confirm that files downloaded from IPFS remained identical to the originals. After uploading a file and obtaining its Content Identifier (CID), the same file was retrieved from IPFS using the CID and compared byte-for-byte with the original file. The successful matches demonstrated that IPFS reliably preserves file integrity during both storage and retrieval operations. In addition, CID validation tests were conducted to ensure that the generated CID accurately represented the corresponding file content. For each uploaded file, the CID produced by IPFS was recorded, and after retrieval, the CID was recalculated from the downloaded file and compared against the original value. Matching CIDs confirmed that the content had not been modified and verified the integrity guarantees provided by the IPFS content-addressing mechanism. Overall, these tests demonstrate that the implemented IPFS integration satisfies key requirements for decentralized storage, including efficient file uploads, reliable retrieval, and strong verification through cryptographic content identifiers.
 \section{End-to-End Integration Testing}
 
-To ensure the seamless operation of the entire platform, end-to-end integration testing was conducted by simulating the complete lifecycle of a civic issue report. This testing phase verifies the interoperability between the frontend DApp, the backend relayer, the IPFS storage network, the AI moderation oracle, and the underlying permissioned blockchain.
+To ensure the seamless operation of the entire platform, end-to-end integration testing will be conducted by simulating the complete lifecycle of a civic issue report. This testing phase will verify the interoperability between the frontend DApp, the backend relayer, the IPFS storage network, the AI moderation oracle, and the underlying permissioned blockchain.
 
-The end-to-end testing workflow was executed as follows:
+The end-to-end testing workflow will be executed as follows:
 
 \begin{enumerate}
-    \item \textbf{Citizen Authentication and Key Generation:} The test commenced with a simulated citizen authenticating via the external GovID simulator. Upon successful verification, the system successfully generated a batch of Zero-Knowledge Proof (ZKP) tickets and derived the local ECDSA wallet, demonstrating the proper functioning of the identity decoupling mechanism.
+    \item \textbf{Citizen Authentication and Key Generation:} The test will commence with a simulated citizen authenticating via the external GovID simulator. Upon successful verification, the system is expected to generate a batch of Zero-Knowledge Proof (ZKP) tickets and derive the local ECDSA wallet, thereby validating the correct functioning of the identity decoupling mechanism.
 
     \begin{figure}[H]
         \centering
@@ -65,7 +65,7 @@ The end-to-end testing workflow was executed as follows:
         \caption{Citizen Authentication Interfaces}
     \end{figure}
     
-    \item \textbf{Report Submission and Cryptographic Signing:} The authenticated user submitted a test report containing a text description (e.g., "Pothole on Main Street") and a sample image. The DApp successfully consumed a ZKP ticket, hashed the payload, and signed it using the local private key before transmitting the multipart form data to the backend relayer.
+    \item \textbf{Report Submission and Cryptographic Signing:} The authenticated user will submit a test report containing a text description (e.g., ``Pothole on Main Street'') and a sample image. The DApp will be expected to consume a ZKP ticket, hash the payload, and sign it using the local private key before transmitting the multipart form data to the backend relayer.
 
     \begin{figure}[H]
         \centering
@@ -73,12 +73,11 @@ The end-to-end testing workflow was executed as follows:
         \caption{Report Submission Form}
     \end{figure}
     
-    \item \textbf{Off-chain Storage and AI Moderation Routing:} Upon receiving the payload, the backend relayer processed the test data. The visual evidence was routed to the IPFS integration module, successfully generating a Content Identifier (CID). Simultaneously, the text and image data were evaluated by the AI moderation service, which validated the report as legitimate, non-abusive content.
+    \item \textbf{Off-chain Storage and AI Moderation Routing:} Upon receiving the payload, the backend relayer will process the submitted data. The visual evidence will be routed to the IPFS integration module, and a Content Identifier (CID) will be generated. Simultaneously, the text and image data will be evaluated by the AI moderation service to verify that the report is classified as legitimate, non-abusive content before proceeding to blockchain submission.
     
+    \item \textbf{Blockchain Recording via Meta-Transaction:} Following AI approval, the backend relayer will format the data—including the IPFS CID, issue description, and the cryptographic proofs—and submit a meta-transaction to the smart contract on the Geth PoA network. The transaction is expected to be mined by the validator nodes, securely anchoring the report to the immutable ledger without requiring the citizen to pay any gas fees.
     
-    \item \textbf{Blockchain Recording via Meta-Transaction:} Following AI approval, the backend relayer formatted the data—including the IPFS CID, issue description, and the cryptographic proofs—and submitted a meta-transaction to the smart contract on the Geth PoA network. The transaction was successfully mined by the validator nodes, securely anchoring the report to the immutable ledger without requiring the citizen to pay gas fees.
-    
-    \item \textbf{Frontend Verification:} Finally, the DApp's query interface was refreshed to retrieve the latest blockchain state. The newly submitted report appeared in the community feed with its corresponding status badge, upvote count, and image thumbnail, confirming that the entire decentralized pipeline executed flawlessly.
+    \item \textbf{Frontend Verification:} Finally, the DApp's query interface will be refreshed to retrieve the latest blockchain state. The expected outcome is that the newly submitted report will appear in the community feed with its corresponding status badge, upvote count, and image thumbnail, confirming that the entire decentralized pipeline has executed correctly.
     
     \begin{figure}[H]
         \centering
@@ -90,7 +89,7 @@ The end-to-end testing workflow was executed as follows:
 
 \end{enumerate}
 
-The successful execution of this simulated workflow validates the system architecture and confirms that the individual components interact correctly to provide a secure, anonymous, and user-friendly civic reporting platform.
+The successful execution of this simulated workflow will validate the system architecture and confirm that the individual components interact correctly to provide a secure, anonymous, and user-friendly civic reporting platform.
 
 
 \section{Results and Observations}
