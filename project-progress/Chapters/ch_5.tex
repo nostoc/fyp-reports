@@ -66,7 +66,12 @@ The current prototype has some limitations.
 
 The identity system is simulated. It does not implement a complete real-world zero-knowledge identity system.
 
-The AI moderation service currently focuses mainly on text moderation. Image moderation is not fully implemented yet.
+Although the current prototype supports both text moderation and image safety
+moderation, the moderation system is still limited to a controlled experimental
+environment. The image moderation component focuses mainly on detecting unsafe
+visual content. It does not fully verify whether an image is geographically
+authentic, whether it was captured at the reported location, or whether it was
+generated or manipulated using generative AI tools.
 
 The oracle decentralization is simulated using separate containers. In a stronger real-world deployment, oracle nodes should run on separate servers or be operated by different organizations.
 

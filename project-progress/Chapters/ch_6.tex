@@ -18,11 +18,10 @@ The next major task is to complete full end-to-end integration. The DApp, GovID 
 
 The government-side workflow should also be completed. This includes report review, issue assignment, resolution updates, closure, and citizen feedback.
 
-Image moderation should be added to the AI moderation service. This will allow the system to check uploaded images for harmful, irrelevant, or misleading content.
 
 The current identity system should be improved in future work. A real zero-knowledge proof or self-sovereign identity mechanism can replace the simulated GovID service.
 
-The oracle system can also be improved. At present, decentralization is simulated using separate containers. In future, oracle nodes can be deployed on separate servers or operated by different trusted organizations.
+The AI moderation service can be extended with stronger multimodal models that evaluate not only image safety, but also image-report relevance, image manipulation, and location consistency. A future version may use vision-language models to compare the submitted image with the selected report category and description. The oracle deployment can also be improved by hosting oracle workers under different administrative domains instead of running them as containers on the same VPS. This would make the oracle layer closer to a decentralized oracle network.
 
 More testing is required after integration. This includes blockchain transaction latency, IPFS upload time, oracle response time, and complete report submission time.
 
