@@ -43,7 +43,7 @@ The aim of this project is to design and prototype a blockchain-based, privacy-p
 
 \item Develop user-friendly interfaces that enable citizens and authorized government officials to interact with the blockchain for reporting issues and tracking their resolution status.
 
-\item Design and integrate an AI-based content moderation system to detect and filter inappropriate textual and visual content in user-submitted reports.
+\item Design and integrate an \ac{AI}-based content moderation system to detect and filter inappropriate textual and visual content in user-submitted reports.
 
 % \item Analyze user participation behavior and implement an \ac{AI}-assisted trustworthiness evaluation mechanism to improve the reliability of community feedback while preserving user anonymity.
 
@@ -99,7 +99,7 @@ Despite the advancements in the blockchain base applications, existing literatur
 
 The traditional centralized platforms have data integrity issues, transparency issues and trust issues when it comes to citizen reporting. Past works also indicates that centralized complaint registries often have single point of failures , delayed responses and public mistrust. Therefore blockchain integrated reporting services can be used to mitigate those issues. 
 
-A blockchain based police complaint management system has proposed by Pratheeba \cite{pratheeba_blockchain_police_complaint} contains a modular architecture. It's include security, blockchain, web interface and a hybrid cloud storage. This system ensure immutability of complaint records by cryptographic hash linking. And also it utilize RSA based encryption to restrict the access only to authorized personnel. In Addition to that, Pratheeba used a Natural Language Processing (NLP) techniques to automatically categorize complaints in the system based on their priorities. 
+A blockchain based police complaint management system has proposed by Pratheeba \cite{pratheeba_blockchain_police_complaint} contains a modular architecture. It's include security, blockchain, web interface and a hybrid cloud storage. This system ensure immutability of complaint records by cryptographic hash linking. And also it utilize RSA based encryption to restrict the access only to authorized personnel. In Addition to that, Pratheeba used \ac{NLP} techniques to automatically categorize complaints in the system based on their priorities. 
 
 \begin{figure}[h!]
     \centering
@@ -136,7 +136,7 @@ Smart contracts also support business processes in governance by embedding polic
 
 In the context of voting and opinion polling, smart contracts offer enhanced security, transparency, immutability and verifiability inherited from blockchain\cite{ResearchGate_2024_ScalableEVoting}, \cite{IEEE_2024_BPVot}. There are advance mechanisms such as Quadratic Voting and also blockchain enabled participatory budgeting. Those mechanisms further extend citizen involvement in decision making. It have expressive preference representation and transparent allocation of public resources\cite{ResearchGate_2021_QuadraticVoting}, \cite{UPSpace_2022_ParticipatoryBudgeting}. In addition to these advantages, there exists some challenges related to scalability, privacy and system complexity when deploying voting and polling systems to large and diverse populations\cite{ResearchGate_2024_ScalableEVoting}, \cite{JournalOfCybersecurity_2020_BlockchainVoting}.
 
-\subsection{User Interfaces for Blockchain-Based e-Gover\\nance Applications}
+\subsection{User Interfaces for Blockchain-Based e-Governance Applications}
 
 User interfaces play a critical role in determining the accessibility and adoption of blockchain based e-governance systems. In the traditional applications the user literacy is less important but in this conventional blockchain applications the user literacy is highly considered because of the blockchain concepts that are different from the traditional apps and it does make the users hard to understand and adopt. The literature consistently identifies usability and user experience challenges as major barriers to the adoption of decentralized applications for the general public. Particularly where security requirements conflict with established usability principles \cite{mdpi2025usercentric}, \cite{sonule2025uxweb3}. So the design of intuitive, inclusive, and responsive web interfaces is essential for enabling effective interaction between citizens, government officials, and the underlying blockchain infrastructure.
 
@@ -232,7 +232,16 @@ Finally, the issue of “toxic immutability” remains a critical challenge for 
 
 \section{Report Outline}
 
-Briefly describe what each chapter contains. \\
+This report is organized into six main chapters. Each chapter focuses on a different part of the project, from the problem background to the current implementation progress and future work.
 
-Usually 1 page maximum.
+Chapter 1 introduces the research problem and explains why a privacy-preserving reporting system is needed for local governance. It presents the problem background, problem statement, objectives, scope, and literature review related to citizen reporting systems, blockchain-based governance, AI moderation, and decentralized applications.
 
+Chapter 2 provides the technical background required to understand the proposed system. It explains the main technologies used in the project, including blockchain, permissioned blockchain with Proof-of-Authority consensus, smart contracts, DApps, IPFS, identity privacy concepts, and AI-based content moderation.
+
+Chapter 3 describes the methodology and implementation of the proposed framework. It explains the research approach, system requirements, overall architecture, workflow, project timeline, and expected outcomes. It also describes the implementation progress of the main components, including the private blockchain, smart contracts, identity service, backend relayer, IPFS integration, AI moderation service, and web-based DApp.
+
+Chapter 4 presents the testing, experimentation, and validation approach. It describes the experimental setup, testing methodology, subsystem testing, integration testing, and preliminary validation of the implemented components. It also discusses the current results and compares the proposed approach with existing reporting systems.
+
+Chapter 5 discusses the main findings of the project. It highlights the important contributions of the proposed methodology and implementation, evaluates the progress against the project objectives, and explains the limitations of the current prototype.
+
+Chapter 6 concludes the report by summarizing the overall progress and significance of the project. It also presents the future work required to complete and improve the system, including full integration, image moderation, government-side workflows, stronger identity mechanisms, and further testing.
