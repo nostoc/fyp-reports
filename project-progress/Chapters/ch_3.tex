@@ -1,87 +1,226 @@
 \chapter{Methodology and Implementation}
 
 \section{Methodology}
+This section explains the research design followed to develop and evaluate the proposed framework. It describes how the project objectives were translated into system requirements, how the main components were identified, and why a modular prototype-based approach was selected. The methodology also explains the reasoning behind the selected technologies, workflows, and evaluation approach.
+
+The proposed system is evaluated through controlled subsystem testing and integration testing. Since the project combines blockchain, privacy-preserving identity, off-chain storage, AI moderation, and a web-based DApp, each component is first designed and validated separately. The components are then integrated through defined APIs, cryptographic data formats, and deployment configurations to evaluate the complete report submission workflow.
 
 \subsection{Research Methodology}
 % Explain:
-
 % prototype-oriented approach,
 % modular architecture,
 % experimental evaluation.
-This project follows a design-oriented and prototype-based research methodology. The main objective is to design, implement, and evaluate a blockchain-based, community-assisted, privacy-preserving reporting framework for local governance. The system is developed as a functional prototype within a controlled experimental environment rather than as a large-scale production deployment.
 
-The research approach is based on identifying the limitations of existing centralized citizen reporting platforms and designing a decentralized alternative that improves transparency, integrity, anonymity, and trustworthiness. The project combines several technologies, including a private permissioned blockchain, smart contracts, a simulated identity verification mechanism, off-chain storage, AI-assisted content moderation, and a web-based decentralized application.
+This project follows a design-oriented and prototype-based research methodology. 
+The main objective is to design, implement, and evaluate a blockchain-based, 
+community-assisted, privacy-preserving reporting framework for local governance. 
+The system is developed as a functional prototype within a controlled experimental 
+environment rather than as a large-scale production deployment.
 
-The system is developed using an incremental and modular development approach. Each major subsystem is designed and implemented independently before being integrated into the complete reporting workflow. This reduces complexity and allows each team member to focus on a specific technical component while maintaining compatibility with the overall architecture. \\
-The major system components are:
+The research approach is based on identifying the limitations of existing centralized 
+citizen reporting platforms and designing a decentralized alternative that improves 
+transparency, integrity, anonymity, and trustworthiness. The project combines several 
+technologies, including a private permissioned blockchain, smart contracts, a simulated 
+identity verification mechanism, off-chain storage, AI-assisted content moderation, a 
+backend relayer, and a web-based decentralized application.
 
-\begin{enumerate}
-    \item Web-based DApp
-    \item ZKP GovID simulator
-    \item Backend relayer
-    \item AI moderation oracle service
-    \item IPFS off-chain storage
-    \item Smart contracts
-    \item Private permissioned PoA blockchain
-\end{enumerate}
+The system is developed using an incremental and modular development approach. 
+First, the functional and non-functional requirements of the system are identified. 
+Based on these requirements, the overall architecture and system components are 
+designed. Each major subsystem is then implemented and tested independently before 
+being integrated into the complete reporting workflow. This reduces implementation 
+complexity and allows each team member to focus on a specific technical component 
+while maintaining compatibility with the overall architecture.
 
-Each subsystem is first implemented and tested individually. After subsystem-level validation, the components are connected through defined APIs, blockchain interfaces, and data formats. The final integration focuses on the end-to-end report submission scenario, where a citizen submits a report through the DApp, the report is validated and moderated, the content is stored off-chain, and the final metadata is recorded on-chain.
+Each subsystem is first validated independently. After subsystem-level testing, the 
+components are connected through defined APIs, blockchain interfaces, cryptographic 
+data formats, and deployment configurations. The main integration focus at the current 
+stage is the end-to-end report submission scenario. In this workflow, a citizen submits 
+a report through the DApp, the report is authenticated and verified by the relayer, the 
+content is moderated by the AI oracle service, accepted content is stored off-chain, and 
+the final metadata is recorded on-chain.
 
-This approach follows the phased methodology described in the project proposal, where requirement analysis, system design, blockchain implementation, smart contract development, identity integration, IPFS integration, AI moderation, DApp development, testing, and evaluation are carried out incrementally.
+The project also follows an experimental evaluation approach. The prototype is tested 
+using synthetic reports, manually prepared moderation test cases, safe civic images, 
+unsafe image test samples, and controlled integration scenarios. These tests are used 
+to evaluate the correctness of subsystem behavior, component interaction, security 
+checks, content moderation, and report submission flow.
 
-
-
-
+In addition to controlled laboratory testing, the project team has discussed a possible 
+real-world pilot deployment with the project supervisor. Upon receiving the approval from the 
+Faculty Board, the system may be deployed within the faculty 
+environment for reporting sensitive issues such as ragging. This potential pilot would provide an opportunity to evaluate the 
+practical usability, privacy expectations, and reporting workflow of the system in a 
+real-world institutional context.
+This approach follows the phased methodology described in the project proposal, where 
+requirement analysis, system design, blockchain implementation, smart contract 
+development, identity integration, IPFS integration, AI moderation, DApp development, 
+testing, and evaluation are carried out incrementally.
 
 \subsection{System Requirements Analysis}
+
+The system requirements analysis identifies the main functions and quality 
+requirements that must be satisfied by the proposed framework. These requirements 
+were derived from the project objectives, literature review findings, and the expected 
+reporting workflow of a local governance environment. The requirements are divided 
+into functional and non-functional requirements.
+
 \subsubsection{Functional Requirements}
 
-The functional requirements define the main services that the system must provide. 
+The functional requirements define the main services that the system must provide.
+
 \begin{enumerate}
-    \item Citizen authentication:
-A citizen should be able to authenticate using the simulated GovID identity service.
-    \item Ticket issuance:
-After successful verification, the identity service should issue a citizen seed and a batch of one-time ticket IDs.
-    \item Report creation:
-A citizen should be able to create a report containing text, category, location, timestamp, and optional media. 
-\item  Payload signing:
-The DApp should sign the report payload using the citizen’s private key before sending it to the relayer.
-\item Relayer verification:
-The backend relayer should verify the ticket, citizen signature, payload hash, and file constraints.
-\item AI moderation:
-The report content should be analyzed by AI moderation services before blockchain submission.
-\item Off-chain storage:
-Accepted report content and media files should be uploaded to IPFS.
-\item Blockchain submission:
-The relayer should submit accepted report metadata to the reporting smart contract.
-\item Report retrieval:
-The DApp should allow citizens and authorized users to read submitted reports and their statuses from the blockchain.
-\item Government action workflow:
-The system should support future integration of government-side actions such as issue review, resolution updates, and closure.
+    \item \textbf{Citizen authentication:}
+    A citizen should be able to authenticate using the simulated GovID identity service.
 
+    \item \textbf{Ticket issuance:}
+    After successful verification, the identity service should issue a citizen seed and a 
+    batch of one-time ticket IDs. These tickets are used to support anonymous but 
+    verifiable participation.
+
+    \item \textbf{Report creation:}
+    A citizen should be able to create a report containing a description, category, 
+    location, timestamp, and optional media evidence.
+
+    \item \textbf{Payload signing:}
+    The DApp should generate a hash of the report payload and sign it using the 
+    citizen's local private key before sending it to the backend relayer.
+
+    \item \textbf{Relayer verification:}
+    The backend relayer should verify the government-signed ticket, citizen signature, 
+    payload hash, ticket usage status, and basic file constraints before forwarding the 
+    report for moderation.
+
+    \item \textbf{AI moderation:}
+    The report text and attached media should be analyzed by the AI moderation 
+    service before IPFS upload and blockchain submission. The moderation service 
+    should detect spam, abusive or threatening text, non-civic content, and unsafe 
+    image content.
+
+    \item \textbf{Off-chain storage:}
+    Accepted report content and media files should be uploaded to IPFS. The returned 
+    CIDs and related hashes should be used to verify the stored content.
+
+    \item \textbf{Blockchain submission:}
+    The backend relayer should submit accepted report metadata, ticket identifiers, 
+    content hashes, and IPFS references to the reporting smart contract.
+
+    \item \textbf{Report retrieval:}
+    The DApp should allow citizens and authorized users to read submitted reports and 
+    their current statuses from the blockchain.
+
+    \item \textbf{Community validation:}
+    Citizens should be able to validate or reject submitted reports using a 
+    ticket-based voting mechanism. This supports community-assisted filtering of 
+    genuine and false reports.
+
+    \item \textbf{Government action workflow:}
+    The system should support government-side actions such as issue review, progress 
+    updates, resolution updates, and closure.
+
+    \item \textbf{Post-resolution verification:}
+    Citizens should be able to verify whether a resolved issue has actually been fixed. 
+    If the community rejects the resolution, the report should be reopened for further 
+    action.
 \end{enumerate}
-
 
 \subsubsection{Non-functional Requirements}
 
-The system also has several non-functional requirements. 
+The system also has several non-functional requirements.
 
 \begin{enumerate}
-    \item Security:
-The system should use hashing, digital signatures, ticket validation, role-based access control, and secure API communication.
-    \item Privacy:
-Citizen identities should be decoupled from on-chain report records.
-    \item Integrity:
-Report payloads, IPFS content, oracle decisions, and blockchain records should be tamper-evident.
-    \item Availability:
-The deployed services should remain accessible during testing and demonstration.
-    \item Performance:
-The system should process reports within reasonable time under prototype workloads.
-    \item Maintainability:
-The system should be modular and containerized to simplify deployment and debugging.
-    \item Auditability:
-Important workflow decisions should be logged and anchored through hashes or blockchain events.
+    \item \textbf{Security:}
+    The system should use hashing, digital signatures, ticket validation, role-based 
+    access control, secure API communication, nonce validation, and timestamp 
+    validation where required.
 
+    \item \textbf{Privacy:}
+    Citizen identities should be decoupled from on-chain report records. The blockchain 
+    should store only pseudonymous identifiers, ticket hashes, metadata, and 
+    cryptographic references rather than personally identifiable information.
+
+    \item \textbf{Integrity:}
+    Report payloads, media hashes, AI oracle decisions, IPFS content, and blockchain 
+    records should be tamper-evident using cryptographic hashes and digital signatures.
+
+    \item \textbf{Availability:}
+    The deployed services should remain accessible during testing, integration, and 
+    demonstration.
+
+    \item \textbf{Performance:}
+    The system should process reports within a reasonable time under prototype 
+    workloads. The blockchain, relayer, IPFS, and AI moderation service should be 
+    evaluated for practical response times.
+
+    \item \textbf{Maintainability:}
+    The system should be modular and containerized to simplify deployment, debugging, 
+    testing, and future extension.
+
+    \item \textbf{Auditability:}
+    Important workflow decisions, such as report submission, moderation decisions, 
+    vote counts, state transitions, and authority actions, should be logged or anchored 
+    through hashes, blockchain events, or signed responses.
+
+    \item \textbf{Usability:}
+    The DApp should hide unnecessary blockchain complexity from normal users. 
+    Citizens should be able to submit reports without manually paying gas fees or 
+    directly interacting with low-level blockchain tools.
+
+    \item \textbf{Scalability:}
+    Large report content and media files should be stored off-chain so that the 
+    blockchain remains lightweight and scalable.
+\end{enumerate}
+
+\subsection{Identified System Components}
+
+Based on the above functional and non-functional requirements, the proposed system 
+is divided into several modular components. Each component provides a specific 
+function and communicates with other components through defined interfaces.
+
+\begin{enumerate}
+    \item \textbf{Web-based DApp for user interaction:}
+    The DApp provides the frontend interface for citizens and government officials. 
+    Citizens use it to authenticate, manage issued tickets, create reports, attach media, 
+    submit votes, and view report statuses. Government officials use future dashboard 
+    interfaces to review validated reports and update resolution progress.
+
+    \item \textbf{ZKP GovID simulator for identity verification and ticket issuance:}
+    The ZKP GovID simulator acts as the identity verification component in the 
+    prototype. It verifies citizen credentials against a simulated registry and issues a 
+    citizen seed together with a batch of government-signed one-time tickets. These 
+    tickets allow the citizen to participate anonymously in reporting and voting.
+
+    \item \textbf{Backend relayer for verification and workflow orchestration:}
+    The backend relayer acts as the middleware coordination layer. It receives signed 
+    payloads from the DApp, verifies tickets and citizen signatures, enforces file and 
+    request constraints, sends content to the AI moderation service, uploads accepted 
+    content to IPFS, and submits blockchain transactions on behalf of users. This 
+    relayer design provides a gasless experience for citizens.
+
+    \item \textbf{AI moderation oracle service for content validation:}
+    The AI moderation oracle service analyzes report text and media before permanent 
+    storage or blockchain submission. It contains an aggregator and three oracle 
+    workers: a Safety Oracle, a Spam and Abuse Oracle, and a Civic Relevance Oracle. 
+    The service returns an ACCEPT or REJECT decision together with confidence values, 
+    oracle votes, hashes, and an aggregator signature.
+
+    \item \textbf{IPFS off-chain storage for report content and media:}
+    IPFS is used to store media evidence off-chain. Instead of 
+    storing files directly on the blockchain, the system stores only IPFS CIDs and 
+    cryptographic hashes on-chain. This reduces blockchain storage overhead while 
+    preserving content integrity.
+
+    \item \textbf{Smart contracts for report lifecycle management:}
+    The Solidity smart contracts manage report submission, ticket nullifier usage, 
+    report state transitions, community validation, authority actions, and post-resolution 
+    verification. They enforce workflow rules and provide an immutable record of 
+    report status changes.
+
+    \item \textbf{Private permissioned PoA blockchain for immutable record keeping:}
+    The private permissioned blockchain provides the trusted ledger layer of the system. 
+    It uses Proof-of-Authority consensus to support efficient transaction validation by 
+    authorized validator nodes. The blockchain stores report metadata, hashes, IPFS 
+    references, voting results, and state transitions.
 \end{enumerate}
 
 \subsection{Proposed System Architecture}
@@ -187,8 +326,8 @@ When a citizen initiates a civic issue report, the system executes the following
     \item The frontend application selects one unused signed ticket from the local batch. It generates a cryptographic hash combining the issue description and the ticket identifier, and subsequently signs this hash using the citizen's local wallet private key.
     \item The application transmits the complete payload, including the raw text, media files, government-signed ticket, and the citizen's signature, to the backend relayer via a secure HTTP request.
     \item The backend relayer performs a strict dual-layer cryptographic verification. First, it fetches the Government Authority public key to verify the authenticity of the ticket. Second, it verifies the citizen's signature against the payload hash to detect any tampering during transit.
-    \item If cryptographic verification succeeds, the relayer routes the submitted text and media to the AI moderation ensemble. The centralized aggregator node processes the inputs through its algorithmic nodes to determine if the content is appropriate or malicious spam.
-    \item Upon receiving an approval verdict from the AI oracle, the backend relayer offloads the multimedia files to \ac{IPFS}. The \ac{IPFS} network returns an immutable \ac{CID} representing the stored files.
+    \item If cryptographic verification succeeds, the relayer routes the submitted text and media to the AI moderation ensemble. The AI moderation ensemble evaluates the report using three oracle workers. The Safety Oracle checks toxic text and unsafe image content. The Spam and Abuse Oracle checks spam and low-quality text patterns. The Civic Relevance Oracle checks whether the submission appears to describe a valid civic issue. The aggregator combines these oracle votes and returns a final ACCEPT or REJECT decision, along with confidence values, report hash, decision hash, and an aggregator signature.
+    \item  Upon receiving an ACCEPT verdict from the AI oracle, the backend relayer uploads the approved report content and media files to IPFS. The IPFS network returns immutable CIDs representing the stored content. If the oracle returns a REJECT verdict, the relayer stops the workflow and the report is not uploaded to IPFS or submitted to the smart contract.
     \item The relayer formulates a blockchain transaction containing only the lightweight \ac{IPFS} \ac{CID} and the ticket identifier. To ensure a gasless experience for the citizen, the relayer signs this transaction with its own wallet and pays the necessary network fees.
     \item The Reporting smart contract receives the transaction. It immediately checks the provided ticket identifier against its internal nullifier mapping to prevent replay attacks and duplicate submissions.
     \item Once the nullifier is marked as consumed, the smart contract successfully anchors the report to the ledger, initializing it in the Pending Validation state to await community consensus.
@@ -334,10 +473,13 @@ Backend Relayer Development
 & In Progress \\
 \hline
 
-AI Oracle Moderation Service
-& Implement three oracle workers, aggregator, voting logic, decision hashing, and containerized VPS deployment.
-& Deployed AI moderation service for text-based report validation.
-& Completed for Text Moderation \\
+AI Content Moderation Service &
+Implement three oracle workers, aggregator, voting logic, relayer request
+signature verification, text moderation, image safety moderation, decision hashing,
+and containerized VPS deployment. &
+Deployed AI moderation service supporting text moderation, image safety
+moderation, oracle voting, and signed aggregator decisions. &
+Completed and Integrated with Relayer \\
 \hline
 
 IPFS Off-chain Storage Integration
@@ -485,6 +627,9 @@ Through these outcomes, the prototype demonstrates the feasibility of combining 
 
 \section{Implementation}
 
+This section presents the implementation details of the prototype system. The implementation follows the modular architecture introduced in the methodology section, where each subsystem is developed as an independent component and then connected to form the complete reporting pipeline.
+
+The implementation focuses on building a functional prototype that can demonstrate the main reporting workflow. This includes citizen authentication, anonymous ticket-based report submission, backend relayer verification, AI-based text and image moderation, IPFS-based off-chain media storage, and smart contract anchoring on a private permissioned blockchain. The key performance and correctness aspects of these components are later evaluated in the testing and validation chapter.
 
 \subsection{Permissioned Blockchain Implementation}
 
@@ -603,14 +748,39 @@ At the current stage of development, the system operates with a single IPFS node
     \label{fig:oracle-architecture}
 \end{figure}
 
+The AI moderation subsystem is implemented as an off-chain oracle service. It is placed between the backend relayer and the IPFS/blockchain submission stage. This ensures that harmful, spam, irrelevant, or unsafe content is filtered before it is permanently stored or referenced by the blockchain.
 
-The AI moderation subsystem is designed as an off-chain oracle network. The moderation process is performed off-chain and the result is returened to the reporting workflow. The oracle network consists of three independent oracle workers and one aggregator. The aggregator forwards the moderation request to all oracle workers, collects their decisions, applies a voting rule, signs the final decision, and returns the result to the relayer. This architecture is demonstrated in Figure~\ref{fig:oracle-architecture}. The oracle 1 focuses on detecting toxic, abusive, threaening, or harmful language. It analyzes the submitted report using a predefined moderation strategy and returns a vote. The oracle 2 focuses on spam detection. It checks for promotional content, repeated characters, and extremely short descriptions. The third oracle focuses on civic relevance. It checks whether the report is related to local governance issues such as roads, garbage, water, drainage, public infrastructure, and community facilities. 
+The moderation service is designed as a containerized oracle network. It contains one aggregator service and three oracle worker services. The backend relayer communicates only with the aggregator. The aggregator then communicates with the oracle workers using internal Docker networking. This keeps the worker services isolated from public access and exposes only one controlled moderation API to the rest of the system.  This architecture is demonstrated in Figure~\ref{fig:oracle-architecture}.
 
-The oracle aggregator combines the decisions of the three oracle workers. Each oracle returns either ACCEPT or REJECT. The current aggregation logic uses a two out of three (2/3) majority rule. The final moderation result includes the final decision, confidence score, report hash, oracle votes, decision hash, and aggregator signature. 
+The implemented oracle workers are as follows:
 
-To ensure integrity of the moderation results, several mechanisms are used. The aggregator computes a hash of the submitted report payload. The final moderation result and oracle votes are combined and hashed to crate the decision hash. Also, the aggregator sign the decision hash using its private key. 
+\begin{itemize}
+    \item \textbf{Safety Oracle:} This oracle checks whether submitted text or images
+    contain unsafe content. For text, it checks toxic, abusive, and threatening
+    patterns. For images, it performs image safety moderation using a pre-trained
+    image classification model to detect unsafe visual content.
 
+    \item \textbf{Spam and Abuse Oracle:} This oracle checks whether the submitted
+    report contains spam-like or low-quality text. It detects promotional phrases,
+    repeated symbols, suspicious URLs, very short descriptions, and common spam
+    patterns.
 
+    \item \textbf{Civic Relevance Oracle:} This oracle checks whether the submitted
+    report is related to a public or local governance issue. It uses category and
+    keyword-based logic to identify reports related to road damage, waste
+    management, drainage, water supply, streetlights, flooding, traffic safety,
+    public property damage, and environmental issues.
+\end{itemize}
+
+Each oracle returns a structured vote containing the oracle identifier, vote, confidence value, explanation code, model or rule version, and additional details. The accepted vote values are ACCEPT and REJECT. The system does not currently use a manual REVIEW state because that would introduce a central human moderation dependency. Instead, unclear or low-quality reports are rejected and the citizen can resubmit a clearer report.
+
+The aggregator combines the oracle outputs using a rule-based decision strategy. If a critical safety violation is detected, the final decision is REJECT. If the civic relevance oracle identifies the content as non-civic, the final decision is also REJECT. Otherwise, the aggregator applies majority voting among the three oracles. If at least two oracle workers accept the content, the final result is ACCEPT. If not, the final result is REJECT.
+
+Security and integrity are also included in the moderation workflow. The backend relayer signs the moderation request using its private wallet key. The aggregator recovers the signer address from the relayer signature and compares it with the trusted relayer address configured in the oracle environment. The request also includes a timestamp and nonce. The timestamp prevents stale requests, while the
+nonce prevents replay attacks. The aggregator computes a report hash and a decision hash, signs the final decision, and returns this information to the relayer. This makes the moderation result tamper-evident and auditable.
+
+The AI moderation service is deployed on a VPS using Docker containers managed through Dokploy. The deployment consists of the oracle aggregator, safety oracle, spam and abuse oracle, and civic relevance oracle containers. At the current stage, the service has been integrated with the backend relayer and supports both text-based moderation and image safety moderation during the report submission
+workflow.
 
 
 
