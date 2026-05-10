@@ -4,6 +4,7 @@
 \documentclass[a4paper,12pt]{report}
 
 \usepackage{graphicx} % graphics
+\usepackage{float}
 \usepackage{subcaption} %sub-caption styles
 \usepackage{amsmath} % equations and spacings
 \usepackage{listings}
@@ -37,6 +38,10 @@
 \usepackage{rotating}  % For rotating the chart (sidewaysfigure)
 \usepackage{geometry}  % To ensure margins fit large figures
 \usepackage{graphicx}
+\usepackage[export]{adjustbox}
+
+% Remove paragraph indentation to avoid leading tabs
+\setlength{\parindent}{0pt}
 
 % Define acronyms
 \DeclareAcronym{AI}{
@@ -83,6 +88,66 @@
   long = Application Programming Interface
 }
 
+\DeclareAcronym{CID}{
+  short = CID,
+  long = Content Identifier
+}
+
+\DeclareAcronym{CICD}{
+  short = CI/CD,
+  long = Continuous Integration and Continuous Deployment
+}
+
+\DeclareAcronym{CNN}{
+  short = CNN,
+  long = Convolutional Neural Network
+}
+
+\DeclareAcronym{FSM}{
+  short = FSM,
+  long = Finite State Machine
+}
+
+\DeclareAcronym{KPI}{
+  short = KPI,
+  long = Key Performance Indicator
+}
+
+\DeclareAcronym{NGO}{
+  short = NGO,
+  long = Non-Governmental Organization
+}
+
+\DeclareAcronym{PaaS}{
+  short = PaaS,
+  long = Platform-as-a-Service
+}
+
+\DeclareAcronym{PII}{
+  short = PII,
+  long = Personally Identifiable Information
+}
+
+\DeclareAcronym{RBAC}{
+  short = RBAC,
+  long = Role-Based Access Control
+}
+
+\DeclareAcronym{TPS}{
+  short = TPS,
+  long = Transactions Per Second
+}
+
+\DeclareAcronym{VPS}{
+  short = VPS,
+  long = Virtual Private Server
+}
+
+\DeclareAcronym{ZKP}{
+  short = ZKP,
+  long = Zero-Knowledge Proof
+}
+
 \DeclareAcronym{GPS}{
   short = GPS,
   long = Global Positioning System
@@ -101,6 +166,11 @@
 \DeclareAcronym{NLP}{
   short = NLP,
   long = Natural Language Processing
+}
+
+\DeclareAcronym{RPC}{
+  short = RPC,
+  long = Remote Procedure Call
 }
 
 % --- COLOR DEFINITIONS (Global) ---
@@ -172,15 +242,15 @@ Local governments in developing countries often struggle to address public issue
 
 %%%%%%%%%%%%%%%%%%%%% The End matters %%%%%%%%%%%%%%%%%%%%%
 
-\begin{appendix}
-\include{End_matters/appendix_01}
-\include{End_matters/appendix_02}
-\include{End_matters/appendix_03}
-\include{End_matters/appendix_04}
-\include{End_matters/appendix_05}
-\include{End_matters/appendix_06}
+% \begin{appendix}
+% \include{End_matters/appendix_01}
+% \include{End_matters/appendix_02}
+% \include{End_matters/appendix_03}
+% \include{End_matters/appendix_04}
+% \include{End_matters/appendix_05}
+% \include{End_matters/appendix_06}
 
-\end{appendix}
+% \end{appendix}
 
 % \addcontentsline{toc}{chapter}{APPENDIX}
 
