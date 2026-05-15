@@ -640,8 +640,19 @@ The core infrastructure of the proposed system is the private permissioned block
 \begin{itemize}
     \item {Geth PoA Network Setup:} A private permissioned Ethereum-compatible network was initialized using the Go Ethereum client. The network was configured to operate in proof-of-authority consensus mode, specifically using the Clique algorithm. This enabled faster block confirmation and lower energy consumption compared to traditional proof-of-work systems. A custom genesis file was created to define network parameters, including the initial set of authorized signers and the chain ID.
     \item {Validator Node Configuration:} Minimum of three full nodes were required to act as an validator. The 3 nodes are deployed in a personal vps infrastructure. Each node is configured with a unique cryptographic identity and their addresses were added to the list of authorized sealers within the consensus engine to manage transaction validation authority.
-    \item {Network Security Measures:} To communicate with the blockchain network, secure \ac{RPC} endpoint was established only for node1. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
+
+    \item {Network Security Measures:} To communicate with the blockchain network, secure \ac{RPC} endpoint was established for node 4. Node 4 is a non-validator node. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
 \end{itemize}
+
+The node configuration is shown in Figure~\ref{fig:validator_nodes}.
+
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/validator_nodes.png}
+    \caption{Validator node configuration of the private permissioned blockchain.}
+    \label{fig:validator_nodes}
+\end{figure}
 
 \subsection{Smart Contract Architecture and Logic}
 
@@ -651,11 +662,11 @@ The core on-chain logic of the decentralized reporting framework is governed by 
 The Report Contract is engineered using a Separation of Concerns principle. To mitigate the prohibitive gas costs associated with storing large multimedia files on the blockchain, the contract only stores essential metadata. 
 \begin{enumerate}
     \item Data Structure: Each civic issue is stored in a Report struct containing a unique integer ID, the IPFS \ac{CID} pointing to off-chain media, voting counters, the assigned authority address, and its current lifecycle state.
-    \item Role-Based Access Control (\ac{RBAC}): Utilizing OpenZeppelin's AccessControl, the contract explicitly defines operational boundaries. The RELAYER\_ROLE is restricted to the backend server, allowing it to submit reports and relay votes on behalf of citizens. The AUTHORITY\_ROLE is granted to recognized government or NGO nodes, granting them permission to update an issue's status to solved or rejected.
+    \item \ac{RBAC}: Utilizing OpenZeppelin's AccessControl, the contract explicitly defines operational boundaries. The RELAYER\_ROLE is restricted to the backend server, allowing it to submit reports and relay votes on behalf of citizens. The AUTHORITY\_ROLE is granted to recognized government or NGO nodes, granting them permission to update an issue's status to solved or rejected.
 \end{enumerate}
 
 \subsubsection{Ticket Validation and Sybil Resistance}
-A fundamental challenge in anonymous decentralized systems is preventing Sybil attacks and duplicate submissions. This framework utilizes a dual-layer validation mechanism based on Zero-Knowledge Proof (\ac{ZKP}) tickets.
+A fundamental challenge in anonymous decentralized systems is preventing Sybil attacks and duplicate submissions. This framework utilizes a dual-layer validation mechanism based on Zero-Knowledge Proof \ac{ZKP} tickets.
 \begin{enumerate}
     \item Off-Chain Cryptographic Validation: Before a transaction reaches the blockchain, the backend relayer intercepts the payload. Using ethers.js, it verifies that the zkpTicketId possesses a valid cryptographic signature from the official Government Authority. It subsequently verifies the citizen's signature against the payload hash to ensure data integrity during transmission.
     \item On-Chain Nullifier Tracking: Once validated off-chain, the zkpTicketId is passed to the smart contract as a submissionNullifier. The contract maintains a mapping of public submissionNullifiers. Upon successful report creation, this nullifier is marked as used. Any subsequent attempt to submit a report using the same ticket will systematically fail, cryptographically guaranteeing that one authorized ticket equates to exactly one unique report.
