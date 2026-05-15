@@ -1,7 +1,6 @@
 \chapter{Background}
 
-This chapter introduces the main background technologies used in the proposed blockchain-based reporting framework. It explains the basic concepts of blockchain, permissioned networks, PoA consensus, smart contracts, decentralized applications, IPFS, privacy-preserving identity concepts, and AI-based content moderation. The aim of this chapter is to give the reader enough technical understanding to follow the system design and implementation discussed in the later chapters. Therefore, the discussion is kept brief, concept-focused, and limited to the technologies directly related to the project.
-
+This chapter introduces the main background technologies used in the proposed blockchain-based reporting framework. It explains the basic concepts of blockchain technology, permissioned networks, PoA consensus, smart contracts, decentralized applications, \ac{IPFS} , privacy-preserving identity concepts, and AI-based content moderation. Through this chapter we aim to give the reader an enough technical understanding to follow the system design and implementation discussed in the later chapters.
 
 \section{Blockchain Technology}
 
@@ -13,13 +12,13 @@ Immutability is a key characteristic in blockchain technology. It is computation
 
 Cryptography plays a significant role in blockchain systems. To generate unique digital fingerprints of data, hash functions are used. To verify ownership and authenticity of transactions, digital signatures are used. By using above cryptographic methods, blockchain systems gurantee integirty, authenticity and non-repudiation of data. 
 
-\section{Permissioned Blockchain and PoA}
+\section{Permissioned Blockchain and PoA Consensus}
 
-Bitcoin and Ethereum are permissionless blockchains, where anyone can participate as a node and validate transactions. In contrast, permissioned blockchains restrict participation to a predefined set of entities. These entities, often referred to as validator nodes. They are responsible for validating transactions and maintaining the integrity of the blockchain. 
+Bitcoin and Ethereum are permissionless blockchains, where anyone can participate as a node and validate transactions. In contrast, permissioned blockchains restrict participation to a predefined set of entities. These entities are often referred to as validator nodes. They are responsible for validating transactions and maintaining the integrity of the blockchain. 
 
-While permissionless blockchains rely on consensus mechanisms like \ac{PoW} or \ac{PoS}, the \ac{PoA} consensus mechanism is specially designed for permissioned blockchains. In here instead of relying on computationally expensive mining or staking process the validator nodes in the permissioned blockchain are validating blocks. Therefore this approach is a reputation and indetity-based mechanism, where the authority of the validators is based on their identity and reputation within the network. This allows for faster transaction processing and lower energy consumption compared to traditional consensus mechanisms, making it suitable for enterprise applications and private networks.
+While permissionless blockchains rely on consensus mechanisms like \ac{PoW} or \ac{PoS}, the \ac{PoA} consensus mechanism is specially designed for permissioned blockchains. In here instead of relying on computationally expensive mining or staking process the validator nodes in the permissioned blockchain are validating blocks. Therefore this approach is a reputation and indetity-based mechanism, where the authority of the validators is based on their identity and reputation within the network. This allows for faster transaction processing and lower energy consumption compared to traditional consensus mechanisms. This makes permissioned blockchains more suitable for enterprise applications and private networks.
 
-In the context of local governance perspective, such system requires predictable performance, immutability, transparency and accountability. \ac{PoA} consensus running in a permissioned blockchain is well suited for this requirements because validators identities are known and they controlled by trusted entities. With addition to that, \ac{PoA} eliminates the need for economic incentives. This make it more efficient and practical for local governance applications. 
+Local governance related system requires predictable performance, immutability, transparency and accountability. \ac{PoA} consensus running in a permissioned blockchain is well suited for above requirements because validators identities are known and they controlled by trusted entities. In addition to that, \ac{PoA} eliminates the need for economic incentives. This make it more efficient and practical for local governance applications. 
 
 \section{Smart Contracts}
 
@@ -31,14 +30,14 @@ The proposed system uses Solidity based smart contracts deployed on a private pe
 
 \ac{DApp}s are software applications that operate on a decentralized network, such as a blockchain, rather than being hosted on centralized servers. Unlike traditional web applications that rely on centralized databases and backend infrastructure, \ac{DApp}s utilize smart contracts to handle backend logic and state management. This shift from traditional Web2 to Web3 architecture ensures that application data is immutable, transparent, and resistant to single points of failure or centralized control.
 
-In a typical \ac{DApp} architecture, the frontend provides the user interface, while the core logic is distributed across the blockchain network. To interact with the blockchain, the frontend utilizes Web3 provider libraries, such as Web3.js or Ethers.js. These libraries enable the application to communicate with blockchain nodes via Remote Procedure Calls (\ac{RPC}). Through this connection, the frontend can query the blockchain to read the current state of smart contracts or construct new transactions. When a user wishes to modify the blockchain state, they must cryptographically sign the transaction using their digital wallet's private key, ensuring authenticity and authorization.
+In a typical \ac{DApp} architecture, the frontend provides the user interface, while the core logic is distributed across the blockchain network. To interact with the blockchain, the frontend utilizes Web3 provider libraries, such as Web3.js or Ethers.js. These libraries enable the application to communicate with blockchain nodes via \ac{RPC}. Through this connection, the frontend can query the blockchain to read the current state of smart contracts or construct new transactions. When a user wishes to modify the blockchain state, they must cryptographically sign the transaction using their digital wallet's private key, ensuring authenticity and authorization.
 
-A significant challenge in traditional DApp adoption is the requirement for users to pay transaction fees, commonly known as "gas," using the native cryptocurrency of the network. This creates a barrier to entry for regular users who may not possess or understand cryptocurrency. To address this usability issue, modern DApps employ meta-transactions and relayers. A meta-transaction allows a user to cryptographically sign their intent to execute a transaction off-chain without broadcasting it themselves. This signed message is then sent to an intermediary service known as a relayer. The relayer, which holds a balance of the network's cryptocurrency, wraps the user's signed message in a standard blockchain transaction, submits it to the network on behalf of the user, and pays the associated gas fees. This approach provides a seamless, "gasless" user experience while maintaining the security and non-repudiation guarantees of cryptographic signatures, making blockchain applications more accessible to the general public.
+A significant challenge in traditional DApp adoption is the requirement for users to pay transaction fees, commonly known as ``gas," using the native cryptocurrency of the network. This creates a barrier to entry for regular users who may not possess or understand cryptocurrency. To address this usability issue, modern DApps employ meta-transactions and relayers. A meta-transaction allows a user to cryptographically sign their intent to execute a transaction off-chain without broadcasting it themselves. This signed message is then sent to an intermediary service known as a relayer. The relayer, which holds a balance of the network's cryptocurrency, wraps the user's signed message in a standard blockchain transaction, submits it to the network on behalf of the user, and pays the associated gas fees. This approach provides a seamless, gasless user experience while maintaining the security and non-repudiation guarantees of cryptographic signatures, making blockchain applications more accessible to the general public.
 
 
-\section{InterPlanetary File System (IPFS)}
+\section{\ac{IPFS}}
 
-\ac{IPFS} is a peer-to-peer network protocol designed for storing and sharing files in a decentralized manner. Unlike the traditional web, where files are identified and accessed through server-based addresses such as URLs, \ac{IPFS} locates files based on their content. This content-addressed approach improves resilience, reduces dependence on centralized servers, and provides an efficient off-chain storage mechanism for blockchain-based applications. A fundamental concept in \ac{IPFS} is the Content Identifier (\ac{CID}), which is a cryptographic hash generated from the content of a file. If the file content changes, the \ac{CID} also changes, ensuring strong integrity guarantees because users can verify that the retrieved content exactly matches the expected \ac{CID}. Since identical content generates the same \ac{CID}, \ac{IPFS} also supports deduplication and immutable references. In the \ac{IPFS} network, data can be hosted by any node that chooses to store or pin the content, allowing files to be retrieved from multiple peers using their \ac{CID}. This decentralized storage model increases availability, improves fault tolerance, and reduces reliance on a single server, although long-term persistence depends on nodes continuing to pin the data. In blockchain-based systems, \ac{IPFS} is commonly used as an off-chain storage layer because storing large files directly on-chain is costly and inefficient. Instead, applications store only \ac{CID}s and essential metadata on the blockchain, while the actual content remains in \ac{IPFS}. Users can then retrieve the file through its \ac{CID} and verify its authenticity using cryptographic hashing. Overall, \ac{IPFS} provides a scalable and cost-effective decentralized storage solution that combines content integrity, distributed hosting, and efficient off-chain data management.
+\ac{IPFS} is a peer-to-peer network protocol designed for storing and sharing files in a decentralized manner. Unlike the traditional web, where files are identified and accessed through server-based addresses such as URLs, \ac{IPFS} locates files based on their content. This content-addressed approach improves resilience, reduces dependence on centralized servers, and provides an efficient off-chain storage mechanism for blockchain-based applications. A fundamental concept in \ac{IPFS} is the \ac{CID}, which is a cryptographic hash generated from the content of a file. If the file content changes, the \ac{CID} also changes, ensuring strong integrity guarantees because users can verify that the retrieved content exactly matches the expected \ac{CID}. Since identical content generates the same \ac{CID}, \ac{IPFS} also supports deduplication and immutable references. In the \ac{IPFS} network, data can be hosted by any node that chooses to store or pin the content, allowing files to be retrieved from multiple peers using their \ac{CID}. This decentralized storage model increases availability, improves fault tolerance, and reduces reliance on a single server, although long-term persistence depends on nodes continuing to pin the data. In blockchain-based systems, \ac{IPFS} is commonly used as an off-chain storage layer because storing large files directly on-chain is costly and inefficient. Instead, applications store only \ac{CID}s and essential metadata on the blockchain, while the actual content remains in \ac{IPFS}. Users can then retrieve the file through its \ac{CID} and verify its authenticity using cryptographic hashing. Overall, \ac{IPFS} provides a scalable and cost-effective decentralized storage solution that combines content integrity, distributed hosting, and efficient off-chain data management.
 \section{Zero-Knowledge and Identity Concepts}
 
 Zero-knowledge proofs allow a user to prove that they possess sensitive information without actually revaling the information itself. 
@@ -49,27 +48,6 @@ The identity decoupling is critical requirment because citizens may hesitate to 
 
 Citizen reporting platforms are vulnerable to spam Submissions, abusive content, misinformation, and malicious reports. Due to immutability of blockchain records, permanently storing harmful content presents significant ethical and operational concerns. Therefore, content moderation techniques are required before reports are recorded on-chain. 
 
-\ac{AI} techniques are widely used for automated content moderation. \ac{NLP} techniques are used in text moderation tasks such as:toxicity detection, hate speech detection, spam filtering, and sentiment Analysis. For image moderation, computer vision and deep learning approaches are mostly used. Convolutional Neural Networks (\ac{CNN}s) and transformer-based vision models can classify images based on categories like: explicit content, graphic violence, hate symbols, and unrelated media. 
+\ac{AI} techniques are widely used for automated content moderation. \ac{NLP} techniques are used in text moderation tasks such as:toxicity detection, hate speech detection, spam filtering, and sentiment Analysis. For image moderation, computer vision and deep learning approaches are mostly used. \ac{CNN}s and transformer-based vision models can classify images based on categories like: explicit content, graphic violence, hate symbols, and unrelated media. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-% \section{Docker and Containerized Deployment}
-
-% Explain:
-
-% containers,
-% service isolation,
-% deployment architecture.
-
-% This helps justify oracle deployment.
 
