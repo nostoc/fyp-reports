@@ -13,23 +13,11 @@ off-chain storage, moderation, and user-friendly interfaces.
 
 \section{Future Work}
 
-The next major task is to complete full end-to-end integration. The DApp, GovID simulator, backend relayer, AI oracle service, IPFS, smart contracts, and blockchain must work together in one complete report submission flow.
+The next major task is to complete full system integration. The DApp, GovID simulator, backend relayer, AI oracle service, IPFS, smart contracts, and blockchain must work together in one complete report submission flow. The government-side workflow should also be completed.  This includes report review, issue assignment, resolution updates, closure, and citizen feedback.The opinion polling functionality should also implemented.
 
-The government-side workflow should also be completed. This includes report review, issue assignment, resolution updates, closure, and citizen feedback.
-
-
-The current identity system should be improved in future work. A real zero-knowledge proof or self-sovereign identity mechanism can replace the simulated GovID service.
-
-The AI moderation service can be extended with stronger multimodal models that evaluate not only image safety, but also image-report relevance, image manipulation, and location consistency. A future version may use vision-language models to compare the submitted image with the selected report category and description. The oracle deployment can also be improved by hosting oracle workers under different administrative domains instead of running them as containers on the same VPS. This would make the oracle layer closer to a decentralized oracle network.
-
-More testing is required after integration. This includes blockchain transaction latency, IPFS upload time, oracle response time, and complete report submission time.
-
-Security testing is also required before any real-world deployment. Smart contracts, APIs, private keys, relayer logic, and deployment infrastructure must be audited carefully.
-
-Finally, the DApp should be improved through usability testing. Citizens should be able to submit and track reports easily without needing blockchain knowledge.
-
+The current identity system should be improved in future work. A real zero- knowledge proof or self-sovereign identity mechanism can replace the simulated GovID service. A future version of AI-based content moderation service may use vision-language models to compare the submitted image with the selected report category and description. The oracle deployment can also be improved by hosting oracle workers under different administrative domains instead of running them as containers on the same VPS. This would make the oracle layer closer to a decentralized oracle network. More testing is required after integration. This includes blockchain transaction latency, IPFS upload time, oracle response time, and complete report submission time. Security testing is also required before any real-world deployment. Smart con- tracts, APIs, private keys, relayer logic, and deployment infrastructure must be audited carefully. Finally, the DApp should be improved through usability testing.
 \section{Final Remarks}
 
-The proposed system provides a strong foundation for a transparent and privacy-preserving local governance reporting platform. Although the prototype is still under development, the current progress shows that the architecture is feasible.
+ The proposed system provides a strong foundation for a transparent and privacy- preserving local governance reporting platform. Although the prototype is still under development, the current progress shows that the architecture is feasible.
 
 With further integration, testing, and improvement, this framework can support more trustworthy citizen participation and better accountability in local governance.
