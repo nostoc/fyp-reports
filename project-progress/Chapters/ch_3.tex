@@ -689,7 +689,7 @@ The implementation utilizes the NestJS framework to provide a robust and highly 
     
     \item AI Content Moderation: To prevent on-chain spam, toxic immutability of blockchains and ensure platform integrity, the relayer routes the submitted text and media to the AI Oracle moderation service. This service acts as an automated filter, analyzing the content for appropriateness and returning a validation verdict before any storage operations occur.
     
-    \item Decentralized Storage (\ac{IPFS}): To maintain a highly efficient and cost-effective blockchain state, heavy multimedia files and detailed text are offloaded to \ac{IPFS}. The relayer manages the file buffers via multer, processes the upload, and retrieves an immutable \ac{CID}.
+    \item Decentralized Storage - \ac{IPFS}: To maintain a highly efficient and cost-effective blockchain state, heavy multimedia files and detailed text are offloaded to \ac{IPFS}. The relayer manages the file buffers via multer, processes the upload, and retrieves an immutable \ac{CID}.
     
     \item Gasless Blockchain Submission: As the final step, the relayer formats a transaction containing the IPFS CID and the ZKP ticket (which serves as a Sybil-resistant submissionNullifier). The relayer signs and dispatches this transaction to the Reporting.sol smart contract. By paying the network gas fees from its own wallet, the relayer enables a completely frictionless, gasless experience for the end-user.
 \end{enumerate}
