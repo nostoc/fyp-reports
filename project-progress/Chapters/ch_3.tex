@@ -247,7 +247,7 @@ The step-by-step authentication process is as follows.
 \end{enumerate}
 
 \subsubsection{Overall System Lifecycle Workflow}
-The overall system workflow combines all the separate steps into one complete flow for a civic issue. It tracks a report from the moment a citizen creates it until the government resolves it and the repair is verified. This big-picture view shows how the off-chain middleware, decentralized storage, the AI moderation tool, and the smart contract all work together. The complete lifecycle is shown in Figure~\ref{fig:overall_workflow}.
+The overall system workflow is a combination of seperate steps, which are described in detail in the following subsections. This workflow tracks a report from the moment a citizen creates it until the government resolves it and the repair is verified. The complete lifecycle is shown in Figure~\ref{fig:overall_workflow}. It demonstrate how the AI moderation, IPFS, Backend Relayer and all other work together.
 
 \begin{figure}[h]
     \centering
@@ -258,18 +258,18 @@ The overall system workflow combines all the separate steps into one complete fl
 
 The progression of a civic report executes sequentially as follows:
 \begin{enumerate}
-    \item The lifecycle initiates with the citizen authenticating their real-world identity through the centralized simulator to securely acquire a batch of anonymous cryptographic tickets.
-    \item Utilizing an acquired ticket, the citizen constructs and submits a civic issue report accompanied by a cryptographic signature.
-    \item The backend relayer intercepts the payload, routing it through the AI moderation ensemble to filter malicious content, and subsequently uploads the approved media to the decentralized storage network.
-    \item The relayer formulates the blockchain transaction and anchors the lightweight metadata to the smart contract, placing the report into the initial pending validation state.
-    \item The local community evaluates the pending report. Reaching the rejection threshold terminates the issue, while reaching the validation threshold transitions the report to an open state, formally notifying the government authority.
+    \item The lifecycle starts with the citizen logging into the Dapp via the ZKP-GovID simulator, which verifies their identity and issues a batch of signed tickets.
+    \item Utilizing an acquired ticket, the citizen write the report description, attach images, and submit the report through the DApp interface. The DApp hashes the report content and signs it with the citizen's local wallet private key, then sends the payload to the backend relayer.
+    \item The backend relayer performs a strict dual-layer cryptographic verification of the payload, ensuring the authenticity of the government-signed ticket and the integrity of the citizen's signature. And also send content to AI moderation and for IPFS upload if accepted.
+    \item The relayer then create the blockchain transaction containing the IPFS CID and ticket identifier, signs it with its own wallet, and submits it to the reporting smart contract.
+    \item The local community vote for pending reports. Once a report receives enough votes, the smart contract automatically transitions it to the Open state, making it actionable for authorities.
     \item The assigned authority acknowledges the validated issue and triggers a state transition to indicate that active, physical repairs are currently in progress.
-    \item Upon concluding the physical intervention, the authority updates the smart contract to mark the issue as solved, which temporarily shifts the report into a pending verification state.
-    \item The community conducts a final, physical review of the repaired site. An acceptance consensus transitions the report to the terminal closed state, whereas a rejection consensus reopens the issue, mandating the authority to rectify the inadequate repair.
+    \item Upon concluding the physical intervention, the authority updates the smart contract to mark the issue as solved. This will transition the report into a pending verification state, awaiting community feedback on the repair quality.
+    \item The citizen then verify the issue is fixed or not. If the citizen accept, the report is closed. If the citizen reject, the report is reopened and goes back to the authority dashboard for further action.
 \end{enumerate}
 
 \subsubsection{Report Submission Workflow}
-The report submission workflow represents the core operational pipeline of the framework. It delegates heavy computational tasks, such as content moderation and file storage, to off-chain middleware, ensuring the blockchain remains a lightweight and gas-efficient state machine. The workflow is shown in Figure~\ref{fig:report_submission_workflow}.
+The report submission workflow represent how the citizen can submit a report annonymously to the system, and how system verify the report, give moderation verdict, how the report is stored in IPFS and how the report is anchored to the blockchain. The workflow also shows how the relayer and the AI moderation service work together to ensure that only valid reports are stored in IPFS and submitted to the blockchain. The report submission workflow is shown in the Figure~\ref{fig:report_submission_workflow}.
 
 \begin{figure}[p]
     \centering
@@ -282,19 +282,18 @@ The report submission workflow represents the core operational pipeline of the f
 
 When a citizen initiates a civic issue report, the system executes the following deterministic pipeline:
 \begin{enumerate}
-    \item The citizen drafts a description of the civic issue and optionally attaches multimedia evidence via the frontend interface.
-    \item The frontend application selects one unused signed ticket from the local batch. It generates a cryptographic hash combining the issue description and the ticket identifier, and subsequently signs this hash using the citizen's local wallet private key.
-    \item The application transmits the complete payload, including the raw text, media files, government-signed ticket, and the citizen's signature, to the backend relayer via a secure HTTP request.
-    \item The backend relayer performs a strict dual-layer cryptographic verification. First, it fetches the Government Authority public key to verify the authenticity of the ticket. Second, it verifies the citizen's signature against the payload hash to detect any tampering during transit.
-    \item If cryptographic verification succeeds, the relayer routes the submitted text and media to the AI moderation ensemble. The AI moderation ensemble evaluates the report using three oracle workers. The Safety Oracle checks toxic text and unsafe image content. The Spam and Abuse Oracle checks spam and low-quality text patterns. The Civic Relevance Oracle checks whether the submission appears to describe a valid civic issue. The aggregator combines these oracle votes and returns a final ACCEPT or REJECT decision, along with confidence values, report hash, decision hash, and an aggregator signature.
-    \item  Upon receiving an ACCEPT verdict from the AI oracle, the backend relayer uploads the approved report content and media files to IPFS. The IPFS network returns immutable CIDs representing the stored content. If the oracle returns a REJECT verdict, the relayer stops the workflow and the report is not uploaded to IPFS or submitted to the smart contract.
-    \item The relayer formulates a blockchain transaction containing only the lightweight \ac{IPFS} \ac{CID} and the ticket identifier. To ensure a gasless experience for the citizen, the relayer signs this transaction with its own wallet and pays the necessary network fees.
-    \item The Reporting smart contract receives the transaction. It immediately checks the provided ticket identifier against its internal nullifier mapping to prevent replay attacks and duplicate submissions.
-    \item Once the nullifier is marked as consumed, the smart contract successfully anchors the report to the ledger, initializing it in the Pending Validation state to await community consensus.
+    \item The citizen selects a category for the report, write the description, and attach optional media files. The DApp hashes the report content and signs it with the citizen's local wallet private key.
+    \item The web dapp send POST request to the backend relayer with the complete payload, including the raw text, media files, government-signed ticket, and the citizen's signature  via a secure HTTPS request.
+    \item The backend relayer perform cryptographic verification of the payload. It first confirm the ticket is valid and signed by the government authority. Then its verify the citien signature and the integrity of the report.
+    \item If the verification is successful, the relayer forwards the report content and media to the AI moderation service for content evaluation. If the verification fails, the relayer rejects the submission and returns an error response to the DApp, prompting the citizen to correct any issues before resubmission.   
+    \item  Upon receiving an ACCEPT verdict from the AI oracle, the relayer upload the text and media of the report to IPFS and get the corresponding CIDs and content hashes.
+    \item The relayer then constructs a transaction payload containing the IPFS CIDs, content hashes, and the original government-signed ticket identifier. The relayer signs this payload with its own wallet private key and submits it to the reporting smart contract on the blockchain.
+    \item The smart contract verifies the relayer's signature and checks that the ticket nullifier has not been previously used. If the verification fails, the transaction is rejected, and the report is not anchored to the blockchain. The relayer receives a failure response and can log this event for auditing purposes.
+    \item Once the nullifier is marked as consumed, the smart contract add the report to the blockchain ledger.
 \end{enumerate}
 
 \subsubsection{Community Consensus and Validation Workflow}
-This workflow outlines the mechanism by which the decentralized community filters out spam and validates the legitimacy of submitted civic issues. It ensures that only genuine reports escalate to the government authorities, thereby optimizing resource allocation. The workflow is shown in Figure~\ref{fig:community_validation_workflow}.
+The community consensus and validation workflow describes the process of how to filter out spam and also validate the legitimacy of the submitted reports. Therefore it ensures that only the genuine reports are escalated to the local governance. The workflow is shown in the Figure~\ref{fig:community_validation_workflow}.
 
 \begin{figure}[p]
     \centering
