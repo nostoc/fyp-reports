@@ -717,29 +717,21 @@ At the current stage of development, the system operates with a single IPFS node
     \label{fig:oracle-architecture}
 \end{figure}
 
-The AI moderation subsystem is implemented as an off-chain oracle service. It is placed between the backend relayer and the IPFS/blockchain submission stage. This ensures that harmful, spam, irrelevant, or unsafe content is filtered before it is permanently stored or referenced by the blockchain.
+The AI moderation subsystem is implemented as an off-chain oracle service. It is placed between the backend relayer and the IPFS submission stage. This ensures that harmful, spam, irrelevant, or unsafe content is filtered before it is permanently stored or referenced by the blockchain.
 
 The moderation service is designed as a containerized oracle network. It contains one aggregator service and three oracle worker services. The backend relayer communicates only with the aggregator. The aggregator then communicates with the oracle workers using internal Docker networking. This keeps the worker services isolated from public access and exposes only one controlled moderation API to the rest of the system.  This architecture is demonstrated in Figure~\ref{fig:oracle-architecture}.
 
 The implemented oracle workers are as follows:
 
 \begin{itemize}
-    \item \textbf{Safety Oracle:} This oracle checks whether submitted text or images
-    contain unsafe content. For text, it checks toxic, abusive, and threatening
-    patterns. For images, it performs image safety moderation using a pre-trained
-    image classification model to detect unsafe visual content.
+    \item \textbf{Safety Oracle:} This oracle checks whether submitted text or images contain unsafe content. For text, it checks toxic, abusive, and threatening patterns using \texttt{unitary/toxic-bert}. For image moderation it uses pre-trained \texttt{Falconsai/nsfw\_image\_detection} to detect unsafe visual content.
 
-    \item \textbf{Spam and Abuse Oracle:} This oracle checks whether the submitted
-    report contains spam-like or low-quality text. It detects promotional phrases,
-    repeated symbols, suspicious URLs, very short descriptions, and common spam
-    patterns.
+    \item \textbf{Spam and Abuse Oracle:} This oracle checks whether the submitted report contains spam-like or low-quality text. It detects promotional phrases, repeated symbols, suspicious URLs, very short descriptions, and common spam patterns.It combines rule-based checks with lightweight NLP model \texttt{mrm8488/bert-tiny-finetuned-sms-spam-detection}.
 
     \item \textbf{Civic Relevance Oracle:} This oracle checks whether the submitted
-    report is related to a public or local governance issue. It uses category and
-    keyword-based logic to identify reports related to road damage, waste
-    management, drainage, water supply, streetlights, flooding, traffic safety,
-    public property damage, and environmental issues.
+    report is related to a public or local governance issue. It uses sentence-transformer model \texttt{sentence-transformers/all-MiniLM-L6-v2} to compare the report text against predefined civic issue descriptions, such as road damage, waste management, drainage, water supply, streetlights, flooding, traffic safety, public property damage, and environmental issues.
 \end{itemize}
+
 
 Each oracle returns a structured vote containing the oracle identifier, vote, confidence value, explanation code, model or rule version, and additional details. The accepted vote values are ACCEPT and REJECT. The system does not currently use a manual REVIEW state because that would introduce a central human moderation dependency. Instead, unclear or low-quality reports are rejected and the citizen can resubmit a clearer report.
 
