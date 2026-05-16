@@ -305,11 +305,10 @@ The community consensus and validation workflow describes the process of how to 
 The validation process executes through the following steps:
 \begin{enumerate}
     \item A newly submitted report enters the Pending Validation state on the smart contract and becomes visible on the community feed within the decentralized application.
-    \item A registered citizen physically observes the issue in the real world and decides to corroborate the report.
-    \item The citizen utilizes the application to cast an upvote. To ensure Sybil resistance, the application binds a new, unused Zero-Knowledge ticket from the citizen's local batch to this specific vote and signs the payload.
-    \item The backend relayer intercepts the voting payload, cryptographically verifies the ticket and signature, and submits the vote to the smart contract.
+    \item Citizens can review the report, and if they also agree on that, they can cast an upvote to validate the report. This voting mechanism is designed to be Sybil-resistant, ensuring that each citizen can only cast one vote per report.
+    \item The backend relayer verify the citizen's vote by checking the validity of the ticket used for voting and ensuring that the same ticket has not been used..
     \item The smart contract verifies that the ticket nullifier has not been used for this specific voting phase of this specific report.
-    \item The contract increments the vote tally. Once the tally surpasses the predefined validation threshold, the smart contract automatically executes a state transition, moving the report from Pending Validation to the Open state, making it actionable for authorities.
+    \item The contract increments the vote tally. Once the time duration for voting ends by using lazy evaluation method, contract calculate the majority votes and change the state of the report to Open or Rejected accordingly.
 \end{enumerate}
 
 \subsubsection{Authority Resolution and Action Workflow}
@@ -324,11 +323,11 @@ This workflow defines how authorized government or non-governmental organization
 
 The authority interaction proceeds as follows:
 \begin{enumerate}
-    \item The government authority monitors the blockchain state via a dedicated dashboard, filtering for reports that have successfully reached the Open state.
-    \item Upon dispatching a physical repair crew to the location, the authority submits a transaction to the smart contract invoking the state change function.
+    \item The government authority monitors the opened reports through the seperate DApp dashboard for authorities. 
+    \item If the government decides to take action on a report, they can change the state of the report from Open to In Progress state notifying the community that the issue is being addressed.
     \item The smart contract validates the transaction signature against its \ac{RBAC} list to ensure the sender possesses the required authority permissions.
     \item Upon permission validation, the contract updates the report state from Open to In Progress, providing real-time transparency to the observing community.
-    \item Once the physical repair is concluded, the authority submits a subsequent transaction to mark the issue as solved.
+    \item Once the issue is solved govenment can update the report state to Solved. This action is also validated against the authority's permissions and logged on the blockchain.
     \item The smart contract processes this transaction and transitions the report into the Pending Verification state, temporarily halting the authority's involvement until the community responds.
 \end{enumerate}
 
@@ -345,12 +344,11 @@ The final workflow enforces the system's core accountability mechanism. It guara
 
 The verification process executes as follows:
 \begin{enumerate}
-    \item Citizens in the vicinity of the purportedly resolved issue inspect the physical location to confirm the repair quality.
-    \item Citizens utilize the decentralized application to cast a verification vote (accepting or rejecting the repair), utilizing the same secure, ticket-based nullifier mechanism to ensure one-citizen-one-vote integrity.
+    \item Citizens can physically verify the repair work or the problem actually solved.
+    \item Then Citizens utilize the application to cast a verification vote (accepting or rejecting the repair), utilizing the same secure, ticket-based nullifier mechanism to ensure one-citizen-one-vote integrity.
     \item The backend relayer processes and forwards these verification votes to the smart contract.
-    \item If the positive verification votes reach the required threshold, the smart contract transitions the report to the terminal Closed state, permanently archiving the successful resolution.
-    \item Conversely, if the negative votes reach the rejection threshold (indicating a poor or non-existent repair), the smart contract transitions the report to the Reopened state.
-    \item A transition to the Reopened state forces the report back onto the authority's active dashboard, mandating further physical intervention and a repetition of the resolution workflow.
+    \item If the positive verification votes have the majority when the time duration for voting ends, the smart contract transitions the report to the Closed state, indicating that the issue has been satisfactorily resolved and no further action is required.
+    \item Conversely, if the negative votes have the majority or if the votes are tied, the smart contract reopens the report by transitioning it back to the Open state. This signals to the authorities that further action is needed and allows the community to continue monitoring the issue until a satisfactory resolution is achieved.
 \end{enumerate}
 
 % authentication,
@@ -597,8 +595,9 @@ The core infrastructure of the proposed system is the private permissioned block
 \end{sloppypar}
 
 \begin{itemize}
-    \item {Geth PoA Network Setup:} A private permissioned Ethereum-compatible network was initialized using the Go Ethereum client. The network was configured to operate in proof-of-authority consensus mode, specifically using the Clique algorithm. This enabled faster block confirmation and lower energy consumption compared to traditional proof-of-work systems. A custom genesis file was created to define network parameters, including the initial set of authorized signers and the chain ID.
-    \item {Validator Node Configuration:} Minimum of three full nodes were required to act as an validator. The 3 nodes are deployed in a personal vps infrastructure. Each node is configured with a unique cryptographic identity and their addresses were added to the list of authorized sealers within the consensus engine to manage transaction validation authority.
+    \item {Geth \ac{PoA} Network Setup:} A private permissioned Ethereum-compatible network was initialized using the Go Ethereum client. The network was configured to operate in \ac{PoA} consensus mode, specifically using the Clique algorithm. This enabled faster block confirmation and lower energy consumption compared to traditional \ac{PoW} systems. A custom genesis file was created to define network parameters, including the initial set of authorized signers and the chain ID.
+    
+    \item {Validator Node Configuration:} Minimum of three full nodes were required to act as an validator. The 3 nodes are deployed in a personal \ac{VPS} infrastructure. Each node is configured with a unique cryptographic identity and their addresses were added to the list of authorized sealers within the consensus engine to manage transaction validation authority.
 
     \item {Network Security Measures:} To communicate with the blockchain network, secure \ac{RPC} endpoint was established for node 4. Node 4 is a non-validator node. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
 \end{itemize}
@@ -640,7 +639,7 @@ A fundamental challenge in anonymous decentralized systems is preventing Sybil a
     \label{fig:state-transition}
 \end{figure}
 
-To enforce accountability and prevent unilateral dismissals of civic issues by authorities, the contract implements a strict Finite State Machine (\ac{FSM}). Every submitted report strictly adheres to an 8-stage lifecycle managed via an on-chain enum:
+To enforce accountability and prevent solely rejection of civic issues by authorities, the contract implements a strict Finite State Machine (\ac{FSM}). Every submitted report strictly adheres to an 8-stage lifecycle managed via an on-chain enum:
 \begin{enumerate}
     \item Pending Validation: Initial state awaiting community confirmation of legitimacy.
     \item Community Rejected: Terminal state for spam or invalid issues.
@@ -654,9 +653,9 @@ To enforce accountability and prevent unilateral dismissals of civic issues by a
 
 A report must traverse these specific states driven by a combination of authority actions and community consensus thresholds.
 \begin{enumerate}
-    \item Community-Driven Transitions: When a report is submitted, it enters the Pending Validation state. The transition to the Open state (making it visible for government action) only occurs automatically via the \_changeStatus() internal function once community upvotes reach the predefined VALIDATION\_THRESHOLD. Conversely, reaching the REJECTION\_THRESHOLD moves it to the terminal Community Rejected state.
+    \item Community-Driven Transitions: When a report is submitted, it enters the Pending Validation state. The transition to the Open state (making it visible for government action) only occurs automatically via the \_changeStatus() function once the report receives a majority of upvotes from the community when time duration for voting ends.
     \item Authority-Driven Transitions: Authorities can only interact with reports in the Open, Reopened, or In Progress states. An authority calling startWork() shifts an Open or Reopened issue to the In Progress state, providing transparency to citizens that action is underway. From the In Progress state, calling markAsSolved() shifts the report to Pending Verification. Additionally, calling rejectIssue() from the Open or In Progress states shifts it to Pending Rejection Review.
-    \item Consensus Verification: The FSM mandates that authority actions are never final until verified by the community. If an authority marks an issue as solved, the community must vote to verify the physical fix. Achieving the verification threshold transitions the report to the terminal Closed state. If the community rejects the fix, the state transitions to Reopened, forcing the authority to address the issue again.
+    \item Consensus Verification: The FSM mandates that authority actions are never final until verified by the community. If an authority marks an issue as solved, the community must vote to verify the physical fix. If the majority votes to accept the fix, the report transitions to Closed. If the majority votes to reject the fix, the report transitions back to Reopened, signaling that further work is needed and allowing the community to continue monitoring the issue until a satisfactory resolution is achieved.
 \end{enumerate}
 
 \subsection{Identity and Access Control Implementation}
@@ -664,7 +663,7 @@ A report must traverse these specific states driven by a combination of authorit
 To satisfy the project's requirement for privacy-preserving accountability, an identity decoupling mechanism was successfully developed. This subsystem ensures that citizens can interact with the blockchain anonymously while remaining verified by an off-chain authority. The implementation was structured into three main components
 
 \begin{itemize}
-    \item {GovID Simulator:} An off-chain simulated identity server was developed and deployed to a personal Virtual Private Server (\ac{VPS}). This service acts as the trusted authority for verifying real-world identities. A dedicated API endpoint (/api/govid/verify-citizen) was implemented to securely authenticate users via their National Identity Number (govId) and a password, bridging the gap between traditional web authentication and decentralized access.
+    \item {GovID Simulator:} An off-chain simulated identity server was developed and deployed to a personal \ac{VPS}. This service acts as the trusted authority for verifying real-world identities. A dedicated API endpoint (/api/govid/verify-citizen) was implemented to securely authenticate users via their National Identity Number (govId) and a password, bridging the gap between traditional web authentication and decentralized access.
     \item {Citizen Keypair generation:} To completely decouple a user's real identity from their on-chain footprint, the identity server does not store or transmit blockchain addresses. Instead, upon successful authentication, the simulator generates and returns a secure, 256-bit citizenSeed. This cryptographic seed is then used by the client-side DApp to deterministically generate an anonymous public-private keypair, allowing the citizen to interact securely with smart contracts without exposing personal data.
     \item {Ticket Batch Generation:} To facilitate multiple secure, anonymous report submissions over time, the simulator implements a batch authorization protocol. During authentication, the server generates a structured ticketBatch (currently configured to issue 10 tickets per request). Each ticket contains a unique ticketId (a cryptographic hash) and a signature signed by the Identity Authority's private key. Citizens use these single-use tickets to authorize their transactions on-chain. The backend relayer validates the authority's signature on the ticket, granting access without ever knowing which specific citizen is submitting the report.
 \end{itemize}
