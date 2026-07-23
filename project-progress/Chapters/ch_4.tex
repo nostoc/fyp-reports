@@ -151,7 +151,7 @@ The most rigorous testing phase will evaluate the strict 8-stage lifecycle of a 
     \item Thresholds and Benchmarks: The testing benchmark mandates 100 percent branch and statement coverage for all state transition functions. The system must yield zero successful unauthorized state bypasses, enforcing absolute adherence to the 8-stage consensus lifecycle.
 \end{enumerate}
 
-\section{AI Moderation Testing}
+\subsection{AI Moderation Testing}
 
 % Metrics:
 
@@ -197,7 +197,7 @@ communicates with the three oracle workers using internal container networking.
 This design prevents direct external access to the oracle workers and keeps the
 moderation workflow controlled through the aggregator.
 
-\subsection{API Availability and Security Tests}
+\subsubsection{API Availability and Security Tests}
 The first set of tests verifies whether the deployed oracle API is reachable and
 whether unauthorized requests are rejected. These tests are important because
 only the backend relayer should be able to call the moderation API successfully.
@@ -228,7 +228,7 @@ AI-T07 & Send expired timestamp & Request is rejected & Passed \\
 \label{tab:ai_api_tests}
 \end{table}
 
-\subsection{Text Moderation Classification Tests}
+\subsubsection{Text Moderation Classification Tests}
 
 The next set of tests evaluates text moderation behavior. The test cases include
 valid civic reports, spam reports, threatening content, empty reports, and non-civic
@@ -260,7 +260,7 @@ AI-T13 & Empty report & Empty text field & Validation error / REJECT & Passed \\
 \label{tab:ai_classification_tests}
 \end{table}
 
-\subsection{Oracle Voting Validation}
+\subsubsection{Oracle Voting Validation}
 
 The oracle moderation system uses three oracle workers. Each oracle returns either
 ACCEPT or REJECT. The aggregator combines the votes using a safety-prioritized
@@ -291,7 +291,7 @@ Critical safety violation detected & REJECT \\
 \label{tab:oracle_voting_validation}
 \end{table}
 
-\subsection{Response Structure Validation}
+\subsubsection{Response Structure Validation}
 Each successful oracle response should include the fields shown in Table
 \ref{tab:oracle-response-fields}. These fields support auditability, debugging, and
 tamper-evidence in the moderation workflow.
@@ -335,7 +335,7 @@ aggregated ACCEPT or REJECT decision. The tests also confirm that unsafe image
 content can be rejected before IPFS upload and blockchain submission.
 
 
-\section{IPFS Storage Testing}
+\subsection{IPFS Storage Testing}
 
 
 The system uses IPFS to store images sent by citizens. Saving images directly on the blockchain is too costly. So the system saves images on IPFS instead. When an image is approved, the server sends it to the IPFS service. The IPFS service saves the image and returns a short code called a CID. The CID is made from the image content. If the image changes, the CID changes too. This makes sure the image stays as it is. The server then saves the CID and the report on the blockchain.
@@ -355,7 +355,7 @@ Once the backend connects to the AI tool, moderation testing will be done. This 
 When the blockchain part is ready, end-to-end testing will be done. This will check the full flow. From the citizen sending a report, to the image being saved, to the CID going on the blockchain. Everything will be checked together.
 
 Finally, load testing will be done. Many images will be sent at the same time. The system will be checked to see how well it handles that. The plan to use three IPFS nodes on three different machines will also be tested. This will confirm that if one node fails, the others still work.
-\section{End-to-End Integration Testing}
+\subsection{End-to-End Integration Testing}
 
 To ensure the seamless operation of the entire platform, end-to-end integration testing will be conducted by simulating the complete lifecycle of a civic issue report. This testing phase will verify the interoperability between the frontend DApp, the backend relayer, the IPFS storage network, the AI moderation oracle, and the underlying permissioned blockchain.
 
