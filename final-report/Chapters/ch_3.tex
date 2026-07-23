@@ -1,0 +1,789 @@
+\chapter{Methodology and Implementation}
+
+\section{Methodology}
+This section explains the design followed to develop the proposed framework. It describes how the project objectives were translated into system requirements, how the main components were identified, and why a modular prototype-based approach was selected. The methodology also explains the reasoning behind the selected technologies, workflows, and suggested evaluation approaches.
+
+The proposed system is evaluated through controlled subsystem testing and integration testing. Since the project combines blockchain, privacy-preserving identity, off-chain storage, AI moderation, and a web-based DApp, each component is first designed and validated separately. The components are then integrated through defined APIs, cryptographic data formats, and deployment configurations to evaluate the complete report submission workflow.
+
+\subsection{Research Methodology}
+% Explain:
+% prototype-oriented approach,
+% modular architecture,
+% experimental evaluation.
+
+This project follows a design-oriented and prototype-based research methodology. 
+The main objective is to design, implement, and evaluate a blockchain-based, 
+community-assisted, privacy-preserving reporting framework for local governance. 
+The system is developed as a functional prototype within a controlled experimental 
+environment rather than as a large-scale production deployment.
+
+The research approach is based on identifying the limitations of existing centralized 
+citizen reporting platforms and designing a decentralized alternative that improves 
+transparency, integrity, anonymity, and trustworthiness. The project combines several 
+technologies, including a private permissioned blockchain, smart contracts, a simulated 
+identity verification mechanism, off-chain storage, AI-assisted content moderation, a 
+backend relayer, and a web-based decentralized application.
+
+The system is developed using an incremental and modular development approach. 
+First, the functional and non-functional requirements of the system are identified. 
+Based on these requirements, the overall architecture and system components are 
+designed. Each major subsystem is then implemented and tested independently before 
+being integrated into the complete reporting workflow. This reduces implementation 
+complexity and allows each team member to focus on a specific technical component 
+while maintaining compatibility with the overall architecture.
+
+Each subsystem is first validated independently. After subsystem-level testing, the 
+components are connected through defined APIs, blockchain interfaces, cryptographic 
+data formats, and deployment configurations. The main integration focus at the current 
+stage is the end-to-end report submission scenario. In this workflow, a citizen submits 
+a report through the DApp, the report is authenticated and verified by the relayer, the 
+content is moderated by the AI oracle service, accepted content is stored off-chain, and 
+the final metadata is recorded on-chain.
+
+The project also follows an experimental evaluation approach. The prototype is tested 
+using synthetic reports, manually prepared moderation test cases, safe civic images, 
+unsafe image test samples, and controlled integration scenarios. These tests are used 
+to evaluate the correctness of subsystem behavior, component interaction, security 
+checks, content moderation, and report submission flow.
+
+In addition to controlled laboratory testing, the project team has discussed a possible 
+real-world pilot deployment with the project supervisor. Upon receiving the approval from the 
+Faculty Board, the system may be deployed within the faculty 
+environment for reporting issues within the faculty. This potential pilot would provide an opportunity to evaluate the 
+practical usability, privacy expectations, and reporting workflow of the system in a 
+real-world institutional context.
+This approach follows the phased methodology described in the project proposal, where 
+requirement analysis, system design, blockchain implementation, smart contract 
+development, identity integration, IPFS integration, AI moderation, DApp development, 
+testing, and evaluation are carried out incrementally.
+
+\subsection{System Requirements Analysis}
+
+The system requirements analysis identifies the main functions and quality 
+requirements that must be satisfied by the proposed framework. These requirements 
+were derived from the project objectives, literature review findings, and the expected 
+reporting workflow of a local governance environment. The requirements are divided 
+into functional and non-functional requirements.
+
+\subsubsection{Functional Requirements}
+
+The functional requirements define the main services that the system must provide.
+
+\begin{enumerate}
+    \item \textbf{Citizen authentication:}
+    A citizen should be able to authenticate using the simulated GovID identity service.
+
+    \item \textbf{Ticket issuance:}
+    After successful verification, the identity service should issue a citizen seed and a 
+    batch of one-time ticket IDs. These tickets are used to support anonymous but 
+    verifiable participation.
+
+    \item \textbf{Report creation:}
+    A citizen should be able to create a report containing a description, category, 
+    location, timestamp, and optional media evidence.
+
+    \item \textbf{Payload signing:}
+    The DApp should hash the report payload and sign it using the 
+    citizen's local private key then send it to the backend relayer.
+
+    \item \textbf{Relayer verification:}
+    The backend relayer should verify the government-signed ticket, citizen signature, 
+    payload hash, status of the ticket before forwarding the report for content moderation.
+
+    \item \textbf{AI moderation:}
+    The report text and media should be analyzed by the AI-based content moderation service before IPFS upload and blockchain submission. The moderation service should detect spam, abusive or threatening text, non-civic content, and unsafe image content.
+
+    \item \textbf{Off-chain storage:}
+    Accepted report content and media files should be uploaded to IPFS. The returned 
+    CIDs and related hashes should be used to verify the stored content.
+
+    \item \textbf{Blockchain submission:}
+    The backend relayer should submit accepted report metadata, ticket identifiers, 
+    content hashes, and IPFS references to the reporting smart contract.
+
+    \item \textbf{Report retrieval:}
+    \item The citizens and authorized government users should be able to  read submitted reports and their current statuses from the blockchain via DApp.
+    
+    \item \textbf{Community validation:}
+    Citizens should be able to validate or reject submitted reports using a 
+    ticket-based voting mechanism.
+
+    \item \textbf{Government action workflow:}
+    The system should support government-side actions such as reviewing issues, update issue progress, update resolution of issues, and closure.
+
+    \item \textbf{Post-resolution verification:}
+    Citizens should be able to verify whether a resolved issue has actually been fixed. If the community rejects the resolution, the report should be reopened for further action.
+
+    \item \textbf{Opinion polling:}
+    Authorized government officials should be able to create public opinion polls for
+    new development proposals, policy decisions, or community-related plans. Citizens should be able to view active polls in the DApp feed and vote anonymously. 
+\end{enumerate}
+
+\subsubsection{Non-functional Requirements}
+
+The system also has several non-functional requirements.
+
+\begin{enumerate}
+    \item \textbf{Security:}
+    The system should use hashing, digital signatures, ticket validation, role-based 
+    access control, secure API communication, nonce validation, and timestamp 
+    validation where required.
+
+    \item \textbf{Privacy:}
+    Citizen identities should be decoupled from on-chain report records. The blockchain should store only pseudonymous identifiers, ticket hashes, metadata, and cryptographic references. The blockchain should not store any \ac{PII}s.
+
+    \item \textbf{Integrity:}
+    Report payloads, media hashes, AI oracle decisions, IPFS content, and blockchain 
+    records should use cryptographic hashes and digital signatures.
+
+    \item \textbf{Availability:}
+    The deployed services should remain accessible during testing, integration, and 
+    demonstration.
+
+    \item \textbf{Performance:}
+    The system should process reports within a reasonable time under prototype 
+    workloads. The system should be evaluated for practical response times.
+
+    \item \textbf{Maintainability:}
+    The system should be modular and containerized to simplify deployment, debugging, 
+    testing, and future extension.
+
+    \item \textbf{Auditability:}
+    Important workflow decisions, such as report submission, moderation decisions, 
+    vote counts, state transitions, and authority actions, should be logged or anchored through hashes, blockchain events, or signed responses.
+
+    \item \textbf{Usability:}
+    The DApp should hide unnecessary blockchain complexity from normal users. 
+    Citizens should be able to submit reports without manually paying gas fees and without directly interacting with low-level blockchain tools.
+
+    \item \textbf{Scalability:}
+    Large report content and media files should be stored off-chain so that the 
+    blockchain remains lightweight and scalable.
+\end{enumerate}
+
+\subsection{Identified System Components}
+
+Based on the above functional and non-functional requirements, the proposed system 
+is divided into several modular components. 
+
+\begin{enumerate}
+    \item Private permissioned PoA blockchain for immutable record keeping.
+    \item Web-based DApp for user interaction.
+    
+    \item ZKP GovID simulator for identity verification and ticket issuance.
+
+    \item Backend relayer for verification and workflow orchestration.
+
+    \item AI-based content moderation service for content validation.
+
+    \item IPFS off-chain storage for report content and media storage.
+
+    \item Smart contracts for report and opinion polling lifecycle management.
+
+ 
+\end{enumerate}
+
+\subsection{Proposed System Architecture}
+
+\subsubsection{Overall System Architecture}
+
+The proposed system uses a hybrid decentralized architecture that combines on-chain and off-chain components. The blockchain is responsible for storing immutable metadata, workflow states, and references to report content. Computationally intensive and large-data operations are handled off-chain through the relayer, AI moderation service, and IPFS. The overall architecture of the system is shown in the Figure~\ref{fig:overall-architecture}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter_3/overall-architecture.png}
+    \caption{High Level Architecture Diagram.}
+    \label{fig:overall-architecture}
+\end{figure}
+
+The DApp acts as the citizen-facing interface. The ZKP GovID simulator handles identity verification and ticket issuance. The backend relayer verifies signed report submissions and coordinates communication between AI moderation, IPFS, and smart contracts. The AI moderation service evaluates report content before storage and blockchain submission. IPFS stores large report data and media evidence, while the smart contracts manage the report lifecycle on the private PoA blockchain.
+
+This architecture supports the main project goal of preserving citizen anonymity while maintaining report integrity and transparency. The use of a relayer also improves usability because citizens do not need to directly manage gas payments or manually submit blockchain transactions.
+
+\subsubsection{Layered Architecture}
+
+The system can be divided into six major layers.
+
+\begin{enumerate}
+    \item User Layer: This layer consists of the citizens and government officials. 
+    \item  Presentation layer:
+This layer consists of the DApp used by citizens and government officials. It provides interfaces for login, report submission, report viewing, and future government-side actions.
+    \item Identity and authentication layer:
+This layer consists of the ZKP GovID simulator. It verifies citizens and issues citizen seeds and ticket batches. This separates real identity verification from on-chain activity.
+    \item Middleware orchestration layer:
+The backend relayer acts as the coordination layer. It receives signed report payloads, performs validations, calls AI moderation services, uploads accepted content to IPFS, and submits blockchain transactions.
+    \item Off-chain services layer:
+This layer includes the AI moderation service and IPFS storage. These components handle tasks that are unsuitable for direct blockchain execution.
+    \item Blockchain layer:
+This layer consists of the smart contracts and the private PoA blockchain. It stores immutable metadata, report states, content hashes, IPFS CIDs, and workflow events.
+
+\end{enumerate}
+
+
+\subsection{Proposed Workflow}
+\label{subsec:proposed-workflow}
+
+The proposed architecture operationalizes the decentralized reporting framework through a series of distinct, cryptographically secure workflows. These workflows ensure that civic participation remains entirely anonymous to the public and the smart contract, while simultaneously guaranteeing that only verified citizens can submit legitimate data.
+
+\subsubsection{Citizen Authentication and Identity Workflow}
+The authentication workflow bridges real-world civic identity with anonymous on-chain participation without exposing \ac{PII} to the blockchain network. This is achieved through the integration of the ZKP-GovID Simulator, which acts as the centralized trust anchor for identity verification. The workflow is shown in Figure~\ref{fig:authentication_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/authentication_workflow.png}
+    \caption{Citizen Authentication and Identity Workflow}
+    \label{fig:authentication_workflow}
+\end{figure}
+
+
+
+The step-by-step authentication process is as follows. 
+\begin{enumerate}
+    \item The citizen inputs their official national identification number and password to frontend of the \ac{DApp}. 
+    \item \ac{DApp} transmits the credentials to the ZKP-GovID Simulator for verification against the mock government database.
+    \item If the credentials are validated, ZKP-GovID simulator generates a batch of randomized, single-use ticket identifiers. These identifiers contain no personal data and serve purely as cryptographic tokens.
+    \item ZKP-GovID simulator uses private key of the  Government Authority  to cryptographically sign each randomized ticket identifier.
+    \item The generated batch of signed tickets, along with a citizen seed value, is returned to the decentralized application and stored securely in the local browser environment.
+\end{enumerate}
+
+\subsubsection{Overall System Lifecycle Workflow}
+The overall system workflow is a combination of seperate steps, which are described in detail in the following subsections. This workflow tracks a report from the moment a citizen creates it until the government resolves it and the repair is verified. The complete lifecycle is shown in Figure~\ref{fig:overall_workflow}. It demonstrate how the AI moderation, IPFS, Backend Relayer and all other work together.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/overall_reporting_workflow.png}
+    \caption{Overall lifecycle workflow of a civic issue within the decentralized framework.}
+    \label{fig:overall_workflow}
+\end{figure}
+
+The progression of a civic report executes sequentially as follows:
+\begin{enumerate}
+    \item The lifecycle starts with the citizen logging into the Dapp via the ZKP-GovID simulator, which verifies their identity and issues a batch of signed tickets.
+    \item Utilizing an acquired ticket, the citizen write the report description, attach images, and submit the report through the DApp interface. The DApp hashes the report content and signs it with the citizen's local wallet private key, then sends the payload to the backend relayer.
+    \item The backend relayer performs a strict dual-layer cryptographic verification of the payload, ensuring the authenticity of the government-signed ticket and the integrity of the citizen's signature. And also send content to AI moderation and for IPFS upload if accepted.
+    \item The relayer then create the blockchain transaction containing the IPFS CID and ticket identifier, signs it with its own wallet, and submits it to the reporting smart contract.
+    \item The local community vote for pending reports. Once a report receives enough votes, the smart contract automatically transitions it to the Open state, making it actionable for authorities.
+    \item The assigned authority acknowledges the validated issue and triggers a state transition to indicate that active, physical repairs are currently in progress.
+    \item Upon concluding the physical intervention, the authority updates the smart contract to mark the issue as solved. This will transition the report into a pending verification state, awaiting community feedback on the repair quality.
+    \item The citizen then verify the issue is fixed or not. If the citizen accept, the report is closed. If the citizen reject, the report is reopened and goes back to the authority dashboard for further action.
+\end{enumerate}
+
+\subsubsection{Report Submission Workflow}
+The report submission workflow represent how the citizen can submit a report annonymously to the system, and how system verify the report, give moderation verdict, how the report is stored in IPFS and how the report is anchored to the blockchain. The workflow also shows how the relayer and the AI moderation service work together to ensure that only valid reports are stored in IPFS and submitted to the blockchain. The report submission workflow is shown in the Figure~\ref{fig:report_submission_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/report_submission_workflow.png}
+    \caption{Report Submission Workflow}
+    \label{fig:report_submission_workflow}
+\end{figure}
+
+
+
+When a citizen initiates a civic issue report, the system executes the following deterministic pipeline:
+\begin{enumerate}
+    \item The citizen selects a category for the report, write the description, and attach optional media files. The DApp hashes the report content and signs it with the citizen's local wallet private key.
+    \item The web dapp send POST request to the backend relayer with the complete payload, including the raw text, media files, government-signed ticket, and the citizen's signature  via a secure HTTPS request.
+    \item The backend relayer perform cryptographic verification of the payload. It first confirm the ticket is valid and signed by the government authority. Then its verify the citien signature and the integrity of the report.
+    \item If the verification is successful, the relayer forwards the report content and media to the AI moderation service for content evaluation. If the verification fails, the relayer rejects the submission and returns an error response to the DApp, prompting the citizen to correct any issues before resubmission.   
+    \item  Upon receiving an ACCEPT verdict from the AI oracle, the relayer upload the text and media of the report to IPFS and get the corresponding CIDs and content hashes.
+    \item The relayer then constructs a transaction payload containing the IPFS CIDs, content hashes, and the original government-signed ticket identifier. The relayer signs this payload with its own wallet private key and submits it to the reporting smart contract on the blockchain.
+    \item The smart contract verifies the relayer's signature and checks that the ticket nullifier has not been previously used. If the verification fails, the transaction is rejected, and the report is not anchored to the blockchain. The relayer receives a failure response and can log this event for auditing purposes.
+    \item Once the nullifier is marked as consumed, the smart contract add the report to the blockchain ledger.
+\end{enumerate}
+
+\subsubsection{Community Consensus and Validation Workflow}
+The community consensus and validation workflow describes the process of how to filter out spam and also validate the legitimacy of the submitted reports. Therefore it ensures that only the genuine reports are escalated to the local governance. The workflow is shown in the Figure~\ref{fig:community_validation_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/community_validation_workflow.png}
+    \caption{Community Validation Workflow}
+    \label{fig:community_validation_workflow}
+\end{figure}
+
+The validation process executes through the following steps:
+\begin{enumerate}
+    \item A newly submitted report enters the Pending Validation state on the smart contract and becomes visible on the community feed within the decentralized application.
+    \item Citizens can review the report, and if they also agree on that, they can cast an upvote to validate the report. This voting mechanism is designed to be Sybil-resistant, ensuring that each citizen can only cast one vote per report.
+    \item The backend relayer verify the citizen's vote by checking the validity of the ticket used for voting and ensuring that the same ticket has not been used..
+    \item The smart contract verifies that the ticket nullifier has not been used for this specific voting phase of this specific report.
+    \item The contract increments the vote tally. Once the time duration for voting ends by using lazy evaluation method, contract calculate the majority votes and change the state of the report to Open or Rejected accordingly.
+\end{enumerate}
+
+\subsubsection{Authority Resolution and Action Workflow}
+This workflow defines how authorized government or non-governmental organization nodes interact with the validated civic issues on the blockchain. It establishes the transparency of the physical repair process. The workflow is shown in Figure~\ref{fig:authority_action_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/authority_action_workflow.png}
+    \caption{Authority Resolution and Action Workflow}
+    \label{fig:authority_action_workflow}
+\end{figure}
+
+The authority interaction proceeds as follows:
+\begin{enumerate}
+    \item The government authority monitors the opened reports through the seperate DApp dashboard for authorities. 
+    \item If the government decides to take action on a report, they can change the state of the report from Open to In Progress state notifying the community that the issue is being addressed.
+    \item The smart contract validates the transaction signature against its \ac{RBAC} list to ensure the sender possesses the required authority permissions.
+    \item Upon permission validation, the contract updates the report state from Open to In Progress, providing real-time transparency to the observing community.
+    \item Once the issue is solved govenment can update the report state to Solved. This action is also validated against the authority's permissions and logged on the blockchain.
+    \item The smart contract processes this transaction and transitions the report into the Pending Verification state, temporarily halting the authority's involvement until the community responds.
+\end{enumerate}
+
+\subsubsection{Post-Resolution Verification and Appeal Workflow}
+The final workflow enforces the system's core accountability mechanism. It guarantees that government authorities cannot unilaterally close a report without the community physically confirming that the job was completed satisfactorily. The workflow is shown in Figure~\ref{fig:post_resolution_verification_workflow}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/post_resolution_verification_workflow.png}
+    \caption{Post-Resolution Verification and Appeal Workflow}
+    \label{fig:post_resolution_verification_workflow}
+\end{figure}
+
+
+The verification process executes as follows:
+\begin{enumerate}
+    \item Citizens can physically verify the repair work or the problem actually solved.
+    \item Then Citizens utilize the application to cast a verification vote (accepting or rejecting the repair), utilizing the same secure, ticket-based nullifier mechanism to ensure one-citizen-one-vote integrity.
+    \item The backend relayer processes and forwards these verification votes to the smart contract.
+    \item If the positive verification votes have the majority when the time duration for voting ends, the smart contract transitions the report to the Closed state, indicating that the issue has been satisfactorily resolved and no further action is required.
+    \item Conversely, if the negative votes have the majority or if the votes are tied, the smart contract reopens the report by transitioning it back to the Open state. This signals to the authorities that further action is needed and allows the community to continue monitoring the issue until a satisfactory resolution is achieved.
+\end{enumerate}
+
+% authentication,
+% report creation,
+% moderation,
+% blockchain anchoring.
+
+% Insert:
+
+% workflow diagram.
+
+\subsection{Project Plan and Timeline}
+
+
+\subsubsection{Project Plan}
+
+The project plan is organized according to the main implementation phases of the system. Each phase focuses on a specific part of the proposed framework and contributes to the final integrated prototype. Table~\ref{tab:project_plan} summarizes the major phases, key activities, expected outputs, and current progress status.
+
+\begin{longtable}{|p{3.2cm}|p{5.2cm}|p{4.2cm}|p{2.2cm}|}
+\caption{Project plan and current progress}
+\label{tab:project_plan} \\
+\hline
+\textbf{Phase} & \textbf{Main Activities} & \textbf{Expected Output} & \textbf{Current Status} \\
+\hline
+\endfirsthead
+
+\multicolumn{4}{c}{\textit{Table~\ref{tab:project_plan} continued}} \\
+\hline
+\textbf{Phase} & \textbf{Main Activities} & \textbf{Expected Output} & \textbf{Current Status} \\
+\hline
+\endhead
+
+\hline
+\multicolumn{4}{r}{\textit{Continued on next page}} \\
+\endfoot
+
+\hline
+\endlastfoot
+
+Background Study and Literature Review
+& Study existing e-governance systems, blockchain-based reporting platforms, PoA consensus, IPFS, AI moderation, and DApp usability.
+& Identification of research gap and technical foundation.
+& Completed \\
+\hline
+
+Requirement Analysis
+& Define functional and non-functional requirements for citizens, government officials, relayer, blockchain, storage, and moderation components.
+& Requirement specification and use-case understanding.
+& Completed \\
+\hline
+
+System Design
+& Design overall architecture, component interactions, report submission workflow, identity model, and deployment architecture.
+& High-level system design and workflow diagrams.
+& Completed \\
+\hline
+
+Permissioned Blockchain Setup
+& Configure private Geth blockchain, PoA consensus, validator nodes, and RPC access.
+& Working private permissioned blockchain network.
+& Completed \\
+\hline
+
+Smart Contract Development
+& Implement report creation, report state management, access control, ticket validation, and event emission.
+& Reporting smart contract for managing issue lifecycle.
+& In Progress \\
+\hline
+
+Identity and Access Control
+& Implement simulated GovID verification, citizen seed generation, ticket batch generation, and pseudonymous key generation.
+& Privacy-preserving identity and access control mechanism.
+& Partially Completed \\
+\hline
+
+Backend Relayer Development
+& Implement payload validation, citizen signature verification, ticket validation, oracle communication, IPFS upload, and smart contract transaction submission.
+& Middleware service connecting DApp, oracle, IPFS, and blockchain.
+& In Progress \\
+\hline
+
+AI Content Moderation Service &
+Implement three oracle workers, aggregator, voting logic, relayer request
+signature verification, text moderation, image safety moderation, decision hashing,
+and containerized VPS deployment. &
+Deployed AI moderation service supporting text moderation, image safety
+moderation, oracle voting, and signed aggregator decisions. &
+Completed and Integrated with Relayer \\
+\hline
+
+IPFS Off-chain Storage Integration
+& Upload report content and media to IPFS, retrieve CIDs, and verify file integrity using hashes.
+& Off-chain storage mechanism for report evidence.
+& In Progress \\
+\hline
+
+Web-based DApp Development
+& Develop citizen login, report submission, report viewing, category selection, and future government-side interfaces.
+& User-facing web application.
+& In Progress \\
+\hline
+
+Subsystem Testing
+& Test DApp, smart contracts, AI oracle service, GovID simulator, IPFS, and relayer independently.
+& Verified subsystem behavior.
+& In Progress \\
+\hline
+
+System Integration and Evaluation
+& Integrate all components and test the full report submission workflow from DApp to blockchain.
+& Functional end-to-end prototype and evaluation results.
+& Pending \\
+\hline
+
+Final Demonstration
+& Prepare final system demo, report, and presentation.
+& Demonstrable prototype and final documentation.
+& Pending \\
+\hline
+
+\end{longtable}
+\clearpage
+
+\subsubsection{Project Timeline}
+
+The project is planned to be completed over two academic semesters using an incremental development approach. The work is divided into several phases, starting from background study and requirement analysis, followed by system design, subsystem implementation, integration, testing, and final evaluation.
+
+The timeline shown in Figure~\ref{fig:ganttchart} was prepared to guide the development process and to allocate sufficient time for each major component of the system. Since this is a progress report, some implementation activities are still ongoing. At the current stage, the main focus is on completing subsystem implementation and moving toward full system integration for the report submission workflow.
+
+\begin{sidewaysfigure}[!p]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    
+    \begin{ganttchart}[
+        vgrid={*1{draw=gridgray}},
+        hgrid={draw=gridgray},
+        y unit chart=0.7cm,
+        x unit=0.4cm,
+        title label font=\color{black},
+        title/.style={draw=gray!50, line width=0.5pt},
+        title height=1,
+        include title in canvas=false,
+        bar/.style={fill=barblue, draw=none},
+        bar height=0.7,
+        group right shift=0,
+        group top shift=0.7,
+        group height=.3,
+        label node/.style={
+            fill=labelgray,
+            draw=gridgray,
+            inner sep=3pt,
+            font=\sffamily\footnotesize
+        }
+        ]{1}{37}
+
+        % --- HEADERS ---
+        \gantttitle{NOV}{3}
+        \gantttitle{DEC}{4}
+        \gantttitle{JAN}{4}
+        \gantttitle{FEB}{4}
+        \gantttitle{MAR}{4}
+        \gantttitle{APR}{4}
+        \gantttitle{MAY}{4}
+        \gantttitle{JUNE}{4}
+        \gantttitle{JULY}{4}
+        \gantttitle{AUG}{2} \\
+        \gantttitlelist[title label font=\color{black}\scriptsize]{1,...,37}{1} \\
+% --- METHODOLOGY-ALIGNED TASKS ---
+
+\ganttbar{\ganttlabel{Grouping \& Project Selection}}{1}{2} \\
+\ganttbar{\ganttlabel{Background Study}}{2}{4} \\
+\ganttbar{\ganttlabel{Literature Review}}{4}{8} \\
+\ganttbar{\ganttlabel{Requirement Analysis}}{7}{10} \\
+\ganttbar{\ganttlabel{Project Proposal Preparation}}{9}{10} \\
+\ganttbar{\ganttlabel{Proposal Evaluation}}{10}{11} \\
+
+\ganttbar{\ganttlabel{Complete System Design}}{11}{15} \\
+
+\ganttbar{\ganttlabel{Permissioned Blockchain Setup}}{15}{20} \\
+\ganttbar{\ganttlabel{Smart Contract Development}}{18}{25} \\
+\ganttbar{\ganttlabel{Identity \& Access Control Implementation}}{19}{24} \\
+\ganttbar{\ganttlabel{Backend Relayer Development}}{20}{27} \\
+\ganttbar{\ganttlabel{IPFS Off-chain Storage Integration}}{22}{28} \\
+\ganttbar{\ganttlabel{AI Oracle Moderation Service}}{16}{24} \\
+
+\ganttbar{\ganttlabel{Web-based \ac{DApp} Development}}{18}{30} \\
+
+\ganttbar{\ganttlabel{Subsystem Testing}}{25}{31} \\
+\ganttbar{\ganttlabel{End-to-End Report Submission Integration}}{29}{34} \\
+
+\ganttbar{\ganttlabel{Performance and Functional Evaluation}}{33}{36} \\
+\ganttbar{\ganttlabel{Final Demonstration}}{36}{37}
+    \end{ganttchart}
+    }
+    \caption{Project Timeline Gantt Chart}
+    \label{fig:ganttchart}
+\end{sidewaysfigure}
+
+\subsection{Expected Outcomes}
+
+The expected outcome of the project is a working prototype of a privacy-preserving, blockchain-based citizen reporting system for local governance.
+
+The system is expected to achieve the following outcomes:
+
+\begin{enumerate}
+    \item  Anonymous civic reporting:
+Citizens can submit reports without directly revealing their real-world identity on-chain.
+    \item Tamper-evident records:
+Report metadata, hashes, and workflow states are recorded on a private blockchain.
+    \item Improved report reliability:
+AI-assisted moderation helps detect spam, abuse, and irrelevant submissions before blockchain anchoring.
+    \item Scalable storage:
+Large report content and media evidence are stored in IPFS, while blockchain stores only metadata and references.
+    \item Usable blockchain interaction:
+The relayer pattern removes the need for citizens to directly manage gas fees or blockchain transactions.
+    \item Modular deployment:
+The system is designed as a collection of independently deployable components.
+    \item 
+Governance transparency:
+The blockchain provides an auditable record of report submission and status changes.
+ 
+\end{enumerate}
+
+
+Through these outcomes, the prototype demonstrates the feasibility of combining blockchain, privacy-preserving identity mechanisms, off-chain storage, AI-assisted moderation, and web-based DApp interfaces to support transparent and accountable local governance reporting.
+
+% Examples:
+
+% anonymous reporting,
+% immutable records,
+% decentralized moderation,
+% transparency.
+
+\section{Implementation}
+
+This section presents the implementation details of the prototype system. The implementation follows the modular architecture introduced in the methodology section, where each subsystem is developed as an independent component and then connected to form the complete reporting pipeline.
+
+The implementation focuses on building a functional prototype that can demonstrate the main reporting workflow. This includes citizen authentication, anonymous ticket-based report submission, backend relayer verification, AI-based text and image moderation, IPFS-based off-chain media storage, and smart contract anchoring on a private permissioned blockchain. The key performance and correctness aspects of these components are later evaluated in the testing and validation chapter.
+
+\subsection{Permissioned Blockchain Implementation}
+
+\begin{sloppypar}
+The core infrastructure of the proposed system is the private permissioned blockchain network. The implementation focused on setting up a secure and efficient environment tailored for local governance applications.
+\end{sloppypar}
+
+\begin{itemize}
+    \item {Geth \ac{PoA} Network Setup:} A private permissioned Ethereum-compatible network was initialized using the Go Ethereum client. The network was configured to operate in \ac{PoA} consensus mode, specifically using the Clique algorithm. This enabled faster block confirmation and lower energy consumption compared to traditional \ac{PoW} systems. A custom genesis file was created to define network parameters, including the initial set of authorized signers and the chain ID.
+    
+    \item {Validator Node Configuration:} Minimum of three full nodes were required to act as an validator. The 3 nodes are deployed in a personal \ac{VPS} infrastructure. Each node is configured with a unique cryptographic identity and their addresses were added to the list of authorized sealers within the consensus engine to manage transaction validation authority.
+
+    \item {Network Security Measures:} To communicate with the blockchain network, secure \ac{RPC} endpoint was established for node 4. Node 4 is a non-validator node. Additionally, the network is configured to operate in a private subnet, further isolating it from external threats. This configuration allowed DApp and smart contracts to communicate with ledger enabling functions such as report submission, transaction querying and state synchronization.
+\end{itemize}
+
+The node configuration is shown in Figure~\ref{fig:validator_nodes}.
+
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{Images/Chapter 3/validator_nodes.png}
+    \caption{Validator node configuration of the private permissioned blockchain.}
+    \label{fig:validator_nodes}
+\end{figure}
+
+\subsection{Smart Contract Architecture and Logic}
+
+The core on-chain logic of the decentralized reporting framework is governed by the Reporting.sol smart contract. This contract is designed to be highly gas-efficient, acting primarily as a state machine and a cryptographic ledger rather than a data storage layer. The implementation is divided into three critical functional domains as The Report Contract structure, Ticket Validation, and State Transition Logic.
+
+\subsubsection{The Report Contract}
+The Report Contract is engineered using a Separation of Concerns principle. To mitigate the prohibitive gas costs associated with storing large multimedia files on the blockchain, the contract only stores essential metadata. 
+\begin{enumerate}
+    \item Data Structure: Each civic issue is stored in a Report struct containing a unique integer ID, the IPFS \ac{CID} pointing to off-chain media, voting counters, the assigned authority address, and its current lifecycle state.
+    \item \ac{RBAC}: Utilizing OpenZeppelin's AccessControl, the contract explicitly defines operational boundaries. The RELAYER\_ROLE is restricted to the backend server, allowing it to submit reports and relay votes on behalf of citizens. The AUTHORITY\_ROLE is granted to recognized government or NGO nodes, granting them permission to update an issue's status to solved or rejected.
+\end{enumerate}
+
+\subsubsection{Ticket Validation and Sybil Resistance}
+A fundamental challenge in anonymous decentralized systems is preventing Sybil attacks and duplicate submissions. This framework utilizes a dual-layer validation mechanism based on Zero-Knowledge Proof \ac{ZKP} tickets.
+\begin{enumerate}
+    \item Off-Chain Cryptographic Validation: Before a transaction reaches the blockchain, the backend relayer intercepts the payload. Using ethers.js, it verifies that the zkpTicketId possesses a valid cryptographic signature from the official Government Authority. It subsequently verifies the citizen's signature against the payload hash to ensure data integrity during transmission.
+    \item On-Chain Nullifier Tracking: Once validated off-chain, the zkpTicketId is passed to the smart contract as a submissionNullifier. The contract maintains a mapping of public submissionNullifiers. Upon successful report creation, this nullifier is marked as used. Any subsequent attempt to submit a report using the same ticket will systematically fail, cryptographically guaranteeing that one authorized ticket equates to exactly one unique report.
+\end{enumerate}
+
+\subsubsection{State Transition Logic}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\textwidth]{Images/Chapter 3/state-transition-diagram-3.png}
+    \caption{State transition diagram for the civic reporting system.}
+    \label{fig:state-transition}
+\end{figure}
+
+To enforce accountability and prevent solely rejection of civic issues by authorities, the contract implements a strict Finite State Machine (\ac{FSM}). Every submitted report strictly adheres to an 8-stage lifecycle managed via an on-chain enum:
+\begin{enumerate}
+    \item Pending Validation: Initial state awaiting community confirmation of legitimacy.
+    \item Community Rejected: Terminal state for spam or invalid issues.
+    \item Open: Validated by citizens and actively awaiting government action.
+    \item In Progress: The authority has officially acknowledged the issue and is actively executing physical repairs or resolution steps.
+    \item Pending Rejection Review: The authority dismissed the issue, triggering a community appeal phase.
+    \item Pending Verification: The authority marked the active work as completed, triggering a mandatory community verification vote.
+    \item Closed: Terminal state indicating a successfully verified resolution or an accepted rejection.
+    \item Reopened: The community rejected the authority's fix, forcing the issue back to the authority for rework.
+\end{enumerate}
+
+A report must traverse these specific states driven by a combination of authority actions and community consensus thresholds.
+\begin{enumerate}
+    \item Community-Driven Transitions: When a report is submitted, it enters the Pending Validation state. The transition to the Open state (making it visible for government action) only occurs automatically via the \_changeStatus() function once the report receives a majority of upvotes from the community when time duration for voting ends.
+    \item Authority-Driven Transitions: Authorities can only interact with reports in the Open, Reopened, or In Progress states. An authority calling startWork() shifts an Open or Reopened issue to the In Progress state, providing transparency to citizens that action is underway. From the In Progress state, calling markAsSolved() shifts the report to Pending Verification. Additionally, calling rejectIssue() from the Open or In Progress states shifts it to Pending Rejection Review.
+    \item Consensus Verification: The FSM mandates that authority actions are never final until verified by the community. If an authority marks an issue as solved, the community must vote to verify the physical fix. If the majority votes to accept the fix, the report transitions to Closed. If the majority votes to reject the fix, the report transitions back to Reopened, signaling that further work is needed and allowing the community to continue monitoring the issue until a satisfactory resolution is achieved.
+\end{enumerate}
+
+\subsection{Identity and Access Control Implementation}
+
+To satisfy the project's requirement for privacy-preserving accountability, an identity decoupling mechanism was successfully developed. This subsystem ensures that citizens can interact with the blockchain anonymously while remaining verified by an off-chain authority. The implementation was structured into three main components
+
+\begin{itemize}
+    \item {GovID Simulator:} An off-chain simulated identity server was developed and deployed to a personal \ac{VPS}. This service acts as the trusted authority for verifying real-world identities. A dedicated API endpoint (/api/govid/verify-citizen) was implemented to securely authenticate users via their National Identity Number (govId) and a password, bridging the gap between traditional web authentication and decentralized access.
+    \item {Citizen Keypair generation:} To completely decouple a user's real identity from their on-chain footprint, the identity server does not store or transmit blockchain addresses. Instead, upon successful authentication, the simulator generates and returns a secure, 256-bit citizenSeed. This cryptographic seed is then used by the client-side DApp to deterministically generate an anonymous public-private keypair, allowing the citizen to interact securely with smart contracts without exposing personal data.
+    \item {Ticket Batch Generation:} To facilitate multiple secure, anonymous report submissions over time, the simulator implements a batch authorization protocol. During authentication, the server generates a structured ticketBatch (currently configured to issue 10 tickets per request). Each ticket contains a unique ticketId (a cryptographic hash) and a signature signed by the Identity Authority's private key. Citizens use these single-use tickets to authorize their transactions on-chain. The backend relayer validates the authority's signature on the ticket, granting access without ever knowing which specific citizen is submitting the report.
+\end{itemize}
+
+\subsection{Backend Relayer Implementation}
+The backend relayer serves as a critical middleware component that bridges the frontend DApp with the blockchain network and external services. It is responsible for handling report submissions, managing interactions with IPFS for off-chain storage, and orchestrating AI-based content moderation before anchoring data on the blockchain.
+
+The implementation utilizes the NestJS framework to provide a robust and highly modular RESTful API. The core workflow of the relayer executes the following deterministic pipeline for each incoming citizen report.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter 3/backend-relayer-impl.png}
+    \caption{Backend relayer workflow architecture.}
+    \label{fig:backend-relayer-impl}
+\end{figure}
+
+\begin{enumerate}
+    \item Cryptographic Verification: The relayer receives the payload via a POST /report endpoint. Utilizing the ethers.js library, it performs a strict dual-signature validation:
+    \begin{enumerate}
+        \item It verifies the ZKP Govid Simulator ticket signature against the dynamically fetched Government Authority public key to ensure the user is an authorized citizen.
+        \item It reconstructs the payload hash (binding the description and ticket ID) and verifies the citizen's signature to prevent data tampering in transit.
+    \end{enumerate}
+    
+    \item AI Content Moderation: To prevent on-chain spam, toxic immutability of blockchains and ensure platform integrity, the relayer routes the submitted text and media to the AI Oracle moderation service. This service acts as an automated filter, analyzing the content for appropriateness and returning a validation verdict before any storage operations occur.
+    
+    \item Decentralized Storage - \ac{IPFS}: To maintain a highly efficient and cost-effective blockchain state, heavy multimedia files and detailed text are offloaded to \ac{IPFS}. The relayer manages the file buffers via multer, processes the upload, and retrieves an immutable \ac{CID}.
+    
+    \item Gasless Blockchain Submission: As the final step, the relayer formats a transaction containing the IPFS CID and the ZKP ticket (which serves as a Sybil-resistant submissionNullifier). The relayer signs and dispatches this transaction to the Reporting.sol smart contract. By paying the network gas fees from its own wallet, the relayer enables a completely frictionless, gasless experience for the end-user.
+\end{enumerate}
+\subsection{IPFS Off-chain Storage Integration}
+
+
+The system uses IPFS to store images. These images come from citizens who send reports. The images are not saved on the blockchain. Only a short code called a CID is saved there. The CID works like a fingerprint for the image. If anyone changes the image, the CID changes too. This keeps the images safe from tampering. It also keeps the blockchain from getting too full.
+
+The IPFS part of the system is built in layers. Each layer has a job. One layer checks the image before it is stored. It makes sure the file is the right type and not too big. Another layer handles uploading and getting images back. There is also a layer that talks to the IPFS node directly.
+
+When a citizen sends a report, the image goes to the backend server first. The server sends the image to an AI tool that checks if the image is okay. If the image passes the check, the server sends it to the IPFS part. The IPFS part saves the image and gives back a CID. The server takes that CID and adds it to the report. Then it sends everything to the blockchain.
+
+When someone needs to see the image, the system reads the CID from the blockchain. It then uses the CID to retrieve the image. The image is shown in the app. Because the CID is derived from the image itself, the system can verify that the image was not changed.
+
+The system also checks the CID before saving it to the blockchain. This makes sure the image can actually be found. The whole system runs inside Docker. It uses two containers. One is for the IPFS service. The other is for the IPFS node. The IPFS service is available on port 4000.
+
+Right now the system uses only one IPFS node. In the future, three nodes will be used. Each node will be on a different machine. All three will be connected to each other. When an image is saved on one node, the other two will copy it. If one node stops working, the others still have the image. This makes the system more reliable. All of this will be done in a private network. It will not connect to the public IPFS network.
+
+
+\subsection{AI-based Moderation System Implementation}
+
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter_3/oracle-architecture.png}
+    \caption{Oracle network architecture for AI moderation.}
+    \label{fig:oracle-architecture}
+\end{figure}
+
+The AI moderation subsystem is implemented as an off-chain oracle service. It is placed between the backend relayer and the IPFS submission stage. This ensures that harmful, spam, irrelevant, or unsafe content is filtered before it is permanently stored or referenced by the blockchain.
+
+The moderation service is designed as a containerized oracle network. It contains one aggregator service and three oracle worker services. The backend relayer communicates only with the aggregator. The aggregator then communicates with the oracle workers using internal Docker networking. This keeps the worker services isolated from public access and exposes only one controlled moderation API to the rest of the system.  This architecture is demonstrated in Figure~\ref{fig:oracle-architecture}.
+
+The implemented oracle workers are as follows:
+
+\begin{itemize}
+    \item \textbf{Safety Oracle:} This oracle checks whether submitted text or images contain unsafe content. For text, it checks toxic, abusive, and threatening patterns using \texttt{unitary/toxic-bert}. For image moderation it uses pre-trained \texttt{Falconsai/nsfw\_image\_detection} to detect unsafe visual content.
+
+    \item \textbf{Spam and Abuse Oracle:} This oracle checks whether the submitted report contains spam-like or low-quality text. It detects promotional phrases, repeated symbols, suspicious URLs, very short descriptions, and common spam patterns.It combines rule-based checks with lightweight NLP model \texttt{mrm8488/bert-tiny-finetuned-sms-spam-detection}.
+
+    \item \textbf{Civic Relevance Oracle:} This oracle checks whether the submitted
+    report is related to a public or local governance issue. It uses sentence-transformer model \texttt{sentence-transformers/all-MiniLM-L6-v2} to compare the report text against predefined civic issue descriptions, such as road damage, waste management, drainage, water supply, streetlights, flooding, traffic safety, public property damage, and environmental issues.
+\end{itemize}
+
+
+Each oracle returns a structured vote containing the oracle identifier, vote, confidence value, explanation code, model or rule version, and additional details. The accepted vote values are ACCEPT and REJECT. The system does not currently use a manual REVIEW state because that would introduce a central human moderation dependency. Instead, unclear or low-quality reports are rejected and the citizen can resubmit a clearer report.
+
+The aggregator combines the oracle outputs using a rule-based decision strategy. If a critical safety violation is detected, the final decision is REJECT. If the civic relevance oracle identifies the content as non-civic, the final decision is also REJECT. Otherwise, the aggregator applies majority voting among the three oracles. If at least two oracle workers accept the content, the final result is ACCEPT. If not, the final result is REJECT.
+
+Security and integrity are also included in the moderation workflow. The backend relayer signs the moderation request using its private wallet key. The aggregator recovers the signer address from the relayer signature and compares it with the trusted relayer address configured in the oracle environment. The request also includes a timestamp and nonce. The timestamp prevents stale requests, while the
+nonce prevents replay attacks. The aggregator computes a report hash and a decision hash, signs the final decision, and returns this information to the relayer. This makes the moderation result tamper-evident and auditable.
+
+The AI moderation service is deployed on a VPS using Docker containers managed through Dokploy. The deployment consists of the oracle aggregator, safety oracle, spam and abuse oracle, and civic relevance oracle containers. At the current stage, the service has been integrated with the backend relayer and supports both text-based moderation and image safety moderation during the report submission
+workflow.
+
+
+
+
+\subsection{Web-based DApp Development}
+The decentralized application (DApp) serves as the primary gateway for citizens to interact with the local governance system. It is built using a modern web stack comprising Next.js and React for the frontend interface, Tailwind CSS for responsive styling, and Ethers.js for cryptographic operations. The architecture is designed to abstract blockchain complexities away from the end-user while maintaining strict privacy and security guarantees.
+
+\subsubsection{User Authentication Interface}
+The authentication interface is designed to verify citizen eligibility without compromising personal privacy.
+\begin{itemize}
+    \item \textbf{GovID Verification Integration:} The interface securely collects the citizen's GovID credentials and interfaces with an external GovID Simulator API. This abstracts the process of verifying a citizen's real-world identity against a centralized registry.
+    \item \textbf{Cryptographic Credential Generation:} Upon successful identity verification, the system retrieves a batch of \ac{ZKP} tickets and a unique `citizenSeed`. 
+    \item \textbf{Local State Management:} Using the `ethers.js` library, a localized Citizen Wallet is derived from the seed. A custom React Context (\texttt{CitizenContext}) is utilized to manage the session state, ensuring that the generated private keys and ZKP tickets remain strictly on the client-side device and are never exposed to external servers. The UI incorporates dynamic feedback mechanisms to indicate the generation of cryptographic proofs to the user.
+\end{itemize}
+
+\subsubsection{Report Submission Interface}
+The report submission module allows authenticated citizens to report civic issues anonymously.
+\begin{itemize}
+    \item \textbf{Form Design and Data Handling:} Developed with a mobile-first approach, the form captures issue descriptions and optional photographic evidence using standard \texttt{FormData} structures to support multipart uploads.
+    \item \textbf{Anonymous Cryptographic Signing:} To guarantee anonymity and prevent spam, each submission consumes a single ZKP ticket from the user's allocated batch. The payload (consisting of the issue description and the ZKP ticket ID) is hashed using Keccak-256 and subsequently signed using the citizen's locally stored ECDSA private key.
+    \item \textbf{Meta-Transaction Relaying:} Instead of submitting transactions directly to the blockchain and incurring gas fees, the frontend dispatches the signed payload, image, and ZKP metadata to a NestJS Backend Relayer. The relayer handles the intermediate steps: uploading the evidence to IPFS, requesting AI moderation, and finally submitting the transaction to the Geth blockchain network on behalf of the user.
+\end{itemize}
+
+\subsubsection{Blockchain Query Interface}
+The query interface acts as a community feed where citizens can view, filter, and track the status of reported issues.
+\begin{itemize}
+    \item \textbf{Mobile-First Feed Architecture:} Implemented as a single-column, scrollable interface inspired by modern social media platforms (e.g., Reddit). This design choice prioritizes readability and user engagement on mobile devices.
+    \item \textbf{Dynamic Issue Cards:} Data retrieved from the blockchain is formatted into interactive cards. Each card displays critical metadata including categorical status badges (e.g., PENDING VALIDATION, OPEN, RESOLVED), community upvotes, truncated descriptions, timestamps, and image thumbnails.
+    \item \textbf{State Management and Navigation:} The interface employs React state hooks to allow real-time filtering of issues by category (e.g., Infrastructure, Parks \& Rec, Safety). Furthermore, a persistent Floating Action Button (FAB) is implemented to provide users with seamless access to the report submission workflow at any time.
+\end{itemize}
+
+% \subsection{Deployment Environment}
+
+% Very important.
+
+% Discuss:
+
+% VPS infrastructure,
+% Ubuntu server,
+% Docker containers,
+% service distribution.
+
+% Include deployment diagram.

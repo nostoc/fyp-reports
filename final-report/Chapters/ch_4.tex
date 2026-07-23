@@ -1,0 +1,445 @@
+\chapter{Testing, Experimentation, and Validation}
+
+This chapter outlines the proposed methodology for the testing, experimentation, and validation of the decentralized reporting framework. Given the distributed nature of the system—which integrates off-chain cryptographic services, AI moderation, and on-chain smart contracts—a rigorous experimental setup will be established to evaluate performance, security, and functional correctness.
+
+\section{Experimental Setup}
+\label{subsec:experimental-setup}
+
+To accurately simulate a real-world deployment of the permissioned blockchain and its ancillary microservices, the experimental environment has been hosted on a cloud-based infrastructure utilizing containerization technologies.
+
+\subsection{Hardware Infrastructure}
+The testing environment was deployed across two identical \ac{VPS} instances to simulate a distributed network architecture and evaluate inter-service communication latency. The hardware specifications for each \ac{VPS} are as follows:
+\begin{enumerate}
+    \item Compute: 4 vCPU Cores
+    \item Memory: 8 GB RAM
+    \item Storage: 75 GB SSD
+    \item Network: High-bandwidth cloud uplink
+\end{enumerate}
+Server 1 acts as the primary operational node, hosting the core citizen-facing applications, middleware, and the blockchain ledger. Server 2 is strictly dedicated to hosting the computationally intensive AI moderation ensemble and the IPFS storage layer. This isolation prevents resource monopolization and ensures accurate performance profiling of the blockchain consensus mechanism.
+
+\subsection{Software and Deployment Environment}
+To ensure reproducibility and consistency across test iterations, the entire software stack was containerized using Docker. 
+\begin{enumerate}
+    \item Orchestration and CI/CD: Deployment and lifecycle management of the containers are handled by Dokploy, a self-hosted Platform-as-a-Service (PaaS) solution installed on both servers. 
+    \item Automated Deployment: Continuous Integration and Continuous Deployment (CI/CD) pipelines were established via GitHub webhooks. Dokploy was configured to monitor the develop branch of the project repository. Upon receiving a trigger, it automatically pulls the latest source code, builds the respective Dockerfiles for the microservices, and deploys the updated containers.
+\end{enumerate}
+
+\subsection{Blockchain Configuration (Server 1)}
+The on-chain environment consists of a private, permissioned \ac{PoA} blockchain.
+\begin{enumerate}
+    \item Client Software: The network was initialized using Go-Ethereum (Geth) version 1.13.15.
+    \item Consensus Engine: The Clique \ac{PoA} consensus algorithm was utilized to ensure deterministic block times and eliminate the computational overhead of \ac{PoW}, which closely aligns with the operational model of a government-backed consortium chain.
+    \item Node Topology: A 3-node cluster was deployed via a unified docker-compose.yml configuration. These nodes serve as the designated Authority (Sealer) nodes representing various governance entities.
+\end{enumerate}
+
+\subsection{Application and Services Topology}
+The testing setup evaluates the interaction between the following primary subsystems distributed across the two servers.\\
+
+Deployed on Server 1 (Core Operations):
+\begin{enumerate}
+    \item ZKP-GovID Simulator: A Node.js service simulating the issuance of government-backed \ac{ZKP} tickets.
+    \item Frontend DApp: A Next.js application providing the citizen interface.
+    \item Backend Relayer: A NestJS-based middleware component responsible for off-chain cryptographic validation, routing, and gasless blockchain transaction submission.
+    \item Smart Contracts: Compiled using the Hardhat development environment utilizing Solidity version 0.8.20.
+\end{enumerate}
+
+Deployed on Server 2 (Storage and AI Oracle):
+\begin{enumerate}
+    \item AI Moderation Ensemble: A multi-node AI oracle architecture designed for robust spam and content filtering. This consists of three distinct AI algorithm nodes running concurrently to analyze incoming media and text. These nodes are governed by a central Aggregator Node that acts as the single entry point and determines the final moderation verdict based on algorithmic consensus.
+    \item IPFS Node: A dedicated \ac{IPFS} node that will be deployed in the subsequent testing phase to handle the distributed, off-chain storage of all civic report multimedia (images) and heavy metadata, returning immutable \ac{CID}s to the backend relayer.
+\end{enumerate}
+
+\section{Testing Methodology}
+\label{subsec:testing-methodology}
+
+To ensure the reliability, security, and performance of the decentralized reporting framework, a comprehensive, multi-tiered testing methodology will be employed. This approach systematically validates the architecture from isolated components up to the complete end-to-end user workflow.
+
+\subsection{Subsystem Testing}
+Subsystem testing will focus on isolating individual architectural components to verify their internal logic, cryptographic integrity, and algorithmic correctness prior to network integration.
+
+\begin{enumerate}
+    \item Smart Contract Validation: The core reporting smart contract will undergo rigorous unit testing using the Hardhat development framework. Automated tests will be written to validate the logic of the \ac{FSM}, ensuring that community voting thresholds trigger correct status changes and that role-based access controls prevent unauthorized authority actions.
+    \item Backend Relayer Verification: The middleware will be tested using a dedicated testing suite. The primary focus will be validating the cryptographic verification algorithms, ensuring that both the \ac{ZKP} tickets from the simulator and the citizen signatures are correctly authenticated or systematically rejected when malformed.
+    \item AI Oracle Evaluation: The AI moderation ensemble will be tested in isolation using a curated dataset of synthetic civic reports. This dataset will include a mixture of valid public issues, explicit spam, and manipulated imagery to evaluate the accuracy, false-positive rate, and consensus latency of the multi-node aggregator.
+\end{enumerate}
+
+\subsection{Integration Testing}
+Once individual subsystems are validated, integration testing will be conducted to evaluate the communication interfaces, network latency, and data flow between the distributed microservices across the two virtual private servers.
+
+\begin{enumerate}
+    \item Relayer and Off-Chain Services: Tests will verify the backend relayer's ability to seamlessly orchestrate the initial validation pipeline. This includes measuring the successful routing of payloads to the AI Oracle ensemble, the handling of timeout exceptions, and the successful uploading of multimedia to the IPFS node to retrieve immutable \ac{CID}s.
+    \item Relayer and Blockchain Interface: Integration scripts will simulate the relayer dispatching transactions to the private \ac{PoA} blockchain network. This phase will verify the gasless submission mechanics, ensuring the relayer accurately wraps the \ac{CID}s and ticket nullifiers into valid transactions that are accepted by the network nodes.
+    \item Frontend to Middleware Communication: API integration tests will confirm that the decentralized application securely formats and transmits the cryptographic payloads, including the user description and attached media, to the relayer over encrypted channels.
+\end{enumerate}
+
+\subsection{Functional Testing}
+Functional testing will evaluate the entire integrated system against the defined operational requirements from an end-user perspective, simulating both real-world usage and adversarial conditions.
+
+\begin{enumerate}
+    \item End-to-End User Journeys: Automated scripts will simulate complete, valid report lifecycles. This entails a simulated citizen generating a ticket, submitting a valid issue via the frontend, passing AI moderation, anchoring on the blockchain, and successfully progressing through the community validation and authority resolution states.
+    \item Sybil Resistance and Replay Attack Mitigation: The framework will be subjected to adversarial functional tests. Scripts will intentionally attempt to submit multiple reports using identical ticket nullifiers to verify that the smart contract successfully rejects duplicate entries and maintains the one-ticket-one-vote invariant.
+    \item Cryptographic Forgery Attempts: The system will be tested by injecting payloads with manipulated descriptions or mismatched signatures. This will ensure the backend relayer systematically drops tampered requests before they can interact with the off-chain storage or consume blockchain resources.
+\end{enumerate}
+
+\subsection{Blockchain Performance Testing}
+\label{subsec:blockchain-performance-testing}
+
+To quantitatively evaluate the viability and scalability of the proposed decentralized reporting framework, a series of performance benchmarking experiments will be conducted on the 3-node Proof-of-Authority network. These stress tests will be executed using automated benchmarking tools, such as Hyperledger Caliper or custom Node.js scripting, to simulate concurrent user interactions. The evaluation will focus on three primary Key Performance Indicators as transaction throughput, transaction latency, and block confirmation times.
+
+\subsubsection{Transaction Throughput Testing}
+The throughput experiment will measure the maximum capacity of the blockchain network to process high volumes of simultaneous civic reports.
+
+\begin{enumerate}
+    \item Experiment Design: The testing suite will generate a progressively increasing load of concurrent report submissions and voting transactions sent to the backend relayer. This mimics a real-world scenario of mass reporting during a localized civic emergency, such as a natural disaster.
+    \item Significance: High throughput is essential to prevent network congestion, avoid memory pool overflows, and ensure the relayer does not become a bottleneck during peak usage.
+    \item Metrics and Parameters: The primary metric is Transactions Per Second, calculated by dividing the total number of successfully committed transactions by the total duration of the stress test. Secondary parameters include the transaction success-to-failure ratio and the CPU utilization on Server 1.
+    \item Thresholds and State-of-the-Art Comparison: Public mainnet blockchains like Ethereum traditionally process between 15 and 30 Transactions Per Second. The benchmark for this permissioned Proof-of-Authority configuration is set at a minimum threshold of 100 Transactions Per Second. Achieving this will demonstrate a highly scalable environment that significantly outperforms traditional public ledgers for civic applications.
+\end{enumerate}
+
+\subsubsection{Transaction Latency Testing}
+The latency experiments will evaluate the responsiveness of the reporting system from the perspective of the backend relayer and the end-user.
+
+\begin{enumerate}
+    \item Experiment Design: High-precision timestamps will be recorded at the exact moment the relayer dispatches the signed transaction to the blockchain and compared against the timestamp of the finalized block that incorporates that specific transaction.
+    \item Significance: Low transaction latency ensures a seamless user experience. Extended delays could lead to timeout errors within the middleware interface and cause desynchronization between the off-chain IPFS storage and the on-chain smart contract state.
+    \item Metrics and Parameters: The core metrics evaluated will be the Average Transaction Latency measured in seconds, and the 95th percentile latency to account for network outliers under heavy load conditions.
+    \item Thresholds and State-of-the-Art Comparison: While public Proof-of-Stake networks currently target latency periods of 12 seconds or more, the configured Proof-of-Authority consensus mechanism eliminates complex cryptographic puzzles. The expected benchmark for this project is an average latency of under 5 seconds per transaction, representing a substantial optimization over standard public blockchain networks.
+\end{enumerate}
+
+\subsubsection{Block Confirmation and Finality Testing}
+This phase of testing will analyze the deterministic nature of the Clique consensus engine across the three designated authority nodes.
+
+\begin{enumerate}
+    \item Experiment Design: Network monitoring tools will track the block propagation times across the node topology and measure the block generation intervals during both idle periods and extreme stress-testing phases.
+    \item Significance: Rapid and deterministic block confirmation is critical for the \ac{FSM} implemented in the reporting contract. It ensures that community votes and authority state transitions are registered instantly without the risk of chain reorganizations, forks, or orphaned blocks.
+    \item Metrics and Parameters: The primary parameters are Average Block Time measured in seconds and Time to Finality, which measures the duration required for a transaction to become mathematically irreversible.
+    \item Thresholds and State-of-the-Art Comparison: Traditional probabilistic finality in legacy networks can take minutes to resolve. For this 3-node Proof-of-Authority setup, the block time parameter is explicitly configured in the genesis block to a fixed interval of 5 seconds. Consequently, the benchmark for absolute finality is expected to be achieved within 1 to 2 blocks, or 5 to 10 seconds. This matches the state-of-the-art performance observed in modern enterprise consortium blockchains.
+\end{enumerate}
+
+\subsection{Smart Contract Validation}
+\label{subsec:smart-contract-validation}
+
+To ensure the logical correctness, security, and gas efficiency of the decentralized reporting framework, a comprehensive validation suite will be executed against the core Solidity smart contract. This testing phase will utilize the Hardhat development environment paired with the Chai assertion library to simulate complex on-chain interactions. The validation process is categorized into three critical domains as ticket validation, report creation logic, and state transition integrity.
+
+\subsubsection{Ticket Validation and Sybil Resistance}
+This phase will empirically test the cryptographic nullifier tracking system to ensure the network is impervious to Sybil attacks and duplicate reporting.
+
+\begin{enumerate}
+    \item Experiment Design: Automated test scripts will simulate the submission of civic reports using valid, backend-signed \ac{ZKP} tickets. Immediately following a successful submission, the script will intentionally attempt a replay attack by submitting a secondary report utilizing the exact same ticket nullifier. Additional tests will attempt to inject malformed or mathematically invalid nullifier hashes.
+    \item Significance: Validating the nullifier mapping is critical to preserving the one-citizen-one-vote invariant. If a malicious actor could bypass this check, they could artificially inflate the severity of an issue or spam the government authority with duplicate tasks.
+    \item Metrics and Parameters: The primary metric evaluated will be the Transaction Revert Rate under adversarial conditions, alongside the specific Gas Cost required to execute the nullifier validation logic.
+    \item Thresholds and Benchmarks: The acceptable benchmark for this mechanism is a strict 100 percent transaction revert rate for all duplicate or malformed ticket submissions. Furthermore, the gas overhead for checking the nullifier mapping must remain highly optimized to ensure the relayer is not subjected to excessive network fees.
+\end{enumerate}
+
+\subsubsection{Report Creation and Access Control}
+These experiments will validate the initialization of civic issues on the blockchain, ensuring that data is stored efficiently and that only authorized entities can write to the ledger.
+
+\begin{enumerate}
+    \item Experiment Design: The test suite will generate transactions attempting to call the report creation function from various network addresses. One address will be properly provisioned with the Relayer Role, while the others will represent unauthorized standard user wallets. The test will verify that only the relayer can anchor the IPFS \ac{CID} and initial voting metadata to the chain.
+    \item Significance: This verifies the Separation of Concerns architecture, ensuring the smart contract acts exclusively as a secure state machine rather than a vulnerable, open-access database.
+    \item Metrics and Parameters: The parameters assessed include \ac{RBAC} execution accuracy and the Initial State Mapping accuracy. The computational cost will be measured in total execution gas.
+    \item Thresholds and Benchmarks: Any creation attempt by an address lacking the designated relayer permissions must revert immediately.
+\end{enumerate}
+
+\subsubsection{State Transition and \ac{FSM} Logic}
+The most rigorous testing phase will evaluate the strict 8-stage lifecycle of a civic report to guarantee that government authorities and citizens interact within predefined boundaries.
+
+\begin{enumerate}
+    \item Experiment Design: A simulated environment will recreate the complete lifecycle of multiple reports. Tests will incrementally cast community votes to verify that an issue automatically transitions from Pending Validation to Open upon reaching the required mathematical threshold. Subsequently, simulated authority nodes will invoke state-changing functions such as starting work, marking as solved, or rejecting the issue. Finally, the suite will attempt unauthorized state bypasses, such as an authority attempting to manually force an issue into the Closed state without the mandatory community Pending Verification phase.
+    \item Significance: The \ac{FSM} is the core accountability mechanism of the project. Validating this logic ensures that authorities cannot unilaterally dismiss public issues and that community consensus dictates the final resolution of every report.
+    \item Metrics and Parameters: The primary metric is Code Coverage, specifically targeting statement, branch, and function coverage within the smart contract. Secondary metrics include State Transition Accuracy under edge-case voting scenarios.
+    \item Thresholds and Benchmarks: The testing benchmark mandates 100 percent branch and statement coverage for all state transition functions. The system must yield zero successful unauthorized state bypasses, enforcing absolute adherence to the 8-stage consensus lifecycle.
+\end{enumerate}
+
+\subsection{AI Moderation Testing}
+
+% Metrics:
+
+% moderation response time,
+% classification correctness,
+% voting consistency.
+
+AI moderation testing evaluates whether the moderation subsystem correctly
+classifies submitted report content as acceptable or unacceptable before IPFS
+upload and blockchain submission. The implemented AI moderation service now
+supports both text-based moderation and image safety moderation. Text moderation
+is used to identify spam, abusive language, threatening content, and irrelevant
+non-civic reports. Image moderation is used to identify unsafe visual content in
+attached media files.
+
+The objectives of AI moderation testing are:
+
+\begin{enumerate}
+    \item to verify that the deployed oracle aggregator API is accessible
+    \item to verify that all three oracle worker containers respond correctly
+    \item to test acceptance of valid civic reports
+    \item to test rejection of spam, abusive, threatening, and non-civic text
+    \item to test rejection of unsafe image content
+    \item to verify relayer request authentication using API key, timestamp, nonce,
+    and relayer signature
+    \item to verify oracle voting and final aggregation behavior
+    \item to verify generation of report hash, request hash, decision hash, and
+    aggregator signature
+\end{enumerate}
+
+The AI moderation service is deployed on Server 2 using Dokploy and Docker
+containers. The deployment includes:
+
+\begin{enumerate}
+    \item Safety Oracle container
+    \item Spam and Abuse Oracle container
+    \item Civic Relevance Oracle container
+    \item Oracle Aggregator container
+\end{enumerate}
+
+The backend relayer communicates only with the aggregator API. The aggregator
+communicates with the three oracle workers using internal container networking.
+This design prevents direct external access to the oracle workers and keeps the
+moderation workflow controlled through the aggregator.
+
+\subsubsection{API Availability and Security Tests}
+The first set of tests verifies whether the deployed oracle API is reachable and
+whether unauthorized requests are rejected. These tests are important because
+only the backend relayer should be able to call the moderation API successfully.
+The test cases used for testing moderation API availability are shown in the Table ~\ref{tab:ai_api_tests}
+
+\begin{table}[h!]
+\centering
+\caption{AI moderation API availability and security tests}
+\begin{tabular}{|p{2cm}|p{5cm}|p{5cm}|p{2cm}|}
+\hline
+\textbf{Test ID} & \textbf{Test} & \textbf{Expected Result} & \textbf{Status} \\
+\hline
+AI-T01 & Call aggregator health endpoint & Service returns running status & Passed \\
+\hline
+AI-T02 & Send valid signed relayer request & Request is processed successfully & Passed \\
+\hline
+AI-T03 & Send request without API key & Request is rejected & Passed \\
+\hline
+AI-T04 & Send request with wrong API key & Request is rejected & Passed \\
+\hline
+AI-T05 & Send request with invalid relayer signature & Request is rejected & Passed \\
+\hline
+AI-T06 & Reuse the same nonce & Replay request is rejected & Passed \\
+\hline
+AI-T07 & Send expired timestamp & Request is rejected & Passed \\
+\hline
+\end{tabular}
+\label{tab:ai_api_tests}
+\end{table}
+
+\subsubsection{Text Moderation Classification Tests}
+
+The next set of tests evaluates text moderation behavior. The test cases include
+valid civic reports, spam reports, threatening content, empty reports, and non-civic
+content. These tests were executed using an automated signed test client that
+simulates the backend relayer.
+
+The test cases used for testing moderation classification are shown in Table ~\ref{tab:ai_classification_tests}
+
+\begin{table}[H]
+\centering
+\caption{AI text moderation classification tests}
+\begin{tabular}{|p{2cm}|p{3cm}|p{4cm}|p{2cm}|p{2cm}|}
+\hline
+\textbf{Test ID} & \textbf{Input Type} & \textbf{Example Input} & \textbf{Expected Decision} & \textbf{Status}\\
+\hline
+AI-T08 & Valid civic report & ``There is a large pothole near the public school road causing traffic problems.'' & ACCEPT & Passed \\
+\hline
+AI-T09 & Valid waste management report & ``Garbage has not been collected near the public market for three days.'' & ACCEPT & Passed\\
+\hline
+AI-T10 & Spam content & ``BUY NOW FREE MONEY CLICK HERE LIMITED OFFER.'' & REJECT & Passed\\
+\hline
+AI-T11 & Threatening content & Text containing a public issue combined with a threatening phrase & REJECT & Passed \\
+\hline
+AI-T12 & Non-civic content & ``I watched a movie yesterday and the food at the restaurant was very tasty.'' & REJECT & Passed \\
+\hline
+AI-T13 & Empty report & Empty text field & Validation error / REJECT & Passed \\
+\hline
+\end{tabular}
+\label{tab:ai_classification_tests}
+\end{table}
+
+\subsubsection{Oracle Voting Validation}
+
+The oracle moderation system uses three oracle workers. Each oracle returns either
+ACCEPT or REJECT. The aggregator combines the votes using a safety-prioritized
+majority logic. If any oracle identifies a critical safety violation, the final decision
+is REJECT even if the other oracles accept the report. If there is no critical
+violation, the aggregator uses majority voting. Table \ref{tab:oracle_voting_validation} summarizes the validation logic.
+
+
+
+\begin{table}[H]
+\centering
+\caption{Oracle voting validation}
+\begin{tabular}{|p{6cm}|p{5cm}|}
+\hline
+\textbf{Oracle Votes} & \textbf{Expected Final Decision} \\
+\hline
+ACCEPT, ACCEPT, ACCEPT & ACCEPT \\
+\hline
+ACCEPT, ACCEPT, REJECT & ACCEPT \\
+\hline
+REJECT, REJECT, ACCEPT & REJECT \\
+\hline
+REJECT, REJECT, REJECT & REJECT \\
+\hline
+Critical safety violation detected & REJECT \\
+\hline
+\end{tabular}
+\label{tab:oracle_voting_validation}
+\end{table}
+
+\subsubsection{Response Structure Validation}
+Each successful oracle response should include the fields shown in Table
+\ref{tab:oracle-response-fields}. These fields support auditability, debugging, and
+tamper-evidence in the moderation workflow.
+
+\begin{table}[h!]
+\centering
+\caption{Oracle aggregator response fields}
+\label{tab:oracle-response-fields}
+\begin{tabular}{|p{5cm}|p{9cm}|}
+\hline
+\textbf{Field} & \textbf{Purpose} \\
+\hline
+final\_decision & Final moderation result returned as ACCEPT or REJECT \\
+\hline
+final\_confidence & Aggregated confidence value of the final moderation decision \\
+\hline
+risk\_level & Indicates the moderation risk level of the submitted report \\
+\hline
+report\_hash & Hash of the submitted report metadata and media hashes \\
+\hline
+request\_hash & Hash of the signed moderation request reconstructed by the aggregator \\
+\hline
+decision\_hash & Hash of the final moderation decision object \\
+\hline
+aggregator\_signature & Digital signature generated by the aggregator over the decision hash \\
+\hline
+oracle\_votes & Individual outputs returned by the Safety, Spam and Abuse, and Civic Relevance oracles \\
+\hline
+security & Indicates relayer signature verification, timestamp validation, and nonce acceptance \\
+\hline
+processing\_time\_ms & Time taken by the oracle aggregator to return the moderation decision \\
+\hline
+\end{tabular}
+\end{table}
+
+The AI content moderation service was successfully deployed as separate Docker
+containers on a VPS and integrated with the backend relayer. Testing confirms
+that the aggregator can receive signed moderation requests, verify the relayer
+signature, communicate with all oracle workers, collect votes, and return an
+aggregated ACCEPT or REJECT decision. The tests also confirm that unsafe image
+content can be rejected before IPFS upload and blockchain submission.
+
+
+\subsection{IPFS Storage Testing}
+
+
+The system uses IPFS to store images sent by citizens. Saving images directly on the blockchain is too costly. So the system saves images on IPFS instead. When an image is approved, the server sends it to the IPFS service. The IPFS service saves the image and returns a short code called a CID. The CID is made from the image content. If the image changes, the CID changes too. This makes sure the image stays as it is. The server then saves the CID and the report on the blockchain.
+
+At this point, the IPFS service has been built and is running. It was packed into Docker and put on the production server. It runs alongside the IPFS node as two containers. A health check was done to make sure everything works. The check showed the service is healthy. The IPFS node was running version 0.41.0. The connection between the service and the node was confirmed. The base of the storage system is now stable and ready.
+
+But the full testing is not done yet. The backend server, the AI check tool, and the blockchain part are still being built. Testing will continue as each part gets finished.
+
+Once the backend server is ready, upload testing will begin. Images of different sizes will be uploaded. The time taken for each upload will be noted. This will show how fast the system works.
+
+After that, retrieval testing will be done. An image will be uploaded and then downloaded again. The downloaded image will be compared to the original. This confirms nothing was lost or changed.
+
+CID testing will also be carried out. After an image is uploaded, its CID is saved. When the image is downloaded, the CID is worked out again. Both CIDs are compared. If they match, the system is working correctly.
+
+Once the backend connects to the AI tool, moderation testing will be done. This will check that only approved images are saved on IPFS. Bad images should be stopped before any CID is made.
+
+When the blockchain part is ready, end-to-end testing will be done. This will check the full flow. From the citizen sending a report, to the image being saved, to the CID going on the blockchain. Everything will be checked together.
+
+Finally, load testing will be done. Many images will be sent at the same time. The system will be checked to see how well it handles that. The plan to use three IPFS nodes on three different machines will also be tested. This will confirm that if one node fails, the others still work.
+\subsection{End-to-End Integration Testing}
+
+To ensure the seamless operation of the entire platform, end-to-end integration testing will be conducted by simulating the complete lifecycle of a civic issue report. This testing phase will verify the interoperability between the frontend DApp, the backend relayer, the IPFS storage network, the AI moderation oracle, and the underlying permissioned blockchain.
+
+The end-to-end testing workflow will be executed as follows:
+
+\begin{enumerate}
+    \item Citizen Authentication and Key Generation: The test will commence with a simulated citizen authenticating via the external GovID simulator. Upon successful verification, the system is expected to generate a batch of \ac{ZKP} tickets and derive the local wallet, thereby validating the correct functioning of the identity decoupling mechanism.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/screen 1.png}
+        \hfill
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/screen.png}
+        \caption{Citizen Authentication Interfaces}
+    \end{figure}
+    
+    \item Report Submission and Cryptographic Signing: The authenticated user will submit a test report containing a text description (e.g., ``Pothole on Main Street'') and a sample image. The DApp will be expected to consume a ZKP ticket, hash the payload, and sign it using the local private key before transmitting the multipart form data to the backend relayer.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\textwidth]{Images/Chapter 4/3.png}
+        \caption{Report Submission Form}
+    \end{figure}
+    
+    \item Off-chain Storage and AI Moderation Routing: Upon receiving the payload, the backend relayer will process the submitted data. The visual evidence will be routed to the IPFS integration module, and a \ac{CID} will be generated. Simultaneously, the text and image data will be evaluated by the AI moderation service to verify that the report is classified as legitimate, non-abusive content before proceeding to blockchain submission.
+    
+    \item Blockchain Recording via Meta-Transaction: Following AI approval, the backend relayer will format the data, including the IPFS CID, issue description, and the cryptographic proofs. Then submit a meta-transaction to the smart contract on the Geth PoA network. The transaction is expected to be verified by the validator nodes, securely anchoring the report to the immutable ledger without requiring the citizen to pay any gas fees.
+    
+    \item Frontend Verification: Finally, the DApp's query interface will be refreshed to retrieve the latest blockchain state. The expected outcome is that the newly submitted report will appear in the community feed with its corresponding status badge, upvote count, and image thumbnail, confirming that the entire decentralized pipeline has executed correctly.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/4.png}
+        \hfill
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/5.png}
+        \caption{Views of the Submitted Report in the Community Feed}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/profile.png}
+        \hfill
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/myreports.png}
+        \caption{User Profile and My Reports}
+    \end{figure}
+
+\end{enumerate}
+
+The successful execution of this simulated workflow will validate the system architecture and confirm that the individual components interact correctly to provide a secure, anonymous, and user-friendly civic reporting platform.
+
+
+\section{Comparison with Existing Systems}
+
+To demonstrate the advantages and novel contributions of the proposed community-assisted reporting framework, it is essential to compare its architecture and features against existing solutions in the domain of e-governance and citizen reporting.
+
+\subsection{Centralized Reporting Platforms}
+Traditional crowdsourced reporting systems, such as FixMyStreet and SeeClickFix, have successfully established user-friendly interfaces with intuitive reporting workflows and clear feedback loops. However, as identified in the literature, these platforms rely entirely on centralized server architectures. This centralization creates single points of failure and makes the systems susceptible to data tampering and unauthorized modifications. Furthermore, centralized platforms often require mandatory identity disclosure, which can discourage citizen participation, especially when reporting sensitive issues or criticizing local authorities. 
+In contrast, the proposed system leverages a permissioned blockchain to ensure data immutability and absolute transparency. By employing \ac{ZKP} and identity decoupling, the proposed framework guarantees citizen anonymity while maintaining mathematical accountability, a feature completely absent in conventional centralized systems.
+
+\subsection{Traditional Content Moderation}
+Traditional content moderation in centralized reporting platforms is usually
+performed by administrators or centralized moderation teams. This approach can
+be effective, but it introduces human delay, moderation bias, operational cost, and
+single points of control. It also conflicts with the privacy-preserving and
+decentralized goals of the proposed framework.
+
+The proposed system uses an off-chain AI oracle moderation service instead of a
+manual centralized moderation queue. The moderation process is automated and
+takes place before IPFS upload and blockchain submission. The use of three oracle
+workers reduces dependence on a single moderation model. The aggregator also
+returns structured outputs, including oracle votes, confidence scores, hashes, and
+a digital signature. This provides better auditability than a purely centralized
+manual decision.
+
+However, the implemented prototype does not claim to fully replace human
+judgement in real-world governance systems. AI moderation is used as a first-line
+filter for spam, abusive content, irrelevant reports, and unsafe images. In a
+production deployment, a dispute or appeal process may still be required for
+borderline cases.
+
+\subsection{Public Blockchain Approaches}
+While some theoretical governance models propose using public, permissionless blockchains (such as the Ethereum mainnet) to achieve maximum decentralization, these architectures are poorly suited for frequent local governance interactions. Public blockchains suffer from high transaction latency, limited throughput, and unpredictable, fluctuating gas fees that the user must pay. 
+The proposed framework overcomes these usability challenges by utilizing a private, permissioned blockchain running a \ac{PoA} consensus mechanism. This architecture provides predictable, high-performance transaction processing. Additionally, it eliminates the financial burden on citizens through the use of a backend relayer network (meta-transactions), offering a seamless, "gasless" experience.
+
+\subsection{Domain-Specific Blockchain Solutions}
+Recent literature highlights several blockchain-based complaint management systems, but these are primarily tailored for highly specific domains such as law enforcement (e.g., police complaint registries). These systems often focus narrowly on administrative efficiency, restrict access entirely to authorized personnel, and frequently lack robust mechanisms for handling large multimedia evidence.
+Unlike these isolated solutions, the proposed framework introduces a generalized, community-assisted approach. It actively encourages public participation through opinion polling and community upvoting. Furthermore, it efficiently manages large multimedia files (e.g., images of infrastructure damage) through decentralized off-chain storage via \ac{IPFS}, seamlessly linking cryptographic hashes back to the immutable blockchain ledger.
