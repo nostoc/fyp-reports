@@ -1,23 +1,42 @@
-\chapter{Conclusion and Future Work}
+\chapter{Results, Benchmark Comparison, and Discussion}
 
-\section{Conclusion}
 
-This project aims to demonstrate a blockchain based, community assisted yet privacy-preserved reporting framework for local governments. We aim to mitigate issues in centralized reporting platforms such as lack of transparency, weak data integrity, privacy preservation, and reliability of reports.
-This reporting framework based on a private blockchain, smart contracts, an identity service simulation, a backend relayer, IPFS, AI-assisted moderation, and a web-based DApp. Each module's responsibilities are well defined.
+Synthesizes findings, compares against existing systems, and discusses impact:
+% This chapter discusses the main findings, important design decisions, current progress, and limitations of the proposed system.
 
-The blockchain and smart contracts lay the foundation of tamper-evident report records and workflow. The GovID simulator and ticket-based system enable privacy preservation. The relayer improves UX by handling blockchain transactions on behalf of citizens. IPFS provides scalable off-chain storage external to the blockchain. The AI oracle service helps moderate spam or inappropriate reports before an incident is permanently recorded on-chain.
-At the time of writing, several major achievements have been made. 
-The main insight from this project is that blockchain alone is not enough for a
-practical civic reporting system. It must be combined with privacy mechanisms,
-off-chain storage, moderation, and user-friendly interfaces.
+\section{Synthesis of Experimental Results}
+ Performance, security, and moderation accuracy trade-offs.
+\section{Comparative Benchmark Analysis}
+Proposed system vs. centralized platforms (*FixMyStreet*, *SeeClickFix*), public Ethereum mainnet, and police complaint systems + Comprehensive Comparison Matrix Table.
+\section{Fulfillment of Project Objectives}
 
-\section{Future Work}
+Objective-by-objective evaluation.
+\section{Novel Architectural Contributions}
+** (1) Sybil-resistant anonymous reporting without ZKP client latency; (2) Multi-node AI oracle consensus; (3) Community-enforced FSM government accountability.
+\section{Real-World Governance Impact \& Practical Applicability}** Feasibility for municipal councils in Sri Lanka.
+\section{Ethical, Legal, and Privacy Considerations}** GDPR / Sri Lanka Data Protection Act compliance \& resolving "toxic immutability".
+\section{System Limitations\& Engineering Trade-offs}**
 
-The next major task is to complete full system integration. The DApp, GovID simulator, backend relayer, AI oracle service, IPFS, smart contracts, and blockchain must work together in one complete report submission flow. The government-side workflow should also be completed.  This includes report review, issue assignment, resolution updates, closure, and citizen feedback.The opinion polling functionality should also implemented.
+% \chapter{Conclusion and Future Work}
 
-The current identity system should be improved in future work. A real zero- knowledge proof or self-sovereign identity mechanism can replace the simulated GovID service. A future version of AI-based content moderation service may use vision-language models to compare the submitted image with the selected report category and description. The oracle deployment can also be improved by hosting oracle workers under different administrative domains instead of running them as containers on the same VPS. This would make the oracle layer closer to a decentralized oracle network. More testing is required after integration. This includes blockchain transaction latency, IPFS upload time, oracle response time, and complete report submission time. Security testing is also required before any real-world deployment. Smart con- tracts, APIs, private keys, relayer logic, and deployment infrastructure must be audited carefully. Finally, the DApp should be improved through usability testing.
-\section{Final Remarks}
+% \section{Conclusion}
 
- The proposed system provides a strong foundation for a transparent and privacy- preserving local governance reporting platform. Although the prototype is still under development, the current progress shows that the architecture is feasible.
+% This project aims to demonstrate a blockchain based, community assisted yet privacy-preserved reporting framework for local governments. We aim to mitigate issues in centralized reporting platforms such as lack of transparency, weak data integrity, privacy preservation, and reliability of reports.
+% This reporting framework based on a private blockchain, smart contracts, an identity service simulation, a backend relayer, IPFS, AI-assisted moderation, and a web-based DApp. Each module's responsibilities are well defined.
 
-With further integration, testing, and improvement, this framework can support more trustworthy citizen participation and better accountability in local governance.
+% The blockchain and smart contracts lay the foundation of tamper-evident report records and workflow. The GovID simulator and ticket-based system enable privacy preservation. The relayer improves UX by handling blockchain transactions on behalf of citizens. IPFS provides scalable off-chain storage external to the blockchain. The AI oracle service helps moderate spam or inappropriate reports before an incident is permanently recorded on-chain.
+% At the time of writing, several major achievements have been made. 
+% The main insight from this project is that blockchain alone is not enough for a
+% practical civic reporting system. It must be combined with privacy mechanisms,
+% off-chain storage, moderation, and user-friendly interfaces.
+
+% \section{Future Work}
+
+% The next major task is to complete full system integration. The DApp, GovID simulator, backend relayer, AI oracle service, IPFS, smart contracts, and blockchain must work together in one complete report submission flow. The government-side workflow should also be completed.  This includes report review, issue assignment, resolution updates, closure, and citizen feedback.The opinion polling functionality should also implemented.
+
+% The current identity system should be improved in future work. A real zero- knowledge proof or self-sovereign identity mechanism can replace the simulated GovID service. A future version of AI-based content moderation service may use vision-language models to compare the submitted image with the selected report category and description. The oracle deployment can also be improved by hosting oracle workers under different administrative domains instead of running them as containers on the same VPS. This would make the oracle layer closer to a decentralized oracle network. More testing is required after integration. This includes blockchain transaction latency, IPFS upload time, oracle response time, and complete report submission time. Security testing is also required before any real-world deployment. Smart con- tracts, APIs, private keys, relayer logic, and deployment infrastructure must be audited carefully. Finally, the DApp should be improved through usability testing.
+% \section{Final Remarks}
+
+%  The proposed system provides a strong foundation for a transparent and privacy- preserving local governance reporting platform. Although the prototype is still under development, the current progress shows that the architecture is feasible.
+
+% With further integration, testing, and improvement, this framework can support more trustworthy citizen participation and better accountability in local governance.
