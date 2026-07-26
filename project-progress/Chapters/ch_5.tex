@@ -4,25 +4,11 @@ This chapter discusses the main findings, important design decisions, current pr
 
 \section{Novel Contributions of the Project}
 
-The main contribution of this project is the design of a privacy-preserving citizen reporting system for local governance. The system combines blockchain, smart contracts, IPFS, AI-based moderation, and a web-based DApp into one framework.
-
-A key design decision is the separation of real citizen identity from on-chain report records. Citizens are first verified through the simulated GovID service. After verification, the system uses ticket IDs and pseudonymous key pairs for report submission. This helps citizens report public issues without directly exposing their identity on the blockchain.
-
-Another important contribution is the use of a backend relayer. The relayer submits blockchain transactions on behalf of citizens. This improves usability because citizens do not need to manage gas fees or directly interact with blockchain nodes.
-
-The system also uses IPFS for off-chain storage. Images and larger report content are stored outside the blockchain, while only CIDs and hashes are stored on-chain. This reduces blockchain storage overhead while preserving data integrity.
-
-AI-assisted moderation is used before reports are stored permanently. This helps reduce spam, abusive content, and irrelevant submissions. The moderation service is designed using multiple oracle workers and an aggregator, which reduces dependence on a single moderation node.
+ The main contribution of this project is the design of a privacy-preserving citizen reporting system for local governance. The system combines blockchain, smart contracts, IPFS, AI-based moderation, and a web-based DApp into one frame- work. A key design decision is the separation of real citizen identity from on-chain report records. Citizens are first verified through the simulated GovID service. After verification, the system uses ticket IDs and pseudonymous key pairs for report submission. This helps citizens report public issues without directly exposing their identity on the blockchain. Another important contribution is the use of a backend relayer. The relayer submits blockchain transactions on behalf of citizens. This improves usability because citizens do not need to manage gas fees or directly interact with blockchain nodes. The system also uses IPFS for off-chain storage. Images and report content are stored outside the blockchain, while only CIDs and hashes are stored on-chain. This reduces blockchain storage overhead while preserving data integrity. AI-based content moderation is used before reports are stored permanently. This helps reduce spam, abusive content, and irrelevant submissions. The moderation service is designed using multiple oracle workers and an aggregator, which reduces dependence on a single moderation node.
 
 \section{Overall System Validity}
 
-The current system design supports the main objectives of the project. The permissioned blockchain provides a tamper-evident record of report metadata. Smart contracts provide the base for report creation, state tracking, and future government actions.
-
-The identity mechanism supports privacy by separating real identity verification from blockchain activity. The DApp improves accessibility by giving citizens a simple interface for report submission. The relayer hides blockchain complexity from users.
-
-The AI oracle service has been deployed as a containerized service on a VPS. This shows that off-chain moderation can be integrated with the reporting workflow. IPFS is planned to handle media and report content storage.
-
-At this progress stage, the system is valid as a proof-of-concept. However, full validation requires complete integration between the DApp, relayer, IPFS, smart contracts, and blockchain.
+The current system design supports the main objectives of the project. The permissioned blockchain provides a immutable record of report metadata. Smart contracts provide the base for report creation, state tracking, and future government actions. The identity mechanism supports privacy by separating real identity verification from blockchain activity. The DApp improves accessibility by giving citizens a simple interface for report submission. The relayer hides blockchain complexity from users. The AI oracle service has been deployed as a containerized service on a VPS. This shows that off-chain moderation can be integrated with the reporting workflow. IPFS is planned to handle media and report content storage. At this progress stage, the system is valid as a proof-of-concept. However, full validation requires complete integration between the DApp, relayer, IPFS, smart contracts, and blockchain.
 
 \section{Achievement of Proposed Objectives}
 
@@ -30,11 +16,11 @@ The project has made progress toward the proposed objectives.
 
 The first objective was to design a permissioned blockchain using PoA consensus. The architecture has been designed around a private Ethereum-compatible blockchain. This supports integrity and controlled participation.
 
-The second objective was to use smart contracts for reporting workflows. The smart contract design includes report creation, status management, and event handling. Government-side actions are still under development.
+The second objective was to use smart contracts for reporting workflows. The smart contract design includes report creation, status management, and event handling. Government-side actions are still under development. 
 
-The third objective was to develop user-friendly interfaces. The citizen-facing DApp interfaces for login and report submission have been developed. Further work is needed for government-side interfaces.
+The third objective was to develop user-friendly interfaces. The citizen-facing DApp interfaces for login, report submission, report feed have been developed. Further work is needed for government-side interfaces.
 
-The fourth objective was to integrate AI-based moderation. A text-based AI oracle moderation service has been implemented and deployed. Image moderation is planned as a future extension.
+The fourth objective was to integrate AI-based moderation. AI-based content moderation service has been implemented, tested, and deployed. 
 
 Overall, the project has achieved good progress at subsystem level. The next important task is full end-to-end integration.
 
@@ -50,11 +36,11 @@ Third, the relayer is important for usability. It allows citizens to use the sys
 
 Fourth, AI moderation should happen before IPFS upload and blockchain submission. This reduces the risk of storing harmful or irrelevant content permanently.
 
-Finally, containerized deployment improved service isolation and deployment consistency, especially for the oracle subsystem.
+Finally, containerized deployment improved service isolation and deployment consistency.
 
 \section{Real-world Applicability}
 
-The proposed system can be useful for local governments where citizens report issues such as road damage, garbage disposal, drainage problems, broken streetlights, and flooding.
+The proposed system can be useful for local governments where citizens report issues such as road damage, garbage disposal, drainage problems, broken streetlights, and flooding, or illegal activities. 
 
 In a real-world scenario, a citizen can submit a report through the DApp. The report is verified, moderated, stored off-chain, and recorded on the blockchain. Later, the citizen can check whether the report still exists and track its status.
 
@@ -62,14 +48,5 @@ This can improve trust between citizens and local authorities. It can also creat
 
 \section{Limitations of the Current Prototype}
 
-The current prototype has some limitations.
-
-The identity system is simulated. It does not implement a complete real-world zero-knowledge identity system.
-
-The AI moderation service currently focuses mainly on text moderation. Image moderation is not fully implemented yet.
-
-The oracle decentralization is simulated using separate containers. In a stronger real-world deployment, oracle nodes should run on separate servers or be operated by different organizations.
-
-Full end-to-end integration is still in progress. Some components are implemented and tested separately, but the complete report submission flow must still be validated.
-
-The system is also tested only in a controlled environment. Real-world deployment would require legal, security, and institutional approval.
+The current prototype has some limitations. The identity system is simulated. It does not implement a complete real-world zero-knowledge identity system. Although the current prototype supports both text moderation and image safety
+moderation, the moderation system is still limited to a controlled experimental environment. The image moderation component focuses mainly on detecting unsafe visual content. It does not fully verify whether an image is geographically authentic, whether it was captured at the reported location, or whether it was generated or manipulated using generative AI tools. The oracle decentralization is simulated using separate containers. In a stronger real-world deployment, oracle nodes should run on separate servers or be operated by different organizations. Full end-to-end integration is still in progress. The system is also tested only in a controlled environment. Real-world deployment would require legal, security, and institutional approval.

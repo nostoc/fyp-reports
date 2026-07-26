@@ -151,7 +151,7 @@ The most rigorous testing phase will evaluate the strict 8-stage lifecycle of a 
     \item Thresholds and Benchmarks: The testing benchmark mandates 100 percent branch and statement coverage for all state transition functions. The system must yield zero successful unauthorized state bypasses, enforcing absolute adherence to the 8-stage consensus lifecycle.
 \end{enumerate}
 
-\section{AI Moderation Testing}
+\subsection{AI Moderation Testing}
 
 % Metrics:
 
@@ -159,87 +159,121 @@ The most rigorous testing phase will evaluate the strict 8-stage lifecycle of a 
 % classification correctness,
 % voting consistency.
 
-AI moderation testing evaluates whether the moderation subsystem correctly classifies submitted report content as acceptable or unacceptable. At the current stage, the implemented AI moderation service focuses mainly on text-based moderation. Image moderation is planned as a future extension.
-
+AI moderation testing evaluates whether the moderation subsystem correctly
+classifies submitted report content as acceptable or unacceptable before IPFS
+upload and blockchain submission. The implemented AI moderation service now
+supports both text-based moderation and image safety moderation. Text moderation
+is used to identify spam, abusive language, threatening content, and irrelevant
+non-civic reports. Image moderation is used to identify unsafe visual content in
+attached media files.
 
 The objectives of AI moderation testing are:
 
 \begin{enumerate}
-    \item to verify that the oracle aggregator API is accessible
-    \item to verify that all three oracle workers respond correctly
-    \item to test valid civic report acceptance
-    \item to test spam and abusive content rejection
-    \item to verify majority voting behavior
-    \item to verify generation of report hash, decision hash, and signature
+    \item to verify that the deployed oracle aggregator API is accessible
+    \item to verify that all three oracle worker containers respond correctly
+    \item to test acceptance of valid civic reports
+    \item to test rejection of spam, abusive, threatening, and non-civic text
+    \item to test rejection of unsafe image content
+    \item to verify relayer request authentication using API key, timestamp, nonce,
+    and relayer signature
+    \item to verify oracle voting and final aggregation behavior
+    \item to verify generation of report hash, request hash, decision hash, and
+    aggregator signature
 \end{enumerate}
 
-The AI moderation service is deployed on the server 2 using Dokploy and Docker containers. The deployment includes:
+The AI moderation service is deployed on Server 2 using Dokploy and Docker
+containers. The deployment includes:
 
 \begin{enumerate}
-    \item Government Oracle container
-    \item International Oracle container
-    \item NGO Oracle container
+    \item Safety Oracle container
+    \item Spam and Abuse Oracle container
+    \item Civic Relevance Oracle container
     \item Oracle Aggregator container
 \end{enumerate}
 
-The backend relayer communicates only with the aggregator API. The aggregator communicates with the three oracle workers using internal container networking.
+The backend relayer communicates only with the aggregator API. The aggregator
+communicates with the three oracle workers using internal container networking.
+This design prevents direct external access to the oracle workers and keeps the
+moderation workflow controlled through the aggregator.
 
-\subsection{API Availability Test}
-
+\subsubsection{API Availability and Security Tests}
+The first set of tests verifies whether the deployed oracle API is reachable and
+whether unauthorized requests are rejected. These tests are important because
+only the backend relayer should be able to call the moderation API successfully.
 The test cases used for testing moderation API availability are shown in the Table ~\ref{tab:ai_api_tests}
+
 \begin{table}[h!]
 \centering
-\caption{AI moderation API availability tests}
-\begin{tabular}{|p{2cm}|p{6cm}|p{5cm}|p{2cm}|}
+\caption{AI moderation API availability and security tests}
+\begin{tabular}{|p{2cm}|p{5cm}|p{5cm}|p{2cm}|}
 \hline
 \textbf{Test ID} & \textbf{Test} & \textbf{Expected Result} & \textbf{Status} \\
 \hline
 AI-T01 & Call aggregator health endpoint & Service returns running status & Passed \\
 \hline
-AI-T02 & Check oracle worker availability & Aggregator identifies available oracle workers & Passed \\
+AI-T02 & Send valid signed relayer request & Request is processed successfully & Passed \\
 \hline
-AI-T03 & Send request without API key & Request rejected & Passed \\
+AI-T03 & Send request without API key & Request is rejected & Passed \\
 \hline
-AI-T04 & Send request with valid API key & Request processed successfully & Passed \\
+AI-T04 & Send request with wrong API key & Request is rejected & Passed \\
+\hline
+AI-T05 & Send request with invalid relayer signature & Request is rejected & Passed \\
+\hline
+AI-T06 & Reuse the same nonce & Replay request is rejected & Passed \\
+\hline
+AI-T07 & Send expired timestamp & Request is rejected & Passed \\
 \hline
 \end{tabular}
 \label{tab:ai_api_tests}
 \end{table}
 
-\subsection{Moderation Classification Tests}
+\subsubsection{Text Moderation Classification Tests}
+
+The next set of tests evaluates text moderation behavior. The test cases include
+valid civic reports, spam reports, threatening content, empty reports, and non-civic
+content. These tests were executed using an automated signed test client that
+simulates the backend relayer.
 
 The test cases used for testing moderation classification are shown in Table ~\ref{tab:ai_classification_tests}
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
-\caption{AI moderation classification tests}
-\begin{tabular}{|p{2cm}|p{4cm}|p{6cm}|p{4cm}|}
+\caption{AI text moderation classification tests}
+\begin{tabular}{|p{2cm}|p{3cm}|p{4cm}|p{2cm}|p{2cm}|}
 \hline
-\textbf{Test ID} & \textbf{Input Type} & \textbf{Example Input} & \textbf{Expected Decision} \\
+\textbf{Test ID} & \textbf{Input Type} & \textbf{Example Input} & \textbf{Expected Decision} & \textbf{Status}\\
 \hline
-AI-T05 & Valid civic report & ``There is a large pothole near the public school.'' & ACCEPT \\
+AI-T08 & Valid civic report & ``There is a large pothole near the public school road causing traffic problems.'' & ACCEPT & Passed \\
 \hline
-AI-T06 & Spam content & ``BUY NOW FREE MONEY CLICK HERE.'' & REJECT \\
+AI-T09 & Valid waste management report & ``Garbage has not been collected near the public market for three days.'' & ACCEPT & Passed\\
 \hline
-AI-T07 & Toxic content & Text containing abusive or threatening phrases & REJECT \\
+AI-T10 & Spam content & ``BUY NOW FREE MONEY CLICK HERE LIMITED OFFER.'' & REJECT & Passed\\
 \hline
-AI-T08 & Empty report & Empty text field & Reject request / validation error \\
+AI-T11 & Threatening content & Text containing a public issue combined with a threatening phrase & REJECT & Passed \\
+\hline
+AI-T12 & Non-civic content & ``I watched a movie yesterday and the food at the restaurant was very tasty.'' & REJECT & Passed \\
+\hline
+AI-T13 & Empty report & Empty text field & Validation error / REJECT & Passed \\
 \hline
 \end{tabular}
 \label{tab:ai_classification_tests}
 \end{table}
 
-\subsection{Oracle Voting Validation}
+\subsubsection{Oracle Voting Validation}
 
-The oracle moderation system uses a three-node voting mechanism. Each oracle returns either one of the votes, \texttt{ACCEPT} or \texttt{REJECT}.
+The oracle moderation system uses three oracle workers. Each oracle returns either
+ACCEPT or REJECT. The aggregator combines the votes using a safety-prioritized
+majority logic. If any oracle identifies a critical safety violation, the final decision
+is REJECT even if the other oracles accept the report. If there is no critical
+violation, the aggregator uses majority voting. Table \ref{tab:oracle_voting_validation} summarizes the validation logic.
 
-The aggregator applies majority-based decision logic.
 
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
 \caption{Oracle voting validation}
-\begin{tabular}{|p{8cm}|p{6cm}|}
+\begin{tabular}{|p{6cm}|p{5cm}|}
 \hline
 \textbf{Oracle Votes} & \textbf{Expected Final Decision} \\
 \hline
@@ -251,64 +285,77 @@ REJECT, REJECT, ACCEPT & REJECT \\
 \hline
 REJECT, REJECT, REJECT & REJECT \\
 \hline
+Critical safety violation detected & REJECT \\
+\hline
 \end{tabular}
 \label{tab:oracle_voting_validation}
 \end{table}
 
-\subsection{Response Structure Validation}
-
-Each successful oracle response should include the fields shown in Table~\ref{tab:oracle_response_fields}.
+\subsubsection{Response Structure Validation}
+Each successful oracle response should include the fields shown in Table
+\ref{tab:oracle-response-fields}. These fields support auditability, debugging, and
+tamper-evidence in the moderation workflow.
 
 \begin{table}[h!]
 \centering
 \caption{Oracle aggregator response fields}
+\label{tab:oracle-response-fields}
 \begin{tabular}{|p{5cm}|p{9cm}|}
 \hline
 \textbf{Field} & \textbf{Purpose} \\
 \hline
-\texttt{final\_decision} & Final moderation result \\
+final\_decision & Final moderation result returned as ACCEPT or REJECT \\
 \hline
-\texttt{final\_confidence} & Aggregated confidence value \\
+final\_confidence & Aggregated confidence value of the final moderation decision \\
 \hline
-\texttt{report\_hash} & Hash of submitted report payload \\
+risk\_level & Indicates the moderation risk level of the submitted report \\
 \hline
-\texttt{decision\_hash} & Hash of final moderation decision \\
+report\_hash & Hash of the submitted report metadata and media hashes \\
 \hline
-\texttt{oracle\_votes} & Individual oracle outputs \\
+request\_hash & Hash of the signed moderation request reconstructed by the aggregator \\
 \hline
-\texttt{aggregator\_signature} & Signature of decision hash \\
+decision\_hash & Hash of the final moderation decision object \\
+\hline
+aggregator\_signature & Digital signature generated by the aggregator over the decision hash \\
+\hline
+oracle\_votes & Individual outputs returned by the Safety, Spam and Abuse, and Civic Relevance oracles \\
+\hline
+security & Indicates relayer signature verification, timestamp validation, and nonce acceptance \\
+\hline
+processing\_time\_ms & Time taken by the oracle aggregator to return the moderation decision \\
 \hline
 \end{tabular}
-\label{tab:oracle_response_fields}
 \end{table}
 
-The presence of \texttt{report\_hash}, \texttt{decision\_hash}, and \texttt{aggregator\_signature} supports auditability and tamper-evidence in the moderation process.
-\vspace{4cm}
+The AI content moderation service was successfully deployed as separate Docker
+containers on a VPS and integrated with the backend relayer. Testing confirms
+that the aggregator can receive signed moderation requests, verify the relayer
+signature, communicate with all oracle workers, collect votes, and return an
+aggregated ACCEPT or REJECT decision. The tests also confirm that unsafe image
+content can be rejected before IPFS upload and blockchain submission.
 
-The AI content moderation service was successfully deployed as separate containers on a VPS. Preliminary API testing confirms that the aggregator can receive moderation requests, communicate with the oracle workers, collect votes, and return an aggregated decision. This validates the feasibility of the decentralized oracle moderation approach at prototype level.
+
+\subsection{IPFS Storage Testing}
 
 
-\section{IPFS Storage Testing}
+The system uses IPFS to store images sent by citizens. Saving images directly on the blockchain is too costly. So the system saves images on IPFS instead. When an image is approved, the server sends it to the IPFS service. The IPFS service saves the image and returns a short code called a CID. The CID is made from the image content. If the image changes, the CID changes too. This makes sure the image stays as it is. The server then saves the CID and the report on the blockchain.
 
+At this point, the IPFS service has been built and is running. It was packed into Docker and put on the production server. It runs alongside the IPFS node as two containers. A health check was done to make sure everything works. The check showed the service is healthy. The IPFS node was running version 0.41.0. The connection between the service and the node was confirmed. The base of the storage system is now stable and ready.
 
-The InterPlanetary File System (IPFS) serves as the off-chain storage layer of the proposed system, dedicated exclusively to storing citizen-submitted report images. Since storing image files directly on the blockchain is expensive and impractical, the backend server forwards approved images to the IPFS microservice, which uploads them to the IPFS node and returns the resulting Content Identifier (CID). The CID is a cryptographic hash of the image content, meaning if the image changes in any way, the CID changes as well. This design ensures image integrity without burdening the blockchain with large files. The backend server then submits this CID along with the report data to the smart contract for permanent on-chain recording.
+But the full testing is not done yet. The backend server, the AI check tool, and the blockchain part are still being built. Testing will continue as each part gets finished.
 
-At the current stage of development, the IPFS microservice has been successfully implemented, containerised using Docker, and deployed to the production server alongside the IPFS node as a two-container stack. The connection between the IPFS microservice and the underlying IPFS node has been established and verified through a health verification test conducted against the deployed service. The test confirmed a healthy status, a live connection to the IPFS node running version 0.41.0, and accurate node information, establishing that the foundation of the off-chain storage layer is stable, deployed, and ready for further integration.
+Once the backend server is ready, upload testing will begin. Images of different sizes will be uploaded. The time taken for each upload will be noted. This will show how fast the system works.
 
-However, since the backend server, the AI content moderation module, and the blockchain layer have not yet been completed, the full testing of the IPFS storage integration is still in progress. The remaining testing activities will be carried out progressively as the dependent components are completed by the respective team members.
+After that, retrieval testing will be done. An image will be uploaded and then downloaded again. The downloaded image will be compared to the original. This confirms nothing was lost or changed.
 
-Upload performance testing will be conducted once the backend server is ready to forward approved images to the IPFS microservice. Images of different sizes will be uploaded through the IPFS service layer and the time taken for each upload will be recorded and analysed to assess the responsiveness of the system under realistic reporting conditions.
+CID testing will also be carried out. After an image is uploaded, its CID is saved. When the image is downloaded, the CID is worked out again. Both CIDs are compared. If they match, the system is working correctly.
 
-Retrieval integrity testing will be performed to confirm that images downloaded from IPFS remain identical to the originals. After uploading an image and obtaining its CID, the same image will be retrieved using that CID and compared against the original content byte by byte to verify that nothing was lost or altered during storage and retrieval.
+Once the backend connects to the AI tool, moderation testing will be done. This will check that only approved images are saved on IPFS. Bad images should be stopped before any CID is made.
 
-CID validation testing will be carried out to ensure that the generated CID accurately represents the corresponding image content. For each uploaded image, the CID produced by IPFS will be recorded, and after retrieval, the CID will be recalculated from the downloaded content and compared against the original value to confirm that the content-addressing mechanism functions correctly.
+When the blockchain part is ready, end-to-end testing will be done. This will check the full flow. From the citizen sending a report, to the image being saved, to the CID going on the blockchain. Everything will be checked together.
 
-AI-assisted content moderation integration testing will be performed once the backend server connects its moderation pipeline to the IPFS microservice. These tests will verify that only images approved by the AI moderation service are forwarded to and stored on the IPFS node, ensuring that inappropriate content is rejected before any CID is generated or passed to the smart contract.
-
-End-to-end integration testing between the IPFS microservice and the deployed smart contracts will be conducted once the blockchain layer and backend server are completed. These tests will verify that image CIDs recorded on-chain correctly resolve back to their corresponding images when fetched through the IPFS retrieval layer, confirming that the complete flow from image submission through backend server, IPFS storage, and on-chain recording operates as intended.
-
-Finally, performance evaluation under simulated load will be carried out to measure upload throughput and retrieval latency when multiple concurrent image submissions are processed simultaneously, as outlined in the evaluation metrics defined in the methodology chapter. Additionally, the planned expansion to a three-node IPFS peer network across three separate machines will be validated to confirm redundant image availability and fault tolerance within the controlled laboratory environment.
-\section{End-to-End Integration Testing}
+Finally, load testing will be done. Many images will be sent at the same time. The system will be checked to see how well it handles that. The plan to use three IPFS nodes on three different machines will also be tested. This will confirm that if one node fails, the others still work.
+\subsection{End-to-End Integration Testing}
 
 To ensure the seamless operation of the entire platform, end-to-end integration testing will be conducted by simulating the complete lifecycle of a civic issue report. This testing phase will verify the interoperability between the frontend DApp, the backend relayer, the IPFS storage network, the AI moderation oracle, and the underlying permissioned blockchain.
 
@@ -347,6 +394,14 @@ The end-to-end testing workflow will be executed as follows:
         \caption{Views of the Submitted Report in the Community Feed}
     \end{figure}
 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/profile.png}
+        \hfill
+        \includegraphics[width=0.45\textwidth]{Images/Chapter 4/myreports.png}
+        \caption{User Profile and My Reports}
+    \end{figure}
+
 \end{enumerate}
 
 The successful execution of this simulated workflow will validate the system architecture and confirm that the individual components interact correctly to provide a secure, anonymous, and user-friendly civic reporting platform.
@@ -361,8 +416,25 @@ Traditional crowdsourced reporting systems, such as FixMyStreet and SeeClickFix,
 In contrast, the proposed system leverages a permissioned blockchain to ensure data immutability and absolute transparency. By employing \ac{ZKP} and identity decoupling, the proposed framework guarantees citizen anonymity while maintaining mathematical accountability, a feature completely absent in conventional centralized systems.
 
 \subsection{Traditional Content Moderation}
-Existing governance platforms typically rely on manual content moderation by human administrators to filter out spam or abusive content. While effective for small-scale operations, manual moderation introduces significant transaction latency, high operational costs, and the potential for human bias. Most importantly, it reintroduces centralized control over what public information is allowed to be published.
-The proposed system addresses these limitations by integrating an AI-based off-chain moderation oracle. By automating the filtering of textual and visual content using machine learning models before the data is permanently recorded on-chain, the system achieves scalable, unbiased, and rapid moderation while preserving the decentralized ethos of the platform.
+Traditional content moderation in centralized reporting platforms is usually
+performed by administrators or centralized moderation teams. This approach can
+be effective, but it introduces human delay, moderation bias, operational cost, and
+single points of control. It also conflicts with the privacy-preserving and
+decentralized goals of the proposed framework.
+
+The proposed system uses an off-chain AI oracle moderation service instead of a
+manual centralized moderation queue. The moderation process is automated and
+takes place before IPFS upload and blockchain submission. The use of three oracle
+workers reduces dependence on a single moderation model. The aggregator also
+returns structured outputs, including oracle votes, confidence scores, hashes, and
+a digital signature. This provides better auditability than a purely centralized
+manual decision.
+
+However, the implemented prototype does not claim to fully replace human
+judgement in real-world governance systems. AI moderation is used as a first-line
+filter for spam, abusive content, irrelevant reports, and unsafe images. In a
+production deployment, a dispute or appeal process may still be required for
+borderline cases.
 
 \subsection{Public Blockchain Approaches}
 While some theoretical governance models propose using public, permissionless blockchains (such as the Ethereum mainnet) to achieve maximum decentralization, these architectures are poorly suited for frequent local governance interactions. Public blockchains suffer from high transaction latency, limited throughput, and unpredictable, fluctuating gas fees that the user must pay. 
