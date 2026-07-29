@@ -1,23 +1,23 @@
 \chapter{System Architecture and Workflow Design}
 \label{ch:architecture}
 
-This chapter presents the comprehensive architectural framework and operational workflow design of the proposed blockchain-based, community-assisted, privacy-preserving reporting platform for local governance. Achieving an optimal balance between citizen anonymity, data immutability, spam mitigation, transparent civic accountability, and decentralized administrative governance requires a structured, multi-layered system architecture. This chapter details the division of responsibilities across on-chain and off-chain components, specifies the communication and verification protocols between architectural layers, defines the underlying mathematical and finite state machine (\ac{FSM}) models governing issue lifecycles, and outlines the deterministic workflows executed during citizen authentication, report submission, community validation, authority resolution, public opinion polling, and two-tier multi-signature governance.
+The chapter sets out the complete architectural framework and the design of the operational workflow for the proposed blockchain-based, community-assisted, privacy-preserving reporting platform concerning local governance. To attain an optimal balance between citizen anonymity, data immutability, spam prevention, transparent civic accountability, and decentralised administrative governance, a well-structured, multi-layered system architecture is required. In this chapter the allocation of responsibilities between the on-chain and off-chain components is explained, the communication and verification procedures between the various layers of the architecture are specified, the mathematical and finite state machine (Finite State Machine (\ac{FSM})) models that control the lifecycle of issues are defined, and the deterministic workflows carried out during citizen authentication, report submission, community validation, authority resolution, public opinion polling, and two-tier multi-signature governance are outlined.
 
 \section{Overall System Architecture}
 \label{sec:overall-architecture}
 
-The proposed system adopts a hybrid on-chain and off-chain architectural design. While decentralized ledger technology provides immutability, transparency, and tamper-evident audit trails, executing high-capacity media storage and computationally complex algorithms directly on-chain is technically unfeasible and economically prohibitive. Consequently, the architecture strictly decouples immutable state management and cryptographic verification from data storage and content evaluation.
+The system in question makes use of a combined on-chain and off-chain architectural approach. Although decentralized ledger technology ensures immutability, transparency, and the presence of tamper-evident audit trails, it is technically impossible and economically unreasonable to carry out high-capacity media storage and the execution of computationally complex algorithms directly on the chain. As a result, the architecture fully separates the management of the immutable state and cryptographic verification from the storage of data and the evaluation of content.
 
 \subsection{Hybrid On-Chain/Off-Chain Model}
 \label{subsec:hybrid-model}
 
 The hybrid model separates system operations into two synchronized environments:
 \begin{enumerate}
-    \item \textbf{On-Chain Execution Environment:} Implemented as a private, permissioned \ac{PoA} blockchain network. This environment stores minimal, immutable state information, including report metadata, lifecycle state transitions, cryptographic hashes of report payloads, one-time ticket nullifiers, role-based access control (\ac{RBAC}) permissions, two-tier multi-signature governance proposals, on-chain official identity profiles, and community voting tallies.
-    \item \textbf{Off-Chain Execution Environment:} Encompasses computationally intensive and data-heavy operations that cannot occur on-chain. This includes the storage of high-resolution multimedia evidence in \ac{IPFS}, automated natural language and visual content moderation via an ensemble of \ac{AI} classifiers, gasless transaction orchestration performed by a middleware backend relayer, automated account funding via event listeners, and background cron jobs for voting window batch finalizations.
+    \item \textbf{On-Chain Execution Environment:} The on-chain execution environment has been implemented as a private and permissioned PoA blockchain network. It holds only minimal and immutable state information, such as report metadata, the various lifecycle state transitions, the cryptographic hashes of the report payloads, the one-time ticket nullifiers, the role-based access control (\ac{RBAC}) permissions, the two-tier multi-signature governance proposals, the on-chain official identity profiles, and the results of community voting.
+    \item \textbf{Off-Chain Execution Environment:} This refers to the set of computationally demanding and data-intensive operations which cannot take place on-chain, such as storing high-resolution multimedia evidence in \ac{IPFS}, carrying out automated natural language and visual content moderation using an ensemble of \ac{AI} classifiers, carrying out gasless transaction orchestration through a middleware backend relayer, providing automated account funding by means of event listeners, and carrying out background cron jobs for the batch finalisation of voting windows.
 \end{enumerate}
 
-Figure~\ref{fig:overall-architecture} illustrates the high-level architecture of the system, depicting the structural boundaries and data bridges between the user interface, identity verification layer, middleware orchestrator, off-chain services, and the permissioned blockchain ledger.
+Figure~\ref{fig:overall-architecture} shows the high-level architecture of the system, indicating the structural boundaries and the data links between the user interface, the identity verification layer, the middleware orchestrator, the off-chain services, and the permissioned blockchain ledger.
 
 \begin{figure}[!htbp]
     \centering
@@ -26,22 +26,26 @@ Figure~\ref{fig:overall-architecture} illustrates the high-level architecture of
     \label{fig:overall-architecture}
 \end{figure}
 
-By leveraging this hybrid design, the system preserves the confidentiality of citizen identities while guaranteeing that all submitted reports, voting actions, authority responses, and administrative role assignments remain publicly verifiable and resistant to unilateral modification or censorship.
+The system is able to maintain the confidentiality of citizen identities while at the same time ensuring that all the reports submitted, the voting actions, the responses from authorities, and the assignments of administrative roles remain publicly verifiable and are resistant to unilateral alteration or censorship.
 
 \subsection{Six-Layer Architectural Topology}
 \label{subsec:six-layer-topology}
 
-To achieve modularity, fault isolation, and scalability, the overall architecture is structured into a six-layer topology. Each layer encapsulates specific functional responsibilities and exposes standardized interfaces to adjacent layers:
+In order to attain modularity, fault isolation, and scalability, the entire architecture is divided into a six-layer structure, each layer taking on specific functional responsibilities and providing standard interfaces to the layers next to it:
 
 \begin{enumerate}
     \item \textbf{User Layer:}
-    This layer comprises the primary participants interacting with the ecosystem: civic citizens, municipal government authorities, and pre-approved institutional stakeholders such as \ac{NGO}s. Citizens report civic issues and participate in validation voting, while authorities monitor, claim, and resolve reported infrastructure problems under the governance of municipal Super Admins.
+
+    This layer includes the main actors who interact with the ecosystem, namely ordinary citizens, the authorities of the municipal government, and previously approved institutional stakeholders such as Non-Governmental Organisations \ac{NGO}. Citizens submit reports about civic issues and take part in validation voting, while the authorities keep an eye on the matter, claim the reported infrastructure problems and resolve them all under the oversight of the municipal Super Admins.
+
 
     \item \textbf{Presentation (DApp) Layer:}
-    The presentation layer consists of a responsive, web-based \ac{DApp} built with Next.js and React. It serves as the primary interface for citizens, government officials, and municipal administrators. For citizens, the \ac{DApp} provides intuitive workflows for authentication, report submission, media uploading, community feed browsing, and anonymous voting. For authorities and Super Admins, it provides an authenticated dashboard to track open reports, claim tasks, post mid-work progress updates, mark issues as resolved, and submit or vote on two-tier multi-signature governance proposals. The presentation layer abstracts underlying blockchain complexity, allowing users to interact with the platform without installing cryptocurrency wallets or managing native gas assets.
+
+    The presentation layer is a responsive, web-based \ac{DApp} developed using Next.js and React, and it functions as the main interface for citizens, government officials, and municipal administrators. Citizens are offered intuitive workflows which allow them to carry out authentication, submit reports, upload media, browse the community feed, and vote anonymously. For authorities and Super Admins, the layer provides an authenticated dashboard which enables them to keep track of open reports, claim tasks, post mid-work progress updates, mark issues as resolved, and either submit or vote on two-tier multi-signature governance proposals. This presentation layer hides the underlying blockchain complexity so that users do not need to install cryptocurrency wallets or deal with native gas assets.
+
 
     \item \textbf{Identity and Authentication Layer:}
-    This layer is responsible for verifying citizen credentials and issuing cryptographic proof of entitlement without associating \ac{PII} with on-chain activities. Implemented via the Zero-Knowledge Proof (\ac{ZKP}) GovID Simulator, this layer authenticates citizens against an official municipal registry and generates batches of single-use, government-signed ticket identifiers (\texttt{zkpTicketId}) along with a unique citizen seed. This mechanism establishes a trust anchor that prevents Sybil attacks while ensuring complete identity decoupling.
+    This layer has the function of verifying the credentials of citizens and providing cryptographic proof of their entitlements without linking any personal identifiable information to the on-chain activities. It is achieved through the use of the Zero-Knowledge Proof (\ac{ZKP}) GovID Simulator, which authenticates citizens against an official municipal registry and produces batches of single-use ticket identifiers (\texttt{zkpTicketId}) that are signed by the government together with a unique citizen seed. This approach sets up a trust anchor that stops Sybil attacks while at the same time ensuring full identity decoupling.
 
     \item \textbf{Middleware Orchestration (Relayer) Layer:}
     The backend relayer acts as the centralized gateway and coordination bridge between web clients and the blockchain network. Built using NestJS, the relayer receives signed report payloads and meta-transactions from the \ac{DApp}, executes a dual-layer cryptographic verification of government-signed tickets and citizen signatures, forwards report text and media to the \ac{AI} moderation service, anchors accepted content to \ac{IPFS}, and submits gas-sponsored transactions to the blockchain on behalf of users. Additionally, this layer incorporates an automated \texttt{AuthorityFundingService} to fund newly approved municipal workers and a background \texttt{CronService} to execute automated batch finalization of expired voting phases.
@@ -49,12 +53,13 @@ To achieve modularity, fault isolation, and scalability, the overall architectur
     \item \textbf{Off-Chain Services Layer:}
     This layer hosts specialized services required for content validation and decentralized storage:
     \begin{itemize}
-        \item \textit{AI Content Moderation Ensemble:} A multi-oracle machine learning service that evaluates textual descriptions and visual evidence for spam, toxicity, abuse, and civic relevance before blockchain submission.
-        \item \textit{IPFS Distributed Storage:} A peer-to-peer storage network that retains raw report descriptions, images, and completion evidence, returning immutable \ac{CID}s that are subsequently recorded on-chain.
+        \item \textit{AI Content Moderation Ensemble:} A machine learning service using multiple oracles which assesses textual descriptions and visual evidence for spam, toxicity, abuse, and civic relevance prior to submission to the blockchain.
+        \item \textit{IPFS Distributed Storage:} A peer-to-peer storage network which keeps the original report descriptions, images, and completion evidence and returns immutable \ac{CID} that are then recorded on the blockchain.
     \end{itemize}
 
     \item \textbf{Blockchain Ledger Layer:}
-    The foundation of the architecture is a private, permissioned blockchain running under the Clique \ac{PoA} consensus engine. This layer executes the compiled smart contract suite—comprising \texttt{Reporting.sol}, \texttt{OpinionPolling.sol}, and \texttt{AuthorityMultiSig.sol}—which enforce deterministic lifecycle rules, manage two-tier municipal access control, maintain on-chain profile directories, track one-time ticket nullifiers, and record an append-only audit trail of all governance events.
+    The foundation of the architecture is a private, permissioned blockchain running under the Clique \ac{PoA} consensus engine. This layer executes the compiled smart contract suite—comprising \texttt{Reporting.sol}, \texttt{OpinionPolling.sol}, and \texttt{AuthorityMultiSig.sol}—which enforce deterministic lifecycle rules, manage two-tier municipal access control, maintain on-chain profile directories, track one-time ticket nullifiers, and record an append-only audit trail of all governance events
+
 \end{enumerate}
 
 \section{Subsystem Interconnection \& Interaction Design}
@@ -67,26 +72,26 @@ The operational integrity of the platform depends on robust, cryptographically s
 
 Inter-layer communication is governed by three primary protocol interfaces:
 \begin{enumerate}
-    \item \textbf{REST/HTTPS API Protocols:} The presentation \ac{DApp} communicates with the ZKP GovID Simulator and the Backend Relayer over secure HTTPS. Report submissions, ticket requests, and polling queries are structured as standard JSON payloads. REST endpoints enforce rate-limiting, request validation, and transport-layer encryption.
-    \item \textbf{JSON-RPC and WebSocket Protocols:} The Backend Relayer and \ac{AI} Oracle workers communicate with the private PoA blockchain via Ethereum-compatible JSON-RPC and WebSocket connections over HTTP/WSS. WebSocket providers enable real-time event streaming, allowing off-chain workers to subscribe to contract events such as \texttt{ReportCreated}, \texttt{ReportStatusChanged}, and \texttt{ProposalExecuted} with sub-second latency.
-    \item \textbf{IPFS HTTP Gateway and RPC API:} The Backend Relayer and \ac{AI} Oracles interact with the local \ac{IPFS} daemon via its RPC API (port 5001) for pinning files and retrieving metadata, while client-side media rendering utilizes decentralized HTTP gateways.
+    \item \textbf{REST/HTTPS API Protocols:} For the REST/HTTPS API protocols, the \ac{DApp} sends its communications to both the ZKP GovID Simulator and the Backend Relayer via secure HTTPS. When it submits reports, requests tickets, or carries out polling queries, it does so by using standard JSON payloads. The REST endpoints include rate-limiting, request validation, and transport-layer encryption. 
+    \item \textbf{JSON-RPC and WebSocket Protocols:} For the backend relayer and \ac{AI} Oracle workers, communication with the private PoA blockchain takes place through Ethereum-compatible JSON-RPC and WebSocket connections using HTTP or WSS. The use of WebSocket providers allows for real-time event streaming, which enables the off-chain workers to subscribe to events such as \texttt{ReportCreated}, \texttt{ReportStatusChanged}, and \texttt{ProposalExecuted} with a latency of less than a second.
+    \item \textbf{IPFS HTTP Gateway and RPC API:} For pinning files and obtaining metadata, the Backend Relayer and \ac{AI} Oracles communicate with the local \ac{IPFS} daemon through its RPC API (on port 5001), whereas media rendering on the client side makes use of decentralised HTTP gateways.
 \end{enumerate}
 
 \subsection{Dual-Layer Cryptographic Verification Engine}
 \label{subsec:dual-layer-verification}
 
-To prevent unauthorized submissions and payload tampering without requiring citizens to submit transactions directly to the blockchain, the Backend Relayer implements a dual-layer cryptographic verification engine. When a citizen submits a report, the relayer evaluates two distinct signatures before initiating off-chain storage or on-chain anchoring:
+In order not to require citizens to submit their transactions directly to the blockchain and at the same time to prevent unauthorized submissions and payload tampering, the Backend Relayer makes use of a dual-layer cryptographic verification engine. When a citizen submits a report, the relayer checks two separate signatures before carrying out off-chain storage or on-chain anchoring:
 
 \begin{enumerate}
-    \item \textbf{Government Ticket Authenticity Verification:} The relayer inspects the single-use ticket identifier (\texttt{zkpTicketId}) attached to the request. It verifies the cryptographic signature generated by the ZKP GovID Simulator using the official government authority's ECDSA public key. This confirms that the submitter is a verified citizen and that the ticket has not been forged.
-    \item \textbf{Citizen Payload Integrity Verification:} The relayer verifies the citizen's ECDSA signature over the composite report hash, defined mathematically as:
+    \item \textbf{Government Ticket Authenticity Verification:} The relayer checks the single-use ticket identifier (\texttt{zkpTicketId}) included in the request and verifies the cryptographic signature that was generated by the ZKP GovID Simulator using the official government authority’s ECDSA public key; this ensures that the person making the submission is a verified citizen and that the ticket has not been forged.
+    \item \textbf{Citizen Payload Integrity Verification:} The relayer checks the ECDSA signature that the citizen has signed over the composite report hash, which is defined mathematically by the equation:
     \begin{equation}
         \mathcal{H}_{\text{report}} = \text{keccak256}\Big(\text{description} \parallel \text{zkpTicketId} \parallel \mathcal{H}_{\text{media}}\Big)
     \end{equation}
-    By verifying that the payload hash signed by the citizen's ephemeral private key matches the received data, the relayer ensures that neither man-in-the-middle attackers nor the relayer itself can alter the report description or media evidence.
+    The relayer is able to ensure that neither man-in-the-middle attackers nor the relayer itself have altered the report description or the media evidence because the payload hash signed by the citizen's ephemeral private key matches the data that has been received.
 \end{enumerate}
 
-Figure~\ref{fig:backend-relayer-impl} illustrates the internal architecture of the Backend Relayer, highlighting the request validation pipeline, signature verification engine, gas sponsorship module, and transaction dispatcher.
+Figure~\ref{fig:backend-relayer-impl} shows the internal architecture of the Backend Relayer, emphasizing the request validation pipeline, the signature verification engine, the gas sponsorship module, and the transaction dispatcher.
 
 \begin{figure}[!htbp]
     \centering
@@ -98,13 +103,13 @@ Figure~\ref{fig:backend-relayer-impl} illustrates the internal architecture of t
 \subsection{AI Moderation Oracle Ensemble Interconnection}
 \label{subsec:ai-oracle-interconnection}
 
-Content moderation is executed through an interconnected ensemble of machine learning oracles designed to filter spam, malicious text, and non-civic media before immutable on-chain anchoring occurs. The ensemble is composed of three specialized oracle nodes coordinated by an Oracle Aggregator:
+Content moderation is carried out by a network of machine learning oracles which are designed to filter out spam, harmful text, and non-civic material before the content is permanently anchored on-chain. This network consists of three specialized oracle nodes that are coordinated by an Oracle Aggregator.
 
 \begin{enumerate}
-    \item \textbf{Safety Oracle Node:} Evaluates textual submissions for abusive, hateful, or threatening language using fine-tuned transformer models (\texttt{unitary/toxic-bert}), and inspects visual evidence for inappropriate or adult content using deep learning image classifiers.
-    \item \textbf{Spam and Abuse Oracle Node:} Identifies unsolicited promotional messages, gibberish, and repetitive flood attacks using lightweight classification models (\texttt{bert-tiny-finetuned-sms-spam-detection}) combined with statistical heuristic filters.
-    \item \textbf{Civic Relevance Oracle Node:} Generates semantic vector embeddings of report descriptions using \texttt{sentence-transformers/all-MiniLM-L6-v2} and computes cosine similarity scores against a domain-specific lexicon of municipal infrastructure categories (e.g., road hazards, sanitation, street lighting) to discard irrelevant submissions.
-    \item \textbf{Oracle Aggregator Node:} Acts as the unified verification gateway. It collects signed moderation verdicts from each oracle worker, verifies request nonces and timestamps to prevent replay attacks, enforces an immediate rejection override if the Safety Oracle detects severe toxicity, and otherwise applies a majority-consensus rule to generate a definitive \texttt{ACCEPT} or \texttt{REJECT} decision.
+    \item \textbf{Safety Oracle Node:} The Safety Oracle Node uses fine-tuned transformer models (specifically \texttt{unitary/toxic-bert}) to assess textual submissions for any abusive, hateful or threatening language and employs deep learning image classifiers to check visual material for inappropriate or adult content
+    \item \textbf{Spam and Abuse Oracle Node:} Unsolicited promotional messages, gibberish, and repetitive flood attacks are detected by means of lightweight classification models (\texttt{bert-tiny-finetuned-sms-spam-detection}) together with statistical heuristic filters
+    \item \textbf{Civic Relevance Oracle Node:} Using the \texttt{sentence-transformers/all-MiniLM-L6-v2} model it produces semantic vector embeddings of the report descriptions and calculates cosine similarity scores based on a domain-specific lexicon of municipal infrastructure categories (such as road hazards, sanitation, and street lighting) in order to reject irrelevant submissions
+    \item \textbf{Oracle Aggregator Node:} This functions as the central verification gateway. It gathers the signed moderation decisions from each oracle worker, checks the request nonces and timestamps in order to guard against replay attacks, enforces an immediate rejection override when the Safety Oracle identifies severe toxicity, and otherwise uses a majority-consensus rule to arrive at a final \texttt{ACCEPT} or \texttt{REJECT} decision
 \end{enumerate}
 
 Figure~\ref{fig:oracle-architecture} details the interconnection topology of the \ac{AI} Content Moderation Ensemble and its synchronization with the Backend Relayer and smart contract event stream.
@@ -119,19 +124,19 @@ Figure~\ref{fig:oracle-architecture} details the interconnection topology of the
 \subsection{Two-Tier Multi-Signature Governance \& Access Control Topology}
 \label{subsec:multisig-governance}
 
-To prevent centralized abuse of administrative privileges and ensure transparent municipal accountability, access control is managed through a two-tier multi-signature governance contract, \texttt{AuthorityMultiSig.sol}, to which ownership of \texttt{Reporting.sol} is transferred upon deployment. The governance architecture divides municipal stakeholders into two distinct hierarchies:
+In order to avoid centralised abuse of administrative powers and to ensure that the municipal authority remains accountable in a transparent way, access control is handled by means of a two-tier multi-signature governance contract, \texttt{AuthorityMultiSig.sol}, to which the ownership of \texttt{Reporting.sol} is passed when the contract is deployed. The architecture of governance divides the various stakeholders of the municipality into two separate hierarchies:
 
 \begin{enumerate}
-    \item \textbf{Super Admins:} A consortium of high-ranking municipal officials (e.g., Mayor, Deputy Mayor, Chief Executive Officer, and Town Planner) responsible for governing the ecosystem. Super Admins hold exclusive authority to submit and vote on governance proposals. Quorum is dynamically calculated as a majority of current Super Admins:
+    \item \textbf{Super Admins:} A group consisting of senior municipal officials (such as the Mayor, Deputy Mayor, Chief Executive Officer, and Town Planner) who are in charge of managing the ecosystem. The Super Admins have the sole power to submit and vote on governance proposals, and the quorum is determined dynamically as a majority of the current Super Admins:
     \begin{equation}
         \text{Quorum} = \Big\lfloor \frac{\texttt{superAdminCount}}{2} \Big\rfloor + 1
     \end{equation}
     Once a proposal reaches quorum, it executes automatically.
     \item \textbf{Authority Workers:} Municipal engineering and maintenance staff authorized to act on civic issues in \texttt{Reporting.sol} (executing \texttt{startWork}, \texttt{addAuthorityUpdate}, \texttt{markAsSolved}, and \texttt{rejectIssue}). An Authority Worker's access can be granted or revoked exclusively through Super Admin multi-sig proposals (\texttt{AddAuthority} and \texttt{RemoveAuthority}).
-    \item \textbf{On-Chain Profile Directory:} To establish institutional transparency, every Super Admin and Authority Worker has an immutable on-chain identity profile (\texttt{Profile} struct) storing their full name, official title, and municipal department. Citizens browsing the \ac{DApp} can inspect the profile of the assigned authority responsible for solving a civic report.
+    \item \textbf{On-Chain Profile Directory:} In order to ensure institutional transparency, each Super Admin and Authority Worker has an immutable on-chain identity profile (\texttt{Profile} struct) which contains their full name, official title, and the municipal department they belong to, so that citizens using the \ac{DApp} are able to check the profile of the authority assigned to deal with a civic report.
 \end{enumerate}
 
-When an \texttt{AddAuthority} or \texttt{RemoveAuthority} proposal achieves quorum, \texttt{AuthorityMultiSig.sol} performs a cross-contract invocation to \texttt{IReporting.setAuthority(target, authorized)}, instantly updating the access registry on the core reporting contract.
+When a proposal to add an authority (\texttt{AddAuthority}) or to remove an authority (\texttt{RemoveAuthority}) has achieved quorum, the contract \texttt{AuthorityMultiSig.sol} carries out a cross-contract call to the function \texttt{IReporting.setAuthority(target, authorized)}, thereby immediately updating the access registry on the main reporting contract.
 
 \subsection{Automated Relayer Funding \& Cron Orchestration Design}
 \label{subsec:relayer-funding-cron}
@@ -140,20 +145,23 @@ To bridge on-chain access control with seamless off-chain operational readiness,
 
 \begin{enumerate}
     \item \textbf{Authority Funding Service (\texttt{AuthorityFundingService}):}
-    While \texttt{AuthorityMultiSig.sol} manages permissions, newly authorized municipal staff require native ETH to pay for transaction gas on the permissioned PoA blockchain. The relayer's funding service listens via WebSocket for \texttt{ProposalExecuted} events emitted by \texttt{AuthorityMultiSig.sol}. When an \texttt{AddAuthority} proposal executes, the service automatically transfers a configurable top-up balance (defaulting to 5.0 ETH) from the pre-funded relayer treasury to the new Authority Worker's wallet. This cleanly decouples on-chain governance logic from automated treasury administration.
+
+    Even though \texttt{AuthorityMultiSig.sol} is in charge of managing permissions, municipal staff who have been given new authority need native ETH in order to cover the cost of transaction gas on the permissioned PoA blockchain. The relayer's funding service monitors for \texttt{ProposalExecuted} events sent by \texttt{AuthorityMultiSig.sol} via WebSocket. Upon execution of an \texttt{AddAuthority} proposal, the service automatically transfers a top-up balance that can be set by the user (with a default amount of 5.0 ETH) from the pre-funded relayer treasury to the new Authority Worker's wallet. This arrangement properly separates the on-chain governance logic from the automated management of the treasury.
 
     \item \textbf{Background Cron Orchestration (\texttt{CronService}):}
-    The relayer executes two scheduled background orchestration workflows:
+    The relayer carries out two background orchestration workflows that are scheduled:
     \begin{itemize}
-        \item \textit{Automated Balance Monitoring:} A daily scheduled cron job (\texttt{0 1 * * *}, Colombo timezone) scans the balances of all registered Super Admins and Authority Workers, automatically topping up any account whose balance drops below the minimum operational threshold (1.0 ETH).
-        \item \textit{Voting Window Batch Finalization Engine:} While \texttt{Reporting.sol} supports lazy evaluation when a user submits a vote after a phase deadline, reports with zero subsequent voting activity could remain indefinitely pending. To prevent workflow stagnation, a daily midnight cron job scans the blockchain for reports in voting phases ($S_0 = \texttt{PendingValidation}$, $S_4 = \texttt{PendingRejectionReview}$, or $S_5 = \texttt{PendingVerification}$) where $\text{block.timestamp} > \texttt{phaseDeadline}$. For all expired reports found, the cron service executes a batch transaction calling \texttt{batchFinalizeVotingWindows}, forcing deterministic state transitions across the platform.
+        \item \textit{Automated Balance Monitoring:} There is an automated balance monitoring system which, every day at 1 o'clock in the Colombo time zone, checks the balances of all the registered Super Admins and Authority Workers and automatically replenishes the funds of any account that falls below the minimum level required for operation (1.0 ETH).
+        \item \textit{Voting Window Batch Finalization Engine:} Even though \texttt{Reporting.sol} allows for lazy evaluation in the case of a user submitting a vote after the phase deadline, reports that have no further voting activity could stay indefinitely in a pending state. In order to avoid workflow stagnation, a daily cron job that runs at midnight checks the blockchain for reports which are in voting phases ($S_0 = \texttt{PendingValidation}$, $S_4 = \texttt{PendingRejectionReview}$, or $S_5 = \texttt{PendingVerification}$) where $\text{block.timestamp} > \texttt{phaseDeadline}$ and for which block.timestamp is greater than the phaseDeadline. The cron service then carries out a batch transaction by calling \texttt{batchFinalizeVotingWindows} for all reports that have expired, thereby forcing deterministic state transitions throughout the platform.
     \end{itemize}
 \end{enumerate}
 
 \subsection{Private Permissioned Validator Network Topology}
 \label{subsec:validator-topology}
 
-The underlying ledger operates as a private, permissioned Ethereum-compatible network utilizing the Clique \ac{PoA} consensus protocol. To ensure distributed governance without the energy consumption and latency of Proof-of-Work (\ac{PoW}), block sealing authority is restricted to a consortium of pre-approved institutional validator nodes. The consortium comprises three primary validator nodes:
+The basic ledger functions as a private, permissioned network that is compatible with Ethereum and uses the Clique \ac{PoA} consensus protocol. In order to achieve distributed governance without having to incur the energy use and latency associated with Proof-of-Work (\ac{PoW}), authority for sealing blocks is limited to a group of institutional validator nodes which have been previously approved. This group consists of three main validator nodes:
+
+
 \begin{itemize}
     \item \textbf{Municipal Authority Validator Node:} Hosted by local government administrative departments responsible for infrastructure maintenance.
     \item \textbf{Regional Oversight Validator Node:} Managed by regional or provincial supervisory bodies to ensure inter-agency auditing.
@@ -172,7 +180,7 @@ Figure~\ref{fig:validator-nodes} illustrates the 3-validator network topology, d
 \section{Detailed Workflow \& Finite State Machine (FSM) Design}
 \label{sec:detailed-workflow-fsm}
 
-The core operational logic of the platform is formalized as a mathematical Finite State Machine (\ac{FSM}) implemented within the \texttt{Reporting.sol} smart contract. This section details the state transitions, cryptographic nullifier protections, and deterministic workflows that govern a civic report from initial submission to post-resolution verification.
+The operational principles at the heart of the platform are expressed in the form of a mathematical Finite State Machine (\ac{FSM}) and are implemented in the \texttt{Reporting.sol} smart contract. The following section describes the state transitions, the cryptographic nullifier safeguards, and the deterministic procedures that oversee a civic report from the moment it is submitted until its verification after resolution.
 
 \subsection{Finite State Machine (FSM) Overview}
 \label{subsec:fsm-overview}
@@ -193,7 +201,7 @@ where:
     \item $S_7 = \texttt{Reopened}$: An active state triggered if the community rejects a claimed repair during verification or successfully appeals an authority rejection.
 \end{itemize}
 
-State transitions are strictly guarded by role-based access control (\ac{RBAC}), temporal window constraints ($\Delta t_{\text{window}} = 6\text{ hours}$), and cryptographic nullifier tracking. To prevent Sybil attacks and double-voting, the smart contract records used ticket hashes in persistent mappings (\texttt{usedSubmissionNullifiers}, \texttt{usedValidationVoteNullifiers}, \texttt{usedVerificationVoteNullifiers}, and \texttt{usedRejectionReviewVoteNullifiers}), enforcing the Checks-Effects-Interactions (CEI) design pattern.
+State transitions are protected by role-based access control (\ac{RBAC}), by constraints relating to the temporal window ($\Delta t_{\text{window}} = 6\text{ hours}$), and by cryptographic nullifier tracking. In order to prevent Sybil attacks and double voting, the smart contract keeps record of the hashes of the tickets in permanent mappings (\texttt{usedSubmissionNullifiers}, \texttt{usedValidationVoteNullifiers}, \texttt{usedVerificationVoteNullifiers}, and \texttt{usedRejectionReviewVoteNullifiers}), thereby adhering to the Checks-Effects-Interactions (CEI) design pattern.
 
 Figure~\ref{fig:state-transition-diagram} presents the formal state transition diagram of the reporting \ac{FSM}, while Figure~\ref{fig:overall-workflow} illustrates the end-to-end lifecycle workflow of a civic issue across all system components.
 
@@ -214,7 +222,7 @@ Figure~\ref{fig:state-transition-diagram} presents the formal state transition d
 \subsection{Citizen Authentication \& Identity Decoupling Workflow}
 \label{subsec:auth-workflow}
 
-The authentication workflow decouples a citizen's real-world civic identity from their on-chain actions, preventing transaction linkability while ensuring that only eligible citizens can participate. Figure~\ref{fig:authentication-workflow} illustrates the sequential steps of the authentication and credential issuance process.
+The authentication workflow separates a citizen's real-world civic identity from their actions on the chain, thus avoiding the linking of transactions while at the same time making sure that only eligible citizens can take part. Figure~\ref{fig:authentication-workflow} shows the sequential steps in the authentication and credential issuance process. The authentication workflow involves five definite steps:
 
 \begin{figure}[!htbp]
     \centering
@@ -225,11 +233,11 @@ The authentication workflow decouples a citizen's real-world civic identity from
 
 The authentication workflow proceeds through five deterministic steps:
 \begin{enumerate}
-    \item \textbf{Credential Submission:} The citizen inputs their official National Identity Number (NID) and password into the \ac{DApp} login interface.
-    \item \textbf{Zero-Knowledge Verification:} The \ac{DApp} transmits an authentication request to the ZKP GovID Simulator. The simulator verifies the credentials against the mock government database without revealing or retaining sensitive identification attributes.
-    \item \textbf{Ticket Batch Generation:} Upon successful verification, the simulator generates a batch of ten randomized, single-use ticket identifiers ($\texttt{zkpTicketId}_1, \dots, \texttt{zkpTicketId}_{10}$) along with a unique citizen seed.
-    \item \textbf{Cryptographic Signing:} The simulator cryptographically signs each ticket identifier using the government authority's ECDSA private key, establishing proof of validity.
-    \item \textbf{Local Browser Storage:} The signed ticket batch and citizen seed are returned to the client and stored securely within local browser storage. For on-chain tracking of personal submissions, the client derives a deterministic, unlinkable citizen pseudonym:
+    \item \textbf{Submission of credentials:} the citizen enters their official National Identity Number (NID) and password into the \ac{DApp} login interface.
+    \item \textbf{For zero-knowledge verification,} the \ac{DApp} sends an authentication request to the ZKP GovID Simulator, which checks the credentials against the fake government database without either revealing or keeping any sensitive identification attributes.
+    \item \textbf{Ticket Batch Generation:} After the verification has been successfully carried out, the simulator produces a batch consisting of ten randomly generated, single-use ticket identifiers ($\texttt{zkpTicketId}_1, \dots, \texttt{zkpTicketId}_{10}$) together with a unique citizen seed.
+    \item \textbf{Cryptographic signing:} Each ticket identifier is cryptographically signed by the simulator using the private key of the government authority, thus providing proof of validity.
+    \item \textbf{Local Browser Storage:} The signed ticket batch and the citizen seed are sent back to the client and stored securely in the browser's local storage. In order to enable on-chain tracking of individual submissions, the client generates a deterministic citizen pseudonym that is unlinkable:
     \begin{equation}
         \text{Pseudonym} = \text{keccak256}\Big(\text{citizenPubKey} \parallel \text{DOMAIN\_SALT}\Big)
     \end{equation}
@@ -238,7 +246,7 @@ The authentication workflow proceeds through five deterministic steps:
 \subsection{Report Submission \& Moderation Pipeline}
 \label{subsec:submission-pipeline}
 
-The report submission workflow coordinates client-side cryptographic signing, relayer verification, AI content moderation, off-chain IPFS storage, and on-chain transaction anchoring. Figure~\ref{fig:report-submission-workflow} depicts the complete report submission and moderation pipeline.
+The workflow for submitting reports involves carrying out cryptographic signing on the client side, having the relayer verify it, subjecting the content to AI moderation, storing it off-chain using \ac{IPFS}, and then anchoring the transaction on the chain. Figure~\ref{fig:report-submission-workflow} shows the entire report submission and moderation pipeline.
 
 \begin{figure}[!htbp]
     \centering
@@ -249,19 +257,19 @@ The report submission workflow coordinates client-side cryptographic signing, re
 
 The submission pipeline executes as follows:
 \begin{enumerate}
-    \item \textbf{Payload Structuring and Signing:} The citizen selects an issue category, inputs a textual description, and attaches optional media evidence. The \ac{DApp} computes the composite report hash ($\mathcal{H}_{\text{report}}$), signs it using the citizen's ephemeral private key, and selects an unused signed ticket from local storage.
-    \item \textbf{Relayer Transmission:} The \ac{DApp} transmits the complete payload—comprising raw text, media files, government-signed ticket, and citizen signature—to the Backend Relayer via HTTPS POST.
-    \item \textbf{Cryptographic Payload Verification:} The relayer verifies that the ticket signature corresponds to the government authority and that the citizen's signature matches the report hash. If verification fails, the request is rejected immediately.
-    \item \textbf{AI Content Moderation:} The relayer forwards the text and media to the AI Moderation Ensemble. The Oracle Aggregator evaluates the submission against toxicity, spam, and civic relevance classifiers. If the ensemble returns a \texttt{REJECT} verdict, the relayer aborts the submission and returns a descriptive error to the \ac{DApp}.
+    \item \textbf{Payload Structuring and Signing:} When structuring and signing the payload, the citizen chooses an issue category, types in a textual description, and attaches any optional media evidence. The \ac{DApp} then calculates the composite report hash ($\mathcal{H}_{\text{report}}$), signs it with the citizen's ephemeral private key, and picks an unused signed ticket from local storage.
+    \item \textbf{Relayer Transmission:} The \ac{DApp} sends to the Backend Relayer via an HTTPS POST the entire payload, which includes the raw text, the media files, the government-signed ticket, and the citizen's signature.
+    \item \textbf{Cryptographic Payload Verification:} The relayer checks that the ticket signature is associated with the government authority and that the citizen's signature corresponds to the report hash. The request is then rejected right away if this verification fails.
+    \item \textbf{AI Content Moderation:} The relayer sends the text and media on to the AI Moderation Ensemble, which then assesses the submission using the toxicity, spam, and civic relevance classifiers. The Oracle Aggregator acts on the evaluation and, if the ensemble decides to reject the submission, the relayer aborts it and sends back a descriptive error to the \ac{DApp}.
     \item \textbf{IPFS Content Anchoring:} Upon receiving an \texttt{ACCEPT} verdict, the relayer uploads the report text and media files to \ac{IPFS}, obtaining the immutable Content Identifier (\texttt{ipfsCid}).
-    \item \textbf{On-Chain Transaction Submission:} The relayer constructs a transaction calling \texttt{submitReport} on \texttt{Reporting.sol}, passing \texttt{ipfsCid}, $\mathcal{H}_{\text{report}}$, the single-use ticket hash as \texttt{submissionNullifier}, and the citizen's derived pseudonym. The relayer signs the transaction with its own wallet, sponsoring gas costs.
-    \item \textbf{Smart Contract Nullifier Enforcement:} The smart contract checks \texttt{usedSubmissionNullifiers[submissionNullifier]}. If the nullifier was previously consumed, the transaction reverts. Otherwise, the contract marks the nullifier as used, initializes the report in state $S_0 (\texttt{PendingValidation})$, sets the phase deadline to $\text{block.timestamp} + 6\text{ hours}$, and emits the \texttt{ReportSubmitted} event.
+    \item \textbf{On-Chain Transaction Submission:} When submitting the on-chain transaction, the relayer creates a transaction which calls the \texttt{submitReport} function on \texttt{Reporting.sol} and includes the \texttt{ipfsCid}, $\mathcal{H}_{\text{report}}$, the hash of the single-use ticket as the \texttt{submissionNullifier}, and the citizen's derived pseudonym. The relayer then signs this transaction using its own wallet and pays the associated gas costs.
+    \item \textbf{Smart Contract Nullifier Enforcement:} The smart contract looks at the value of \texttt{usedSubmissionNullifiers[submissionNullifier]}. If that nullifier has already been used, the transaction is reverted; otherwise, the contract records the nullifier as having been used, places the report into state $S_0 (\texttt{PendingValidation})$, sets the phase deadline to $\text{block.timestamp} + 6\text{ hours}$, and sends out the \texttt{ReportSubmitted} event.
 \end{enumerate}
 
 \subsection{Community Consensus \& Validation Workflow}
 \label{subsec:validation-workflow}
 
-To filter spam and ensure that only genuine civic concerns escalate to municipal authorities, newly submitted reports undergo community validation. Figure~\ref{fig:community-validation-workflow} illustrates the community consensus and peer-validation workflow.
+In order to filter out spam and make sure that only real civic concerns are passed on to the municipal authorities, reports that have just been submitted go through a process of community validation. Figure~\ref{fig:community-validation-workflow} shows the workflow for reaching a community consensus and for peer validation.
 
 \begin{figure}[!htbp]
     \centering
@@ -272,22 +280,22 @@ To filter spam and ensure that only genuine civic concerns escalate to municipal
 
 The validation workflow proceeds as follows:
 \begin{enumerate}
-    \item \textbf{Community Feed Visualization:} Reports in state $S_0 (\texttt{PendingValidation})$ are displayed on the public \ac{DApp} feed alongside an active countdown timer representing the 6-hour voting window.
-    \item \textbf{Sybil-Resistant Vote Casting:} Citizens review the report and cast an upvote (\texttt{support = true}) or downvote (\texttt{support = false}) using an unused ticket nullifier.
+    \item \textbf{Community Feed Visualization:} The public \ac{DApp} feed shows reports that are in state $S_0 (\texttt{PendingValidation})$ together with an active countdown timer indicating the 6-hour voting period.
+    \item \textbf{Sybil-Resistant Vote Casting:} To ensure sybil resistance, citizens look at the report and carry out an upvote ($\texttt{support} = \text{true}$) or a downvote ($\texttt{support} = \text{false}$) by using a nullifier of an unused ticket.
     \item \textbf{Relayer Signature and Ticket Validation:} The relayer verifies the citizen's vote payload and forwards the transaction to \texttt{castValidationVote} on \texttt{Reporting.sol}.
-    \item \textbf{On-Chain Vote Tallying:} The smart contract verifies that \texttt{usedValidationVoteNullifiers[reportId][voteNullifier]} is false, consumes the nullifier, and increments \texttt{validationUpvotes} or \texttt{validationDownvotes}.
+    \item \textbf{On-Chain Vote Tallying:} When tallying the on-chain votes, the smart contract checks that \texttt{usedValidationVoteNullifiers[reportId][voteNullifier]} is false, uses the nullifier, and then increases the appropriate count, either \texttt{validationUpvotes} or \texttt{validationDownvotes}.
     \item \textbf{State Finalization Engine:} State finalization occurs through two complementary mechanisms:
     \begin{itemize}
-        \item \textit{Lazy Evaluation:} If any user submits a vote after the deadline ($\text{block.timestamp} > \texttt{phaseDeadline}$), the contract automatically invokes \texttt{\_finalizeSingleReport}.
+        \item \textit{Lazy Evaluation:} If any user submits a vote after the deadline ($\text{block.timestamp} > \texttt{phaseDeadline}$), the contract will automatically call \texttt{\_finalizeSingleReport}.
         \item \textit{Automated Cron Finalization:} If no user action occurs, the relayer's background \texttt{CronService} invokes \texttt{batchFinalizeVotingWindows} daily at midnight, ensuring timely transitions.
     \end{itemize}
-    If $\texttt{upvotes} > \texttt{downvotes}$, the report transitions to state $S_2 (\texttt{Open})$. Otherwise, it transitions to state $S_1 (\texttt{CommunityRejected})$.
+    If $\texttt{upvotes} > \texttt{downvotes}$, the report moves into state $S_2 (\texttt{Open})$; otherwise, it moves into state $S_1 (\texttt{CommunityRejected})$.
 \end{enumerate}
 
 \subsection{Authority Resolution \& Action Workflow}
 \label{subsec:authority-workflow}
 
-Reports that achieve community consensus ($S_2 = \texttt{Open}$) become actionable for municipal authorities. Figure~\ref{fig:authority-action-workflow} details the authority resolution, work tracking, and status update workflow.
+Reports which reach a consensus within the community ($S_2 = \texttt{Open}$) become actionable for municipal authorities. Figure~\ref{fig:authority-action-workflow} sets out the procedure for authority resolution, work tracking, and status updates.
 
 \begin{figure}[!htbp]
     \centering
@@ -298,17 +306,17 @@ Reports that achieve community consensus ($S_2 = \texttt{Open}$) become actionab
 
 The authority workflow executes through the following operations:
 \begin{enumerate}
-    \item \textbf{Dashboard Monitoring and Profile Verification:} Authorized municipal officials monitor validated reports via the authenticated Authority Dashboard in the \ac{DApp}. When an authority interacts with a report, their on-chain identity profile (\texttt{name}, \texttt{position}, \texttt{department}) managed by \texttt{AuthorityMultiSig.sol} is displayed to the community.
-    \item \textbf{Work Initiation (\texttt{startWork}):} An authority claims an open issue by submitting a transaction calling \texttt{startWork(reportId, comment, imageCid)}. The smart contract verifies that the sender is currently authorized in \texttt{authorizedAuthorities} (governed exclusively by \texttt{AuthorityMultiSig.sol}), assigns the official to \texttt{report.assignedAuthority}, transitions the status to $S_3 (\texttt{InProgress})$, appends an \texttt{AuthorityAction} record to the on-chain audit log, and emits the \texttt{WorkStarted} event.
-    \item \textbf{Progress Updates (\texttt{addAuthorityUpdate}):} While work is underway, the assigned authority can post mid-repair updates by calling \texttt{addAuthorityUpdate}. This appends explanatory comments and progress image \ac{CID}s to the audit history without altering the report state.
+    \item \textbf{Dashboard monitoring and profile verification:} Authorized municipal officials can monitor validated reports through the authenticated Authority Dashboard within the \ac{DApp}, and when an authority carries out an interaction with a report, their on-chain identity profile (including \texttt{name}, \texttt{position} and \texttt{department}) which is managed by \texttt{AuthorityMultiSig.sol} is shown to the community.
+    \item \textbf{Work Initiation (\texttt{startWork}):} An authority establishes its claim to an open issue by submitting a transaction containing the call \texttt{startWork(reportId, comment, imageCid)}. The smart contract checks that the sender is currently listed among the \texttt{authorizedAuthorities} (this list being controlled solely by \texttt{AuthorityMultiSig.sol}), designates the authority as the value of \texttt{report.assignedAuthority}, changes the status to $S_3 (\texttt{InProgress})$, adds an \texttt{AuthorityAction} entry to the on-chain audit log, and triggers the \texttt{WorkStarted} event.
+    \item \textbf{Progress Updates (\texttt{addAuthorityUpdate}):} Even though the work is ongoing, the authority responsible can issue mid-repair updates by using the \texttt{addAuthorityUpdate} function. It adds explanatory comments together with the \ac{CID}s of progress images to the audit history without changing the report's state.
     \item \textbf{Resolution Declaration (\texttt{markAsSolved}):} Upon completing physical infrastructure repairs, the authority calls \texttt{markAsSolved(reportId, comment, imageCid)}, attaching photographic evidence of the repair. The contract transitions the report to $S_5 (\texttt{PendingVerification})$ and sets a new 6-hour community verification deadline.
-    \item \textbf{Issue Rejection (\texttt{rejectIssue}):} If an authority determines that a report is duplicate, unfeasible, or out of jurisdiction, they call \texttt{rejectIssue(reportId, comment, imageCid)}. The contract transitions the status to $S_4 (\texttt{PendingRejectionReview})$, opening a 6-hour community appeal window.
+    \item \textbf{Issue Rejection (\texttt{rejectIssue}):} If an authority decides that a report is a duplicate, impossible, or falls outside its area of jurisdiction, it calls the \texttt{rejectIssue} function with the \texttt{reportId}, \texttt{comment}, and \texttt{imageCid} as parameters. The contract then changes the status to $S_4 (\texttt{PendingRejectionReview})$ and opens a six-hour period during which the community can appeal.
 \end{enumerate}
 
 \subsection{Post-Resolution Verification \& Appeal Workflow}
 \label{subsec:post-res-workflow}
 
-The framework enforces mutual accountability by preventing authorities from unilaterally closing reports without citizen confirmation. Figure~\ref{fig:post-resolution-verification-workflow} illustrates the post-resolution verification and community appeal workflow.
+The framework ensures that all parties are held mutually responsible by stopping authorities from closing reports on their own without first obtaining confirmation from citizens. Figure~\ref{fig:post-resolution-verification-workflow} shows the workflow for post-resolution verification and the community appeal.
 
 \begin{figure}[!htbp]
     \centering
@@ -319,47 +327,45 @@ The framework enforces mutual accountability by preventing authorities from unil
 
 The post-resolution workflow governs two distinct review paths:
 \begin{enumerate}
-    \item \textbf{Repair Verification ($S_5 = \texttt{PendingVerification}$):}
-    Citizens physically inspect the completed infrastructure repair and submit acceptance (\texttt{accept = true}) or rejection (\texttt{accept = false}) votes via \texttt{castVerificationVote} within the 6-hour window. Upon deadline finalization:
+    \item \textbf{Repair Verification ($S_5 = \texttt{PendingVerification}$):} The citizens will carry out a physical inspection of the completed repair work and then submit their acceptance ($\texttt{accept} = \text{true}$) or rejection ($\texttt{accept} = \text{false}$) votes by using the \texttt{castVerificationVote} function within the 6-hour period; when the deadline is reached:
     \begin{itemize}
-        \item If $\texttt{verificationAcceptVotes} \ge \texttt{verificationRejectVotes}$, the report transitions to the terminal state $S_6 (\texttt{Closed})$, marking successful resolution.
-        \item If $\texttt{verificationRejectVotes} > \texttt{verificationAcceptVotes}$, the report transitions to $S_7 (\texttt{Reopened})$, signaling to municipal authorities that the repair was inadequate and requires corrective intervention.
+        \item If the number of votes to accept the verification is greater than or equal to the number of votes to reject it ($\rho_{\text{accept}} \ge \rho_{\text{reject}}$), the report moves into the terminal state $S_6 (\texttt{Closed})$, which indicates that the issue has been successfully resolved.
+        \item If the number of verification reject votes is greater than the number of verification accept votes ($\rho_{\text{reject}} > \rho_{\text{accept}}$), the report is moved to $S_7 (\texttt{Reopened})$, which informs the municipal authorities that the repair was inadequate and needs corrective action.
     \end{itemize}
-    \item \textbf{Rejection Review and Appeal ($S_4 = \texttt{PendingRejectionReview}$):}
-    When an authority rejects an issue, citizens vote to uphold (\texttt{uphold = true}) or appeal (\texttt{uphold = false}) the rejection via \texttt{castRejectionReviewVote}. Upon deadline finalization:
+    \item \textbf{Rejection Review and Appeal ($S_4 = \texttt{PendingRejectionReview}$):} If an authority rejects an issue, the citizens then vote to either uphold ($\texttt{uphold} = \text{true}$) or to appeal ($\texttt{uphold} = \text{false}$) the rejection by using the \texttt{castRejectionReviewVote} function. When the deadline is finalised:
     \begin{itemize}
-        \item If $\texttt{rejectionUpholdVotes} \ge \texttt{rejectionAppealVotes}$, the rejection is sustained, and the report transitions to $S_6 (\texttt{Closed})$.
-        \item If $\texttt{rejectionAppealVotes} > \texttt{rejectionUpholdVotes}$, the community appeal succeeds, and the report transitions to $S_7 (\texttt{Reopened})$, obligating the authority to re-examine the issue.
+        \item If the number of votes in favour of upholding the rejection is greater than or equal to the number of votes in favour of appealing ($\upsilon_{\text{uphold}} \ge \upsilon_{\text{appeal}}$), then the rejection is upheld and the report moves to $S_6 (\texttt{Closed})$.
+        \item If the number of votes in favour of the appeal is greater than the number of votes upholding the rejection ($\upsilon_{\text{appeal}} > \upsilon_{\text{uphold}}$), then the community appeal is successful and the report moves to $S_7 (\texttt{Reopened})$, which requires the authority to re-examine the issue.
     \end{itemize}
 \end{enumerate}
 
 \subsection{Anonymous Public Opinion Polling Workflow}
 \label{subsec:opinion-polling-workflow}
 
-In addition to citizen-initiated issue reporting, the architecture supports top-down municipal consultation through an anonymous public opinion polling workflow managed by the \texttt{OpinionPolling.sol} smart contract. This workflow enables local governments to solicit democratic feedback on public works proposals, zoning changes, or budget allocations without compromising voter privacy.
+Apart from the possibility of citizens reporting issues themselves, the system also provides for top-down municipal consultation via an anonymous public opinion polling procedure which is managed by the \texttt{OpinionPolling.sol} smart contract. This procedure allows local governments to obtain democratic feedback on proposals concerning public works, zoning changes, or budget allocations without compromising voter privacy
 
 The opinion polling workflow proceeds as follows:
 \begin{enumerate}
-    \item \textbf{Official Poll Creation:} An authorized municipal official calls \texttt{createOfficialPoll(ipfsMetadataCid, deadline, pollType)}, specifying an \ac{IPFS} \ac{CID} containing detailed proposal documentation, a timestamp deadline, and the poll modality (\texttt{TrueFalse} or \texttt{MultiChoice}). The smart contract verifies authority credentials against \texttt{Reporting.sol}'s access registry, assigns a unique \texttt{pollId}, and emits the \texttt{PollCreated} event.
-    \item \textbf{DApp Poll Dissemination:} Active polls are displayed on the citizen \ac{DApp} interface, presenting proposal details fetched from \ac{IPFS} alongside selectable voting options.
-    \item \textbf{Anonymous Ballot Casting:} A citizen selects an option index and generates an ephemeral voting request signed with an unused ticket nullifier. The relayer submits the transaction to \texttt{castVote(pollId, optionIndex, nullifier)}.
-    \item \textbf{Sybil-Resistant Tallying:} The smart contract checks \texttt{nullifierVoted[pollId][nullifier]}. If unconsumed, it records the nullifier and increments \texttt{pollResults[pollId][optionIndex]}.
+    \item \textbf{Official Poll Creation:} To create an official poll, an authorized municipal official calls the \texttt{createOfficialPoll(ipfsMetadataCid, deadline, pollType)} function, providing as parameters the \ac{IPFS} \ac{CID} which holds the detailed documentation of the proposal, the deadline timestamp, and the type of poll (either \texttt{TrueFalse} or \texttt{MultiChoice}). The smart contract then checks the official's authority credentials against the access registry in \texttt{Reporting.sol}, assigns a unique \texttt{pollId}, and triggers the \texttt{PollCreated} event.
+    \item \textbf{DApp Poll Dissemination:} When it comes to the distribution of \ac{DApp} polls, the selectable voting options are shown on the citizen's \ac{DApp} interface together with the details of the proposals retrieved from \ac{IPFS}.
+    \item \textbf{Anonymous Ballot Casting:} When a citizen wants to cast an anonymous ballot, they choose an option index and produce a voting request which is then signed using an unused ticket nullifier. The relayer then submits the transaction to the \texttt{castVote(pollId, optionIndex, nullifier)} function.
+    \item \textbf{Sybil-Resistant Tallying:} The smart contract checks whether \texttt{nullifierVoted[pollId][nullifier]} has been consumed; if it has not been consumed, it records the nullifier and increases \texttt{pollResults[pollId][optionIndex]}.
     \item \textbf{Poll Finalization:} Once the deadline elapses, any user or relayer can call \texttt{finalizePoll(pollId)} to mark the poll inactive and freeze results, providing municipal authorities with immutable, tamper-evident public consultation data.
 \end{enumerate}
 
 \section{Summary and Expected Outcomes}
 \label{sec:summary-outcomes}
 
-This chapter detailed the structural architecture, interface specifications, mathematical state modeling, two-tier multi-signature governance, and operational workflows of the decentralized local governance reporting framework. By integrating a six-layer topology with a hybrid on-chain/off-chain execution model, the system successfully addresses the core limitations of conventional centralized reporting systems.
+This chapter sets out the structural architecture, the interface specifications, the mathematical modelling of the state, the two-tier multi-signature governance, and the operational workflows of the decentralised local governance reporting framework. Through the use of a six-layer topology together with a hybrid on-chain/off-chain execution model, the system manages to overcome the main limitations of traditional centralised reporting systems.
 
 The expected outcomes of the architectural design include:
 \begin{enumerate}
-    \item \textbf{Guaranteed Citizen Anonymity and Privacy:} Zero-knowledge authentication and single-use ticket nullifiers completely decouple real-world identity from on-chain transactions, removing fear of retaliation.
-    \item \textbf{Decentralized Municipal Governance:} Replacing monolithic administrative control with \texttt{AuthorityMultiSig.sol} ensures that authority access and official identity profiles are governed democratically by a majority quorum of Super Admins.
-    \item \textbf{Automated Off-Chain Orchestration:} The relayer's automated \texttt{AuthorityFundingService} and \texttt{CronService} eliminate manual treasury management and ensure deterministic batch finalizations of expired voting windows.
-    \item \textbf{Tamper-Evident Accountability:} Storing metadata, state transitions, authority action logs, and voting tallies on a private \ac{PoA} blockchain ensures an immutable audit trail.
+    \item \textbf{Guaranteed Citizen Anonymity and Privacy:} Citizens' anonymity and privacy are guaranteed since zero-knowledge authentication and single-use ticket nullifiers fully separate their real-world identity from the transactions on the chain, thus eliminating the fear of retaliation.
+    \item \textbf{Decentralized Municipal Governance:} By introducing \texttt{AuthorityMultiSig.sol}, decentralized municipal governance is achieved, so that access to authority and official identity profiles is controlled democratically by a majority quorum of the Super Admins.
+    \item \textbf{Automated Off-Chain Orchestration:} The relayer's automated \texttt{AuthorityFundingService} and \texttt{CronService} remove the need for manual treasury management and make it possible to deterministically finalise batches of expired voting windows.
+    \item \textbf{Tamper-Evident Accountability:} Ensuring tamper-evident accountability consists of storing metadata, records of state transitions, logs of authority actions, and the voting tallies on a private \ac{PoA} blockchain so that an immutable audit trail is obtained.
     \item \textbf{Automated Spam and Toxicity Mitigation:} The multi-oracle \ac{AI} Moderation Ensemble prevents abusive, irrelevant, or malicious content from polluting off-chain storage or ledger state.
-    \item \textbf{Democratic Lifecycle Oversight:} Sybil-resistant community voting at validation, verification, and appeal stages prevents arbitrary dismissal of reports and enforces repair quality.
+    \item \textbf{Democratic Lifecycle Oversight:} There should be oversight of the democratic lifecycle by means of community voting which is resistant to Sybil attacks at the stages of validation, verification, and appeal, in order to prevent the arbitrary dismissal of reports and to ensure that repairs meet a certain standard.
     \item \textbf{High Usability and Gasless Interaction:} The middleware relayer pattern eliminates cryptocurrency onboarding barriers, allowing citizens to engage via a responsive web application seamlessly.
 \end{enumerate}
 
