@@ -292,26 +292,26 @@ The \texttt{IpfsService.uploadComplaint()} method bundles the report description
 
 The CID is cryptographically derived from the content of the uploaded file. The blockchain submission step stores this \texttt{ipfsUri} on-chain in the \texttt{Report} struct. At any time, a verifier can retrieve the content from IPFS by its CID and recompute the hash to confirm that the stored data has not been modified.
 
-\section{AI Content Moderation Oracle Service Ensemble}
+\section{AI Content Moderation Service Ensemble}
 \label{sec:ai-impl}
 
 The AI moderation service is implemented as a network of four containerized microservices. All four containers are deployed on a dedicated VPS and communicate through an internal Docker network.
 
-\subsection{Oracle Worker Implementations and Model Hyperparameters}
+\subsection{Classifier Worker Implementations and Model Hyperparameters}
 \label{subsec:oracle-hyperparameters}
 
-Each oracle worker uses pre-trained transformer or sentence-embedding models with tuned decision thresholds. The thresholds are set as environment variables so they can be adjusted without rebuilding the containers.
+Each classifier worker uses pre-trained transformer or sentence-embedding models with tuned decision thresholds. The thresholds are set as environment variables so they can be adjusted without rebuilding the containers.
 
-\subsubsection*{Safety Oracle (Oracle 1)}
+\subsubsection*{Safety Classifier Service (Worker 1)}
 
-The Safety Oracle uses two models:
+The Safety Classifier Service uses two models:
 
 \begin{enumerate}
     \item \textbf{Text Safety — \texttt{unitary/toxic-bert}}: A BERT-based multi-label classifier fine-tuned on the Jigsaw Toxic Comment dataset. It outputs six independent toxicity probability scores. Table~\ref{tab:safety-text-thresholds} shows the per-label decision thresholds used to classify text as unsafe.
 
     \begin{table}[h!]
     \centering
-    \caption{Safety Oracle: unitary/toxic-bert Decision Thresholds}
+    \caption{Safety Classifier Service: unitary/toxic-bert Decision Thresholds}
     \label{tab:safety-text-thresholds}
     \begin{tabular}{|l|l|l|}
     \hline
@@ -339,9 +339,9 @@ The Safety Oracle uses two models:
     \item \textbf{Face Blurring — OpenCV Haar Cascades}: Safe images are processed for face detection using four OpenCV Haar cascade classifiers: \texttt{haarcascade\_frontalface\_default.xml}, \texttt{haarcascade\_frontalface\_alt.xml}, \texttt{haarcascade\_frontalface\_alt2.xml}, and \texttt{haarcascade\_profileface.xml} (applied twice: on the original and horizontally flipped image for right-profile detection). Face detection parameters are: \texttt{scaleFactor = 1.05}, \texttt{minNeighbors = 3}, \texttt{minSize = (20, 20)} pixels. Overlapping detections are deduplicated using Non-Maximum Suppression (NMS) with an overlap threshold of 0.4. Detected face regions are blurred with a Gaussian kernel sized proportionally to the face bounding box, with a minimum kernel size of $19 \times 19$.
 \end{enumerate}
 
-\subsubsection*{Spam and Abuse Oracle (Oracle 2)}
+\subsubsection*{Spam and Abuse Classifier Service (Worker 2)}
 
-The Spam and Abuse Oracle combines an NLP model with a rule-based scoring engine:
+The Spam and Abuse Classifier Service combines an NLP model with a rule-based scoring engine:
 
 \begin{enumerate}
     \item \textbf{NLP Model — \texttt{mrm8488/bert-tiny-finetuned-sms-spam-detection}}: A lightweight BERT-tiny model fine-tuned on SMS spam data. It is used as a signal alongside rule-based checks.
@@ -350,7 +350,7 @@ The Spam and Abuse Oracle combines an NLP model with a rule-based scoring engine
 
     \begin{table}[h!]
     \centering
-    \caption{Spam Oracle: Hybrid Decision Thresholds}
+    \caption{Spam Classifier Service: Hybrid Decision Thresholds}
     \label{tab:spam-thresholds}
     \begin{tabular}{|l|l|l|}
     \hline
@@ -370,7 +370,7 @@ The Spam and Abuse Oracle combines an NLP model with a rule-based scoring engine
     \item \textbf{Rule-based signals} and their contribution to the spam score are: a text length below 5 words adds 0.35; a matched spam phrase adds 0.80; promotional language adds 0.35; more than one URL adds 0.60; one URL adds 0.25; repeated character patterns add 0.50; excessive symbols add 0.40. Scores are capped at 1.0.
 \end{enumerate}
 
-\subsubsection*{Civic Relevance Oracle (Oracle 3)}
+\subsubsection*{Civic Relevance Classifier Service (Worker 3)}
 
 \begin{enumerate}
     \item \textbf{Embedding Model — \texttt{sentence-transformers/all-MiniLM-L6-v2}}: A compact sentence transformer model that maps text to 384-dimensional semantic embedding vectors. Civic reference descriptions for 9 issue categories are pre-embedded at startup and stored in memory.
@@ -379,7 +379,7 @@ The Spam and Abuse Oracle combines an NLP model with a rule-based scoring engine
 
     \begin{table}[h!]
     \centering
-    \caption{Civic Relevance Oracle: Cosine Similarity Thresholds}
+    \caption{Civic Relevance Classifier Service: Cosine Similarity Thresholds}
     \label{tab:civic-thresholds}
     \begin{tabular}{|l|l|l|}
     \hline
@@ -395,56 +395,104 @@ The Spam and Abuse Oracle combines an NLP model with a rule-based scoring engine
     The cosine similarity is computed between the report embedding and each reference embedding for the nine civic categories: Road Damage, Waste Management, Streetlight Issue, Drainage/Sewage, Water Supply, Flooding, Public Property Damage, Traffic/Road Safety, and Environmental Issues. A report is accepted if its maximum cosine similarity across all reference descriptions exceeds \texttt{TEXT\_RELEVANCE\_THRESHOLD = 0.38}. The category match threshold applies separately and does not cause rejection; it only adds a warning to the response.
 \end{enumerate}
 
-\subsection{Oracle Aggregator}
-The Oracle Aggregator is the single entry point for the backend relayer. It:
+\subsection{Moderation Decision Aggregator}
+The Moderation Decision Aggregator is the single entry point for the backend relayer. It:
 \begin{enumerate}
     \item Receives the signed moderation request from the relayer. The relayer signs the request with its private key, and the aggregator recovers and verifies the signer address.
     \item Validates the request timestamp (to prevent stale requests) and nonce (to prevent replay attacks).
-    \item Forwards the moderation request to all three oracle workers in parallel.
+    \item Forwards the moderation request to all three classifier workers in parallel.
     \item Applies the following decision logic:
     \begin{itemize}
-        \item If the Safety Oracle detects a critical violation, the final decision is \texttt{REJECT} regardless of other votes.
-        \item If the Civic Relevance Oracle determines the content is non-civic, the final decision is \texttt{REJECT}.
-        \item Otherwise, majority voting is applied: if two or more oracle workers return \texttt{ACCEPT}, the final decision is \texttt{ACCEPT}; otherwise it is \texttt{REJECT}.
+        \item If the Safety Classifier Service detects a critical violation, the final decision is \texttt{REJECT} regardless of other votes.
+        \item If the Civic Relevance Classifier Service determines the content is non-civic, the final decision is \texttt{REJECT}.
+        \item Otherwise, majority voting is applied: if two or more classifier workers return \texttt{ACCEPT}, the final decision is \texttt{ACCEPT}; otherwise it is \texttt{REJECT}.
     \end{itemize}
     \item Computes a \texttt{report\_hash}, a \texttt{decision\_hash}, and an \texttt{aggregator\_signature} over the final decision. These fields are returned to the relayer in the moderation response.
 \end{enumerate}
 
 \section{Web-Based Decentralized Application (DApp)}
+\label{sec:dapp-impl}
+
+The decentralized application (DApp) provides a responsive, mobile-first web interface for citizens, municipal authority workers, and Super Admins. Built using Next.js 14, React, Tailwind CSS, and \texttt{ethers.js}, the DApp abstracts blockchain interactions, gas fees, and key management away from end-users.
 
 \subsection{Authentication Interface}
-The login page collects the citizen's GovID credentials and sends them to the ZKP GovID Simulator. Upon successful verification, the DApp receives the \texttt{citizenSeed} and the signed ticket batch. The \texttt{ethers.js} library derives the anonymous ECDSA key pair from the seed. A custom React Context (\texttt{CitizenContext}) is used to store the keys and ticket batch in the browser's local storage. Keys and tickets never leave the device.
+
+The authentication interface enables citizens to login using their municipal GovID credentials (NID and password). Upon authentication against the ZKP GovID Simulator, the DApp stores the signed ticket batch and citizen seed in browser local storage. Figure~\ref{fig:ui-authentication} shows the web and mobile authentication interfaces.
+
+% \begin{figure}[!htbp]
+%     \centering
+%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+%     \textit{[UI Screenshot Placeholder: Citizen Authentication & ZKP GovID Login Interface (Web Desktop View & Mobile Responsive View). Shows NID credential input, successful authentication state, and remaining single-use ticket count.]}
+%     }}
+%    % \vspace{1.5cm}
+%     \caption{User Interface: Citizen Authentication and ZKP GovID Login (Web and Mobile Views)}
+%     \label{fig:ui-authentication}
+% \end{figure}
 
 \subsection{Report Submission Interface}
-The report submission form uses a mobile-first layout. Citizens enter a description, select a category, and optionally attach photographic evidence. On submission:
-\begin{enumerate}
-    \item The DApp hashes the description and ticket ID using Keccak-256.
-    \item The citizen's private key signs the hash to produce the payload signature.
-    \item The signed payload, images, and ZKP ticket are sent to the backend relayer via a multipart HTTPS POST request.
-    \item The relayer responds immediately with a \texttt{jobId}.
-    \item The DApp opens an \ac{SSE} connection to \texttt{/report/status/stream?citizenAddress=<address>} and displays a live progress bar.
-\end{enumerate}
+
+The report submission form provides an intuitive, mobile-first interface for submitting civic complaints. Citizens select an issue category, type a detailed description, and attach photographic evidence. On submission, the client computes and signs the composite payload hash $\mathcal{H}_{\text{report}}$ before transmitting it to the relayer. Figure~\ref{fig:ui-report-submission} shows the submission interface.
+
+% \begin{figure}[!htbp]
+%     \centering
+%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+%     \textit{[UI Screenshot Placeholder: Civic Report Submission Interface (Mobile Layout & Web View). Displays category selector, description input box, camera/file attachment preview, and Submit Report button.]}
+%     \vspace{1.5cm}}}
+%     \caption{User Interface: Civic Report Submission Form and Evidence Attachment}
+%     \label{fig:ui-report-submission}
+% \end{figure}
 
 \subsection{Real-Time Submission Progress UI}
-The progress UI is driven by SSE events received from the backend relayer. The DApp renders a step-by-step progress bar with the following stages:
-\begin{enumerate}
-    \item \textit{Queued}: Report is accepted and waiting for processing.
-    \item \textit{AI Moderation}: Content is being analyzed by the oracle ensemble.
-    \item \textit{IPFS Upload}: Approved content is being stored off-chain.
-    \item \textit{On-Chain Submission}: Transaction is being submitted to the blockchain.
-    \item \textit{Completed}: Transaction is confirmed on-chain. The transaction hash and block number are displayed.
-\end{enumerate}
-If any step fails, the UI displays a clear error message with the reason returned by the relayer (e.g., ``Content was rejected by AI moderation: non-civic content detected.'').
 
-\subsection{Community Feed Interface}
-The public feed retrieves submitted reports from the blockchain and displays them as interactive cards. Each card shows the report category, description excerpt, current status badge (e.g., \texttt{PENDING VALIDATION}, \texttt{OPEN}, \texttt{IN PROGRESS}, \texttt{CLOSED}), upvote and downvote counts, timestamp, and a thumbnail of the attached image retrieved from IPFS.
+Upon submitting a report, the DApp opens a Server-Sent Events (SSE) stream to \texttt{/report/status/stream?citizenAddress=<address>} and displays an interactive progress bar. Figure~\ref{fig:ui-submission-progress} shows the real-time progress notification interface.
 
-Citizens can filter the feed by category. Authenticated citizens can cast validation votes, verification votes, and rejection review votes directly from the feed. Vote submissions are also processed asynchronously through the vote queue, and the DApp receives SSE progress events for votes in the same way as for reports.
+\begin{figure}[!htbp]
+    \centering
+    \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+    \textit{[UI Screenshot Placeholder: Real-Time SSE Submission Progress Bar UI. Shows active pipeline stages: Queued (5\%), AI Moderation (33\%), IPFS Upload (66\%), Blockchain Submission (90\%), and Completed (100\%) with confirmed Transaction Hash.]}
+    \vspace{1.5cm}}}
+    \caption{User Interface: Real-Time SSE Report Submission Progress Tracker}
+    \label{fig:ui-submission-progress}
+\end{figure}
+
+\subsection{Community Feed and Validation Interface}
+
+The public community feed displays submitted reports as interactive cards retrieved from the blockchain. Cards display report categories, description excerpts, status badges (\texttt{PENDING VALIDATION}, \texttt{OPEN}, \texttt{IN PROGRESS}, \texttt{CLOSED}), live upvote/downvote counts, countdown timers, and IPFS media thumbnails. Figure~\ref{fig:ui-community-feed} shows the community feed and peer-validation UI.
+
+% \begin{figure}[!htbp]
+%     \centering
+%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+%     \textit{[UI Screenshot Placeholder: Community Feed and Peer-Validation Voting Interface (Desktop Grid View & Mobile Card View). Displays report filter tabs, status badges, countdown timer, upvote/downvote action buttons, and IPFS evidence modal.]}
+%     \vspace{1.5cm}}}
+%     \caption{User Interface: Public Community Feed and Peer-Validation Voting}
+%     \label{fig:ui-community-feed}
+% \end{figure}
 
 \subsection{Authority Dashboard}
-Authenticated authority workers access a separate dashboard that shows all reports in the \texttt{Open} and \texttt{Reopened} states. Authorities can claim a report by calling \texttt{startWork()}, post mid-repair progress updates using \texttt{addAuthorityUpdate()}, mark a report as solved using \texttt{markAsSolved()}, or reject an invalid report using \texttt{rejectIssue()}. Each action triggers a blockchain transaction signed by the authority's wallet.
 
-Super Admin users access the governance dashboard to submit and vote on multi-sig proposals for adding or removing authority workers.
+Authenticated municipal staff access an Authority Dashboard that lists actionable reports in \texttt{Open} and \texttt{Reopened} states. Officers can claim issues (\texttt{startWork}), post progress updates (\texttt{addAuthorityUpdate}), attach completion photos and mark issues solved (\texttt{markAsSolved}), or reject invalid reports (\texttt{rejectIssue}). Figure~\ref{fig:ui-authority-dashboard} shows the Authority Dashboard interface.
+
+\begin{figure}[!htbp]
+    \centering
+    \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+    \textit{[UI Screenshot Placeholder: Municipal Authority Dashboard Interface. Shows assigned task table, claim issue modal, mid-repair update log form, completion photo upload, and mark as solved button.]}
+    \vspace{1.5cm}}}
+    \caption{User Interface: Municipal Authority Resolution Dashboard}
+    \label{fig:ui-authority-dashboard}
+\end{figure}
+
+\subsection{Public Opinion Polling Interface}
+
+Citizens participate in anonymous municipal polls, while authorized officials create new polls through the Opinion Polling UI. Figure~\ref{fig:ui-opinion-polling} displays the public opinion polling interface.
+
+% \begin{figure}[!htbp]
+%     \centering
+%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+%     \textit{[UI Screenshot Placeholder: Anonymous Public Opinion Polling Interface. Shows official poll creation form for municipal authorities, citizen voting options (True/False & MultiChoice), live vote tallies, and poll expiry countdown.]}
+%     \vspace{1.5cm}}}
+%     \caption{User Interface: Anonymous Public Opinion Polling and Consultation Interface}
+%     \label{fig:ui-opinion-polling}
+% \end{figure}
 
 \section{Deployment Infrastructure}
 \label{sec:deployment-impl}
@@ -461,12 +509,12 @@ The complete system is deployed across two VPS instances to separate the core op
     \item Web DApp (Next.js, Docker container).
 \end{itemize}
 
-\textbf{Server 2 (AI Oracle and Storage)} hosts:
+\textbf{Server 2 (AI Content Moderation and Storage)} hosts:
 \begin{itemize}
-    \item AI Oracle Aggregator (Python/FastAPI, Docker container).
-    \item Safety Oracle worker (Docker container).
-    \item Spam and Abuse Oracle worker (Docker container).
-    \item Civic Relevance Oracle worker (Docker container).
+    \item AI Moderation Decision Aggregator (Python/FastAPI, Docker container).
+    \item Safety Classifier worker (Docker container).
+    \item Spam and Abuse Classifier worker (Docker container).
+    \item Civic Relevance Classifier worker (Docker container).
     \item IPFS Node and IPFS HTTP Service (Docker containers).
 \end{itemize}
 
@@ -477,7 +525,7 @@ Continuous integration and deployment are managed using Dokploy, a self-hosted P
 \begin{figure}[!htbp]
     \centering
     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-    \textit{[Image suggestion IMG-06: 2-Server VPS Deployment Topology Diagram. Show Server 1 hosting blockchain nodes, Redis, relayer, DApp, ZKP simulator. Show Server 2 hosting 4 AI oracle containers and 2 IPFS containers. Indicate Dokploy CI/CD on both servers and GitHub webhook trigger.]}
+    \textit{[Image suggestion IMG-06: 2-Server VPS Deployment Topology Diagram. Show Server 1 hosting blockchain nodes, Redis, relayer, DApp, ZKP simulator. Show Server 2 hosting 4 AI moderation containers and 2 IPFS containers. Indicate Dokploy CI/CD on both servers and GitHub webhook trigger.]}
     \vspace{1.5cm}}}
     \caption{Two-Server VPS Deployment Topology}
     \label{fig:deployment-topology}
