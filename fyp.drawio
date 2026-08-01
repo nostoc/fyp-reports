@@ -1,0 +1,129 @@
+<mxfile host="app.diagrams.net" pages="2">
+  <diagram name="high-level-architecture-diagram" id="uRi14we7FtfUTbdMM1D0">
+    <mxGraphModel dx="2264" dy="777" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" value="" vertex="1">
+          <mxGeometry height="240" width="315" x="305" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="226" width="530" x="-90" y="414" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-11" edge="1" parent="1" source="ZJCa7zNNkSxjqMz3cQFO-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontStyle=1" target="ZJCa7zNNkSxjqMz3cQFO-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="Citizen/ User" vertex="1">
+          <mxGeometry height="55" width="230" x="60" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-12" edge="1" parent="1" source="ZJCa7zNNkSxjqMz3cQFO-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontStyle=1" target="ZJCa7zNNkSxjqMz3cQFO-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-13" edge="1" parent="1" source="ZJCa7zNNkSxjqMz3cQFO-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontStyle=1" target="ZJCa7zNNkSxjqMz3cQFO-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="Web DApp Interface" vertex="1">
+          <mxGeometry height="55" width="230" x="60" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-14" edge="1" parent="1" source="ZJCa7zNNkSxjqMz3cQFO-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;fontStyle=1" target="ZJCa7zNNkSxjqMz3cQFO-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-15" edge="1" parent="1" source="ZJCa7zNNkSxjqMz3cQFO-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontStyle=1" target="ZJCa7zNNkSxjqMz3cQFO-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-18" edge="1" parent="1" source="ZJCa7zNNkSxjqMz3cQFO-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontStyle=1" target="ZJCa7zNNkSxjqMz3cQFO-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="Backend Relayer Gateway" vertex="1">
+          <mxGeometry height="55" width="230" x="60" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="IPFS File Storage" vertex="1">
+          <mxGeometry height="55" width="230" x="-80" y="572" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="AI Moderation Ensemble" vertex="1">
+          <mxGeometry height="55" width="250" x="180" y="573" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="ZKP GovID Authentication" vertex="1">
+          <mxGeometry height="70" width="230" x="390" y="257.5" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-17" edge="1" parent="1" source="ZJCa7zNNkSxjqMz3cQFO-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontStyle=1" target="ZJCa7zNNkSxjqMz3cQFO-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="Private PoA Blockchain" vertex="1">
+          <mxGeometry height="55" width="285" x="320" y="732" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="Smart Contracts&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;(Reporing, Emergency, Polling, MutliSig)&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="55" width="285" x="320" y="832" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-19" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;fontStyle=1" value="Off-Chain Services" vertex="1">
+          <mxGeometry height="30" width="146" x="-86" y="418" as="geometry" />
+        </mxCell>
+        <mxCell id="ZJCa7zNNkSxjqMz3cQFO-20" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=15;fontStyle=1" value="On-Chain Services" vertex="1">
+          <mxGeometry height="30" width="170" x="310" y="665" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="Bt095q42Fpg15FevyJve" name="layered-architecture">
+    <mxGraphModel dx="1414" dy="811" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="" vertex="1">
+          <mxGeometry height="150" width="340" x="210" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=19;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Citizens, Municipal Authorities,&amp;nbsp;&lt;div&gt;Super Admins&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="310" x="225" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1" value="Layer 1 : User Layer" vertex="1">
+          <mxGeometry height="30" width="215" x="272.5" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="" vertex="1">
+          <mxGeometry height="150" width="340" x="210" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=19;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Citizens, Municipal Authorities,&amp;nbsp;&lt;div&gt;Super Admins&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="310" x="225" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1" value="Layer 2 : Presentation Layer" vertex="1">
+          <mxGeometry height="30" width="252.5" x="253.75" y="535" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-19" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="" vertex="1">
+          <mxGeometry height="150" width="340" x="220" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=19;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Citizens, Municipal Authorities,&amp;nbsp;&lt;div&gt;Super Admins&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="310" x="235" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-21" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1" value="Layer 1 : User Layer" vertex="1">
+          <mxGeometry height="30" width="215" x="282.5" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="" vertex="1">
+          <mxGeometry height="150" width="340" x="205" y="940" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=19;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Citizens, Municipal Authorities,&amp;nbsp;&lt;div&gt;Super Admins&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="310" x="220" y="990" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-24" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1" value="Layer 1 : User Layer" vertex="1">
+          <mxGeometry height="30" width="215" x="267.5" y="950" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="" vertex="1">
+          <mxGeometry height="150" width="340" x="200" y="1120" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=19;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Citizens, Municipal Authorities,&amp;nbsp;&lt;div&gt;Super Admins&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="310" x="215" y="1170" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-27" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1" value="Layer 1 : User Layer" vertex="1">
+          <mxGeometry height="30" width="215" x="262.5" y="1130" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-28" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="" vertex="1">
+          <mxGeometry height="150" width="340" x="200" y="1310" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-29" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=19;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Citizens, Municipal Authorities,&amp;nbsp;&lt;div&gt;Super Admins&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="310" x="215" y="1360" as="geometry" />
+        </mxCell>
+        <mxCell id="0DP560Ilxe-8VJXPu3rE-30" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1" value="Layer 1 : User Layer" vertex="1">
+          <mxGeometry height="30" width="215" x="262.5" y="1320" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
