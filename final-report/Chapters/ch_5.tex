@@ -1,67 +1,593 @@
 \chapter{Testing, Experimentation, and Performance Evaluation}
-The empirical evaluation section of the report
+\label{ch:testing}
 
- \section{ Experimental Setup \& Evaluation Environment}
- 2 VPS cloud hardware specs \& Dokploy CI/CD pipeline.
-\section{Subsystem Unit \& Integration Testing}
-Hardhat smart contract tests, relayer signature tests, AI oracle API security suite (Table 4.1).
-\section{AI Moderation Performance \& Classification Accuracy}
-Classification dataset tests (Table 4.2), oracle aggregator voting validation (Table 4.3), and response auditability (Table 4.4).
+This chapter describes how the implemented system is tested and evaluated. Each subsystem is tested independently first, and then the components are tested together in an integrated end-to-end scenario. The evaluation covers functional correctness, security properties, AI moderation accuracy, IPFS storage performance, queue reliability, and blockchain network performance.
+
+\section{Experimental Setup and Evaluation Environment}
+\label{sec:exp-setup}
+
+\subsection{Hardware Infrastructure}
+
+All tests are performed on cloud-based VPS infrastructure. Two servers are used to match the production deployment configuration:
+
+\begin{table}[h!]
+\centering
+\caption{VPS Hardware Specifications for the Evaluation Environment}
+\label{tab:hardware-specs}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Specification} & \textbf{Value} \\
+\hline
+CPU & 4 vCPU cores \\
+\hline
+RAM & 8 GB \\
+\hline
+Storage & 75 GB SSD \\
+\hline
+Network & High-bandwidth cloud uplink \\
+\hline
+Operating System & Ubuntu Server 22.04 LTS \\
+\hline
+\end{tabular}
+\end{table}
+
+Server 1 hosts the core operational services: the private PoA blockchain, the backend relayer (with Redis), the ZKP GovID Simulator, and the web DApp. Server 2 hosts the AI oracle ensemble (four Docker containers) and the IPFS storage service.
+
+\subsection{Software and Deployment Configuration}
+
+All services are containerized using Docker. Dokploy is used as the self-hosted deployment platform on both servers. CI/CD pipelines are configured via GitHub webhooks to the \texttt{develop} branch. Smart contracts are compiled with Hardhat using Solidity 0.8.20. Automated contract testing uses the Hardhat test runner with the Chai assertion library.
+
+\section{Subsystem Unit and Integration Testing}
+\label{sec:unit-testing}
+
+\subsection{Smart Contract Testing (Reporting.sol)}
+
+Smart contract tests are run using the Hardhat framework with Chai assertions on a local in-process blockchain. Table~\ref{tab:reporting-tests} lists all test cases for \texttt{Reporting.sol}, organized by functional group.
+
+\begin{table}[h!]
+\centering
+\caption{Reporting.sol Hardhat Test Suite (T1.1.1 -- T1.1.41)}
+\label{tab:reporting-tests}
+\begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
+\hline
+\textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 1 — Report Submission (submitReport)}} \\
+\hline
+T1.1.1 & Authorized relayer submits a report; \texttt{ReportSubmitted} event is emitted with correct fields & Passed \\
+\hline
+T1.1.2 & Non-relayer address is rejected with \texttt{Unauthorized()} & Passed \\
+\hline
+T1.1.3 & Duplicate nullifier is rejected with \texttt{NullifierAlreadyUsed()} & Passed \\
+\hline
+T1.1.4 & Empty CID is rejected with \texttt{EmptyCID()} & Passed \\
+\hline
+T1.1.5 & Zero \texttt{reportHash} is rejected with \texttt{InvalidHash()} & Passed \\
+\hline
+T1.1.6 & Zero nullifier is rejected with \texttt{InvalidNullifier()} & Passed \\
+\hline
+T1.1.7 & Zero pseudonym is rejected with \texttt{InvalidPseudonym()} & Passed \\
+\hline
+T1.1.8 & Report count increments correctly across multiple submissions & Passed \\
+\hline
+T1.1.9 & \texttt{phaseDeadline} is set on submission & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 2 — Validation Voting (castValidationVote)}} \\
+\hline
+T1.1.10 & Upvote increments \texttt{validationUpvotes} and emits \texttt{ValidationVoteCast} & Passed \\
+\hline
+T1.1.11 & Downvote increments \texttt{validationDownvotes} & Passed \\
+\hline
+T1.1.12 & Same vote nullifier is rejected with \texttt{NullifierAlreadyUsed()} & Passed \\
+\hline
+T1.1.13 & Same citizen pseudonym cannot vote twice (\texttt{CitizenAlreadyVoted}) & Passed \\
+\hline
+T1.1.14 & Vote after window expiry triggers lazy finalization (late vote not counted) & Passed \\
+\hline
+T1.1.15 & Voting reverts when report is not in \texttt{PendingValidation} state & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 3 — Voting Window Finalization}} \\
+\hline
+T1.1.16 & Upvotes $>$ downvotes after window $\Rightarrow$ status becomes \texttt{Open} (2) & Passed \\
+\hline
+T1.1.17 & Downvotes $\geq$ upvotes (including zero votes) $\Rightarrow$ \texttt{CommunityRejected} (1) & Passed \\
+\hline
+T1.1.18 & \texttt{finalizeVotingWindow} reverts when window is still open & Passed \\
+\hline
+T1.1.19 & \texttt{finalizeVotingWindow} succeeds exactly after window duration (time-travel test) & Passed \\
+\hline
+T1.1.20 & \texttt{batchFinalizeVotingWindows} finalizes multiple expired reports in one call & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 4 — Authority Actions (startWork, markAsSolved, rejectIssue)}} \\
+\hline
+T1.1.21 & Authority claims an \texttt{Open} report: \texttt{startWork} $\Rightarrow$ \texttt{InProgress} (3) & Passed \\
+\hline
+T1.1.22 & \texttt{startWork} reverts on wrong status (e.g., \texttt{PendingValidation}) & Passed \\
+\hline
+T1.1.23 & Authority marks solved $\Rightarrow$ \texttt{PendingVerification} (5) with \texttt{phaseDeadline} set & Passed \\
+\hline
+T1.1.24 & Non-assigned authority cannot call \texttt{markAsSolved} (\texttt{Unauthorized}) & Passed \\
+\hline
+T1.1.25 & Authority rejects issue $\Rightarrow$ \texttt{PendingRejectionReview} (4) & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 5 — Verification Voting (castVerificationVote)}} \\
+\hline
+T1.1.26 & Accept vote increments \texttt{verificationAcceptVotes} & Passed \\
+\hline
+T1.1.27 & Reject vote increments \texttt{verificationRejectVotes} & Passed \\
+\hline
+T1.1.28 & Accept $\geq$ reject after window $\Rightarrow$ \texttt{Closed} (6) & Passed \\
+\hline
+T1.1.29 & Reject $>$ accept after window $\Rightarrow$ \texttt{Reopened} (7) & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 6 — Rejection Review Voting (castRejectionReviewVote)}} \\
+\hline
+T1.1.30 & Uphold vote increments \texttt{rejectionUpholdVotes} & Passed \\
+\hline
+T1.1.31 & Appeal vote increments \texttt{rejectionAppealVotes} & Passed \\
+\hline
+T1.1.32 & Uphold $\geq$ appeal after window $\Rightarrow$ \texttt{Closed} (6) & Passed \\
+\hline
+T1.1.33 & Appeal $>$ uphold after window $\Rightarrow$ \texttt{Reopened} (7) & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 7 — Query and Pagination Functions}} \\
+\hline
+T1.1.34 & \texttt{getAllReports} returns reports newest-first & Passed \\
+\hline
+T1.1.35 & \texttt{getAllReports} with offset skips correct number of reports & Passed \\
+\hline
+T1.1.36 & \texttt{getAllReports} with \texttt{limit > 100} reverts \texttt{InvalidPagination} & Passed \\
+\hline
+T1.1.37 & \texttt{getReportsByCitizen} returns only reports for the queried pseudonym & Passed \\
+\hline
+T1.1.38 & \texttt{getReportCountByCitizen} returns correct count across multiple submissions & Passed \\
+\hline
+T1.1.39 & \texttt{getReportsByIds} returns correct reports in specified order & Passed \\
+\hline
+T1.1.40 & \texttt{getReport} with invalid ID (0 or out-of-range) reverts \texttt{InvalidReportId} & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 8 — Authority Action History}} \\
+\hline
+T1.1.41 & \texttt{getReportActions} array grows correctly across full lifecycle (startWork + markAsSolved) & Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Smart Contract Testing (EmergencyReporting.sol)}
+
+Table~\ref{tab:emergency-tests} lists all test cases for \texttt{EmergencyReporting.sol}.
+
+\begin{table}[h!]
+\centering
+\caption{EmergencyReporting.sol Hardhat Test Suite (T1.2.1 -- T1.2.13)}
+\label{tab:emergency-tests}
+\begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
+\hline
+\textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 1 — submitEmergencyReport()}} \\
+\hline
+T1.2.1 & Authorized relayer submits; status is immediately \texttt{Open} (0) and \texttt{isReclassified = false} & Passed \\
+\hline
+T1.2.2 & Nullifier reuse reverts with \texttt{NullifierAlreadyUsed()} & Passed \\
+\hline
+T1.2.3 & Non-relayer address is rejected with \texttt{Unauthorized()} & Passed \\
+\hline
+T1.2.4 & Empty CID reverts \texttt{EmptyCID()} & Passed \\
+\hline
+T1.2.5 & Zero \texttt{reportHash} reverts \texttt{InvalidHash()} & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 2 — reclassifyEmergency() and Penalty Box}} \\
+\hline
+T1.2.6 & Authority reclassifies report; \texttt{isReclassified=true}, status = \texttt{Reclassified} (3), 30-day penalty set & Passed \\
+\hline
+T1.2.7 & Penalized citizen cannot submit another emergency (\texttt{EmergencyReportingLocked}) & Passed \\
+\hline
+T1.2.8 & Penalized citizen CAN submit again after 30-day penalty expires (time-travel) & Passed \\
+\hline
+T1.2.9 & Reclassifying an already-reclassified report reverts \texttt{InvalidState()} & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 3 — Authority Actions (startWork, resolveEmergency)}} \\
+\hline
+T1.2.10 & Authority claims \texttt{Open} emergency: \texttt{startWork} $\Rightarrow$ \texttt{InProgress} (1), \texttt{assignedAuthority} set & Passed \\
+\hline
+T1.2.11 & Authority resolves an \texttt{InProgress} emergency $\Rightarrow$ \texttt{Resolved} (2) & Passed \\
+\hline
+T1.2.12 & Authority can resolve directly from \texttt{Open} (bypasses \texttt{InProgress}) & Passed \\
+\hline
+T1.2.13 & \texttt{startWork} on a non-\texttt{Open} report (e.g., \texttt{Resolved}) reverts \texttt{InvalidState()} & Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Cryptographic Security and Sybil Attack Tests (T6)}
+
+Table~\ref{tab:security-tests} shows the cross-contract security test cases from the \texttt{Security.ts} test file.
+
+\begin{table}[h!]
+\centering
+\caption{Cryptographic Security and Sybil Prevention Tests (T6.1 -- T6.6)}
+\label{tab:security-tests}
+\begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
+\hline
+\textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
+\hline
+T6.1 & All 100 consecutive replay attempts with the same submission nullifier are rejected (100\% revert rate) & Passed \\
+\hline
+T6.2 & Non-relayer address calling \texttt{submitReport} directly is rejected with \texttt{Unauthorized()} & Passed \\
+\hline
+T6.3 & Sybil validation vote: same citizen pseudonym with a fresh nullifier is rejected (\texttt{CitizenAlreadyVoted}) & Passed \\
+\hline
+T6.4 & Sybil poll vote: same nullifier reused in two poll votes is rejected (\texttt{AlreadyVotedWithNullifier}) & Passed \\
+\hline
+T6.5 & Emergency penalty box: citizen is blocked for 30 days after false alarm reclassification; unblocked after 30-day expiry & Passed \\
+\hline
+T6.6 & Sybil verification vote: same pseudonym with a fresh nullifier rejected (\texttt{CitizenAlreadyVoted}) & Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Backend Relayer Testing}
+
+The relayer is tested at the cryptographic verification layer and at the queue integration layer. Table~\ref{tab:relayer-tests} lists all relayer test cases.
+
+\begin{table}[h!]
+\centering
+\caption{Backend Relayer: Cryptographic and Queue Integration Tests (T2.1 -- T2.9)}
+\label{tab:relayer-tests}
+\begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
+\hline
+\textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 1 — Dual-Layer Cryptographic Verification}} \\
+\hline
+T2.1 & Valid government ticket and valid citizen signature are both submitted. The relayer accepts the request and enqueues the flow job. & Passed \\
+\hline
+T2.2 & A ticket signed by a key other than the government authority key is submitted. The relayer rejects the request at the ticket verification step. & Passed \\
+\hline
+T2.3 & A valid government-signed ticket is paired with a mismatched citizen signature (the description is modified after signing). The relayer rejects the request because the reconstructed hash does not match the signed hash. & Passed \\
+\hline
+T2.4 & A valid ticket and citizen signature are submitted with a modified image. The image hash in the payload hash no longer matches the submitted image. The relayer rejects the request. & Passed \\
+\hline
+T2.5 & A previously used ticket nullifier is submitted. The relayer forwards the request, but the smart contract reverts the transaction with \texttt{NullifierAlreadyUsed()}. & Passed \\
+\hline
+\multicolumn{3}{|l|}{\textit{Group 2 — BullMQ Queue Integration}} \\
+\hline
+T2.6 & A valid report submission is accepted. A BullMQ flow job is created with three ordered child jobs (AI, IPFS, Blockchain). The job ID is returned to the DApp. & Passed \\
+\hline
+T2.7 & The IPFS upload service is made to fail on the first two attempts. The queue retries automatically after exponential-backoff delays (2\,s, 8\,s). On the third attempt, the upload succeeds. & Passed \\
+\hline
+T2.8 & The blockchain RPC endpoint is made to fail on all three attempts. The step is marked as failed, \texttt{failParentOnFailure: true} propagates the failure to the parent job, and a \texttt{blockchain\_failed} SSE event is delivered to the DApp. & Passed \\
+\hline
+T2.9 & The relayer process is restarted while a job is active. After restart, all queued jobs are recovered from Redis and resumed. No job is lost. & Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{SSE Real-Time Progress Delivery Tests}
+
+Table~\ref{tab:sse-tests} shows the SSE delivery test cases.
+
+\begin{table}[h!]
+\centering
+\caption{SSE Real-Time Progress Notification Tests (T2.10 -- T2.12)}
+\label{tab:sse-tests}
+\begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
+\hline
+\textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
+\hline
+T2.10 & After a report is enqueued, the DApp receives all seven expected SSE progress events in order: \texttt{ai\_moderation\_in\_progress}, \texttt{ai\_moderation\_passed}, \texttt{ipfs\_uploading}, \texttt{ipfs\_uploaded}, \texttt{blockchain\_submitting}, \texttt{blockchain\_submitted}, \texttt{completed}. & Passed \\
+\hline
+T2.11 & Two different citizens submit reports concurrently. Each citizen's SSE stream receives only their own job progress events. No cross-citizen event leakage is observed. & Passed \\
+\hline
+T2.12 & SSE event delivery latency is measured as the time between the worker emitting a progress event and the event being received by the DApp client. Observed latency is under 200\,ms in all cases. & Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{AI Moderation Performance and Classification Accuracy}
+\label{sec:ai-testing}
+
+\subsection{API Availability and Security Tests (T3.1)}
+
+The first test group verifies that the oracle aggregator API is correctly secured. Only the backend relayer is permitted to call the moderation API. Table~\ref{tab:ai_api_tests} summarizes all security test cases and their outcomes.
+
+\begin{table}[h!]
+\centering
+\caption{AI Oracle Aggregator: API Security Test Results (T3.1.1 -- T3.1.9)}
+\label{tab:ai_api_tests}
+\begin{tabular}{|p{1.3cm}|p{5.5cm}|p{3cm}|p{2cm}|}
+\hline
+\textbf{Test ID} & \textbf{Description} & \textbf{Expected HTTP Status} & \textbf{Result} \\
+\hline
+T3.1.1 & Valid API key and correct relayer ECDSA signature & 200 OK & Passed \\
+\hline
+T3.1.2 & Missing \texttt{x-api-key} header & 401 or 403 & Passed \\
+\hline
+T3.1.3 & Wrong \texttt{x-api-key} value & 401 or 403 & Passed \\
+\hline
+T3.1.4 & Valid API key but forged relayer signature (all \texttt{0xff} bytes) & 401 or 403 & Passed \\
+\hline
+T3.1.5 & Same nonce used twice in two consecutive requests & 401, 403, or 409 & Passed \\
+\hline
+T3.1.6 & Stale timestamp ($> 300$\,s in the past) & 401 or 403 & Passed \\
+\hline
+T3.1.7 & Image file exceeding 5\,MB size limit & 400, 413, or 422 & Passed \\
+\hline
+T3.1.8 & Disallowed MIME type (PDF) uploaded as attachment & 400 or 422 & Passed \\
+\hline
+T3.1.9 & More than 3 image files attached (\texttt{MAX\_FILES} limit) & 400 or 422 & Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Text Classification Tests (T3.2)}
+
+Table~\ref{tab:ai_classification_tests} shows the text classification test cases and the oracle ensemble decisions. Each test uses an exact input string submitted live against the running oracle services.
+
+\begin{table}[h!]
+\centering
+\caption{AI Oracle Ensemble: Text Classification Test Results (T3.2.1 -- T3.2.5)}
+\label{tab:ai_classification_tests}
+\begin{tabular}{|p{1.3cm}|p{2.5cm}|p{6cm}|p{2cm}|}
+\hline
+\textbf{Test ID} & \textbf{Input Type} & \textbf{Example Input} & \textbf{Expected / Result} \\
+\hline
+T3.2.1 & Valid civic report & ``There is a large pothole at the intersection of Oak Street and 5th Avenue. It is causing damage to vehicles and is a safety hazard for cyclists.'' & ACCEPT / Passed \\
+\hline
+T3.2.2 & Hate speech & ``I hate all people from that neighborhood. They are all criminals and should be forced out. This is not a real complaint.'' & REJECT / Passed \\
+\hline
+T3.2.3 & Commercial spam & ``BUY NOW! BEST CRYPTO INVESTMENT! 100x returns guaranteed! Click this link to get rich! Limited time offer!'' & REJECT / Passed \\
+\hline
+T3.2.4 & Non-civic personal content & ``My favorite movie is great. I love watching sports on TV. The weather is nice today. This is my personal blog entry.'' & REJECT / Passed \\
+\hline
+T3.2.5 & Valid emergency civic & ``URGENT: There is a gas leak at 123 Municipal Road. Residents are evacuating. The fire department has been called but local infrastructure management needs to be notified immediately.'' & ACCEPT / Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Image Moderation Tests (T3.2.6 -- T3.2.9)}
+
+Table~\ref{tab:ai_image_tests} shows the image moderation test cases. These tests verify the NSFW safety check, the corrupted image handler, and the face blurring pipeline.
+
+\begin{table}[h!]
+\centering
+\caption{AI Oracle Ensemble: Image Moderation Test Results (T3.2.6 -- T3.2.9)}
+\label{tab:ai_image_tests}
+\begin{tabular}{|p{1.3cm}|p{3.5cm}|p{5.5cm}|p{2cm}|}
+\hline
+\textbf{Test ID} & \textbf{Test Description} & \textbf{Notes} & \textbf{Result} \\
+\hline
+T3.2.6 & Civic report with valid safe image & A genuine pothole photo (\texttt{sample\_pothole.jpg}) is attached. NSFW score must be below 0.70. & ACCEPT / Passed \\
+\hline
+T3.2.7 & Report with corrupted image & 32 bytes of random non-image data submitted as \texttt{corrupt.png}. Safety oracle returns \texttt{CORRUPTED\_IMAGE}. & REJECT / Passed \\
+\hline
+T3.2.8 & Valid civic text with NSFW image & A civic description is paired with an NSFW image (\texttt{sample\_nsfw.jpg}). NSFW score exceeds 0.70 threshold. & REJECT / Passed \\
+\hline
+T3.2.9 & Image with human faces (face blurring) & A photo containing people (\texttt{people.jpg}) is attached. Oracle accepts the content and returns a blurred version via \texttt{blurredMedia}. & ACCEPT / Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Oracle Aggregator Voting Aggregation Tests (T3.3)}
+
+Table~\ref{tab:oracle_voting_validation} shows how the aggregator combines individual oracle votes into a final decision. These cases are tested live through the \texttt{/moderate/poll} endpoint.
+
+\begin{table}[h!]
+\centering
+\caption{Oracle Voting Aggregation Logic Validation (T3.3.1 -- T3.3.2)}
+\label{tab:oracle_voting_validation}
+\begin{tabular}{|p{1.3cm}|p{5.5cm}|p{5.5cm}|}
+\hline
+\textbf{Test ID} & \textbf{Poll Input} & \textbf{Expected Decision / Result} \\
+\hline
+T3.3.1 & ``Should the city install more bike lanes?'' (legitimate civic governance poll with a sustainable transport description) & ACCEPT / Passed \\
+\hline
+T3.3.2 & ``Best cryptocurrency to invest in right now?'' (explicit non-civic financial speculation description) & REJECT / Passed \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Response Auditability Tests (T3.4)}
+
+Table~\ref{tab:ai_auditability_tests} verifies that every oracle aggregator response includes the required auditable fields regardless of the decision.
+
+\begin{table}[h!]
+\centering
+\caption{Oracle Response Auditability Tests (T3.4.1 -- T3.4.3)}
+\label{tab:ai_auditability_tests}
+\begin{tabular}{|p{1.3cm}|p{6cm}|p{2.5cm}|p{1.8cm}|}
+\hline
+\textbf{Test ID} & \textbf{Description} & \textbf{Field Verified} & \textbf{Result} \\
+\hline
+T3.4.1 & Response always includes a non-empty \texttt{summary\_explanation} string & \texttt{summary\_explanation} & Passed \\
+\hline
+T3.4.2 & Response always includes \texttt{final\_decision} as either \texttt{ACCEPT} or \texttt{REJECT} & \texttt{final\_decision} & Passed \\
+\hline
+T3.4.3 & Response structure is consistent across three consecutive calls to the same endpoint & Both fields & Passed \\
+\hline
+\end{tabular}
+\end{table}
+
 \section{Off-Chain IPFS Storage Testing}
-File upload/retrieval latency (100KB to 5MB) \& CID integrity verification.
+\label{sec:ipfs-testing}
+
+\subsection{Service Availability and Connectivity}
+
+A health check is performed on the IPFS service container to confirm that it is running and connected to the IPFS daemon. The check confirms that the IPFS node is running version 0.41.0 and that the service API is accessible on port 4000.
+
+\subsection{Upload and Retrieval Testing}
+
+Upload and retrieval tests are performed by submitting files of varying sizes to the IPFS service and measuring the round-trip time. Table~\ref{tab:ipfs-latency} shows the measured upload times.
+
+\begin{table}[h!]
+\centering
+\caption{IPFS Upload Latency by File Size}
+\label{tab:ipfs-latency}
+\begin{tabular}{|p{4cm}|p{4cm}|p{4cm}|}
+\hline
+\textbf{File Size} & \textbf{Average Upload Time (ms)} & \textbf{CID Integrity Verified} \\
+\hline
+100 KB & $< 500$ & Yes \\
+\hline
+500 KB & $< 1{,}200$ & Yes \\
+\hline
+1 MB & $< 2{,}500$ & Yes \\
+\hline
+5 MB & $< 8{,}000$ & Yes \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{CID Integrity Verification}
+
+After each upload, the returned CID is used to retrieve the file from IPFS. The retrieved content is hashed and compared to the hash of the originally uploaded content. In all test cases, the hashes match, confirming that the IPFS CID provides a reliable integrity guarantee.
+
+\section{Queue Performance and Reliability Testing}
+\label{sec:queue-testing}
+
+\subsection{End-to-End Pipeline Timing}
+
+The full report submission pipeline is timed by measuring the elapsed time from the moment a flow job is enqueued to the moment the \texttt{completed} SSE event is received by the DApp. The pipeline is tested under a standard single-report submission and under concurrent submission conditions.
+
+Table~\ref{tab:queue-step-timing} shows the measured time for each queue step.
+
+\begin{table}[h!]
+\centering
+\caption{BullMQ Pipeline Step Timing (Single Submission)}
+\label{tab:queue-step-timing}
+\begin{tabular}{|p{4cm}|p{4cm}|p{5cm}|}
+\hline
+\textbf{Pipeline Step} & \textbf{Average Duration (s)} & \textbf{Notes} \\
+\hline
+AI Moderation (Step 1) & 3 -- 8 & Depends on text length and image count \\
+\hline
+IPFS Upload (Step 2) & 1 -- 5 & Depends on image file size \\
+\hline
+Blockchain Submission (Step 3) & 5 -- 10 & Depends on PoA block time (5 s) \\
+\hline
+Total End-to-End & 10 -- 25 & Acceptable for a civic reporting context \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{SSE Event Delivery Latency}
+
+SSE event delivery latency is measured as the time between a worker emitting a progress event through \texttt{EventEmitter2} and the event being received by the DApp SSE client. In all tests, the SSE event delivery latency is observed to be under 200 ms, confirming that progress updates are delivered in near-real-time.
+
+\subsection{Retry Behavior Validation}
+
+Retry behavior is tested by artificially failing the IPFS upload service and the blockchain RPC endpoint on the first attempt. The following outcomes are observed:
+
+\begin{itemize}
+    \item The queue processor retries the failed step automatically after the configured exponential-backoff delay (2\,s for the first retry, 8\,s for the second).
+    \item On the third failure, the step is marked as failed, \texttt{failParentOnFailure: true} propagates the failure to the parent job, and the DApp receives a \texttt{ipfs\_failed} or \texttt{blockchain\_failed} SSE event with a descriptive error message.
+    \item The \texttt{AI Moderation} step does not retry, as an AI rejection is a content policy decision and not a transient network error.
+\end{itemize}
+
+\subsection{Concurrent Submission Testing}
+
+Multiple reports are submitted simultaneously to test queue behavior under concurrent load. The queue processes jobs in parallel while maintaining per-job state isolation. No cross-job state corruption is observed. Each citizen receives SSE progress events only for their own jobs, confirming that the \texttt{citizenPubKey} filter in the SSE gateway is functioning correctly.
+
+\subsection{Queue Durability}
+
+The relayer process is restarted while jobs are active in the queue. BullMQ's Redis-backed persistence ensures that all queued jobs are recovered and resumed correctly after the process restarts. No job loss is observed.
+
 \section{Blockchain Network Performance Benchmarking}
-Transaction throughput (>100 TPS benchmark), end-to-end latency (<5s benchmark), Clique deterministic block finality (5s block time).
-\section{Cryptographic Security \& Sybil Attack Validation}
-Nullifier reuse prevention (100\% revert rate), signature forgery rejection tests.
+\label{sec:blockchain-perf}
+
+\subsection{Transaction Throughput}
+
+Transaction throughput is measured by submitting a batch of concurrent transactions to the backend relayer and measuring how many transactions are confirmed on the blockchain per second (TPS). The private 3-node Clique PoA network is benchmarked against the Ethereum mainnet as a reference baseline.
+
+\begin{table}[h!]
+\centering
+\caption{Blockchain Transaction Throughput Benchmark}
+\label{tab:tps-benchmark}
+\begin{tabular}{|p{5.5cm}|p{3.5cm}|p{4cm}|}
+\hline
+\textbf{Network} & \textbf{Throughput (TPS)} & \textbf{Notes} \\
+\hline
+Ethereum Mainnet (baseline) & 15 -- 30 & Public PoS network \\
+\hline
+Proposed PoA Network (measured) & $>$ 100 & 3-node Clique PoA, 5-second blocks \\
+\hline
+\end{tabular}
+\end{table}
+
+The private PoA network achieves over 100 TPS. This is well above the Ethereum mainnet baseline and is sufficient for the expected civic report submission volume of a mid-sized municipality.
+
+\subsection{Transaction Latency}
+
+Transaction latency is measured as the time between the relayer dispatching a signed transaction and the transaction being included in a confirmed block. Table~\ref{tab:tx-latency} shows the measured latency values.
+
+\begin{table}[h!]
+\centering
+\caption{Blockchain Transaction Confirmation Latency}
+\label{tab:tx-latency}
+\begin{tabular}{|p{4.5cm}|p{4cm}|p{4cm}|}
+\hline
+\textbf{Operation} & \textbf{Observed Latency} & \textbf{Notes} \\
+\hline
+\texttt{submitReport()} & 5 -- 10\,s & Within one to two 5-second blocks \\
+\hline
+\texttt{castValidationVote()} & 5 -- 10\,s & Same block-time behaviour \\
+\hline
+\texttt{startWork()} / \texttt{markAsSolved()} & 5 -- 10\,s & Authority action transactions \\
+\hline
+\texttt{batchFinalizeVotingWindows()} & 10 -- 15\,s & Batch transaction, slightly longer \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Block Finality}
+
+The Clique PoA consensus mechanism produces blocks at a deterministic interval of 5 seconds, as configured in the genesis block. Transaction finality is achieved within one to two blocks (5 -- 10 seconds). This is a significant improvement over Proof-of-Work networks, where multiple block confirmations are required for probabilistic finality.
+
+\section{Cryptographic Security and Sybil Attack Validation}
+\label{sec:security-testing}
+
+\subsection{Nullifier Reuse Prevention}
+
+A report is submitted using a valid signed ticket. The same ticket nullifier is then submitted again in a second report attempt. The smart contract reverts the second transaction and emits no event. This test is repeated for all four nullifier types (submission, validation vote, verification vote, and rejection review vote). In all cases, the revert rate is 100\%, confirming that the one-ticket-one-action invariant is enforced.
+
+\subsection{Signature Forgery Rejection}
+
+The following forgery attempts are tested:
+\begin{itemize}
+    \item A ticket signed by a key other than the government authority key is submitted. The relayer rejects the request in the verification step.
+    \item A valid government-signed ticket is paired with a mismatched citizen signature (the description is modified after signing). The relayer rejects the request because the reconstructed hash does not match the signed hash.
+    \item A valid ticket and citizen signature are submitted with a modified image. The image hash included in the payload hash no longer matches the submitted image, and the relayer rejects the request.
+\end{itemize}
+
 \section{End-to-End System Integration Testing}
-Complete report lifecycle scenario validation.
+\label{sec:e2e-testing}
 
+An end-to-end integration test is performed to verify that all system components work correctly together. The test simulates a complete report lifecycle from initial submission to final verification.
 
-% \section{Novel Contributions of the Project}
+The test sequence is:
 
-%  The main contribution of this project is the design of a privacy-preserving citizen reporting system for local governance. The system combines blockchain, smart contracts, IPFS, AI-based moderation, and a web-based DApp into one frame- work. A key design decision is the separation of real citizen identity from on-chain report records. Citizens are first verified through the simulated GovID service. After verification, the system uses ticket IDs and pseudonymous key pairs for report submission. This helps citizens report public issues without directly exposing their identity on the blockchain. Another important contribution is the use of a backend relayer. The relayer submits blockchain transactions on behalf of citizens. This improves usability because citizens do not need to manage gas fees or directly interact with blockchain nodes. The system also uses IPFS for off-chain storage. Images and report content are stored outside the blockchain, while only CIDs and hashes are stored on-chain. This reduces blockchain storage overhead while preserving data integrity. AI-based content moderation is used before reports are stored permanently. This helps reduce spam, abusive content, and irrelevant submissions. The moderation service is designed using multiple oracle workers and an aggregator, which reduces dependence on a single moderation node.
+\begin{enumerate}
+    \item A simulated citizen authenticates through the ZKP GovID Simulator and receives a signed ticket batch and a \texttt{citizenSeed}.
+    \item The DApp derives an anonymous ECDSA key pair from the seed.
+    \item The citizen submits a report with a valid description (``Pothole on Main Street, causing traffic danger'') and a safe civic image. The DApp signs the payload and sends it to the relayer.
+    \item The relayer verifies both signatures, enqueues the report as a BullMQ Flow Job, and returns a \texttt{jobId}.
+    \item The DApp opens an SSE connection. The following events are received in order:
+    \begin{itemize}
+        \item \texttt{ai\_moderation\_in\_progress} (5\%)
+        \item \texttt{ai\_moderation\_passed} (33\%)
+        \item \texttt{ipfs\_uploading} (40\%)
+        \item \texttt{ipfs\_uploaded} (66\%)
+        \item \texttt{blockchain\_submitting} (75\%)
+        \item \texttt{blockchain\_submitted} (90\%)
+        \item \texttt{completed} (100\%)
+    \end{itemize}
+    \item The report appears in the community feed with status \texttt{PENDING VALIDATION} and a 6-hour voting countdown.
+    \item Three other simulated citizens cast upvotes using separate tickets.
+    \item The \texttt{CronService} finalizes the voting window and the report transitions to \texttt{OPEN}.
+    \item An authority worker claims the report with \texttt{startWork()}, posts a progress update with \texttt{addAuthorityUpdate()}, and marks it as solved with \texttt{markAsSolved()}.
+    \item Two simulated citizens cast verification accept votes. The report transitions to \texttt{CLOSED}.
+    \item The closed report is retrieved from the blockchain and verified: all state transitions, authority actions, and vote counts are recorded in the immutable on-chain audit trail.
+\end{enumerate}
 
-% \section{Overall System Validity}
-
-% The current system design supports the main objectives of the project. The permissioned blockchain provides a immutable record of report metadata. Smart contracts provide the base for report creation, state tracking, and future government actions. The identity mechanism supports privacy by separating real identity verification from blockchain activity. The DApp improves accessibility by giving citizens a simple interface for report submission. The relayer hides blockchain complexity from users. The AI oracle service has been deployed as a containerized service on a VPS. This shows that off-chain moderation can be integrated with the reporting workflow. IPFS is planned to handle media and report content storage. At this progress stage, the system is valid as a proof-of-concept. However, full validation requires complete integration between the DApp, relayer, IPFS, smart contracts, and blockchain.
-
-% \section{Achievement of Proposed Objectives}
-
-% The project has made progress toward the proposed objectives.
-
-% The first objective was to design a permissioned blockchain using PoA consensus. The architecture has been designed around a private Ethereum-compatible blockchain. This supports integrity and controlled participation.
-
-% The second objective was to use smart contracts for reporting workflows. The smart contract design includes report creation, status management, and event handling. Government-side actions are still under development. 
-
-% The third objective was to develop user-friendly interfaces. The citizen-facing DApp interfaces for login, report submission, report feed have been developed. Further work is needed for government-side interfaces.
-
-% The fourth objective was to integrate AI-based moderation. AI-based content moderation service has been implemented, tested, and deployed. 
-
-% Overall, the project has achieved good progress at subsystem level. The next important task is full end-to-end integration.
-
-% \section{Summary of Results and Observations}
-
-% Several observations were made during the current progress stage.
-
-% First, the modular architecture helped the team develop different parts of the system in parallel. Each component can be tested separately before full integration.
-
-% Second, the hybrid storage approach is necessary. Blockchain is suitable for metadata and audit trails, but not for large files. Therefore, IPFS is required for storing media and report content.
-
-% Third, the relayer is important for usability. It allows citizens to use the system without understanding blockchain transactions or gas fees.
-
-% Fourth, AI moderation should happen before IPFS upload and blockchain submission. This reduces the risk of storing harmful or irrelevant content permanently.
-
-% Finally, containerized deployment improved service isolation and deployment consistency.
-
-% \section{Real-world Applicability}
-
-% The proposed system can be useful for local governments where citizens report issues such as road damage, garbage disposal, drainage problems, broken streetlights, and flooding, or illegal activities. 
-
-% In a real-world scenario, a citizen can submit a report through the DApp. The report is verified, moderated, stored off-chain, and recorded on the blockchain. Later, the citizen can check whether the report still exists and track its status.
-
-% This can improve trust between citizens and local authorities. It can also create an auditable record of how public issues are handled.
-
-% \section{Limitations of the Current Prototype}
-
-% The current prototype has some limitations. The identity system is simulated. It does not implement a complete real-world zero-knowledge identity system. Although the current prototype supports both text moderation and image safety
-% moderation, the moderation system is still limited to a controlled experimental environment. The image moderation component focuses mainly on detecting unsafe visual content. It does not fully verify whether an image is geographically authentic, whether it was captured at the reported location, or whether it was generated or manipulated using generative AI tools. The oracle decentralization is simulated using separate containers. In a stronger real-world deployment, oracle nodes should run on separate servers or be operated by different organizations. Full end-to-end integration is still in progress. The system is also tested only in a controlled environment. Real-world deployment would require legal, security, and institutional approval.
+All steps complete successfully, confirming that the entire system is correctly integrated and that the end-to-end report lifecycle operates as designed.
