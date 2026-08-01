@@ -1,42 +1,190 @@
 \chapter{Results, Benchmark Comparison, and Discussion}
+\label{ch:results}
 
-
-Synthesizes findings, compares against existing systems, and discusses impact:
-% This chapter discusses the main findings, important design decisions, current progress, and limitations of the proposed system.
+This chapter presents the results of the experiments described in Chapter~\ref{ch:testing}. It compares the proposed system against existing solutions, evaluates the achievement of the project objectives, identifies the novel contributions, discusses the practical impact of the system, and addresses ethical and legal considerations.
 
 \section{Synthesis of Experimental Results}
- Performance, security, and moderation accuracy trade-offs.
+\label{sec:results-synthesis}
+
+\subsection{Blockchain Performance}
+
+The private PoA blockchain network has produced deterministic blocks at a fixed interval of five seconds as configured. Transaction finality has been achieved within one to two blocks, giving a finality window of five to ten seconds. This is significantly faster than the probabilistic finality of public Proof-of-Work networks, where multiple block confirmations are typically required. The 3-node Clique PoA network has demonstrated a throughput that exceeds the 100 TPS target in benchmark tests, far surpassing the 15--30 TPS typical of the Ethereum mainnet.
+
+\subsection{Smart Contract Correctness}
+
+All eight states of the FSM have been validated through automated Hardhat tests. All unauthorized state transition attempts have been rejected. The nullifier tracking mappings have been confirmed to prevent 100\% of duplicate submission and double-voting attempts. The multi-signature governance contract has correctly enforced the dynamic quorum threshold in all tested proposal scenarios.
+
+\subsection{AI Moderation Accuracy}
+
+The AI oracle ensemble has correctly classified all test cases in Table~\ref{tab:ai_classification_tests}. The safety override mechanism has been confirmed to reject content with critical toxicity regardless of the other oracle votes. The civic relevance oracle has successfully rejected non-civic content in all tested cases. The aggregator's security layer has rejected all unauthorized and replayed requests in the API security test suite (Table~\ref{tab:ai_api_tests}).
+
+\subsection{IPFS Storage Performance}
+
+IPFS upload and retrieval have been completed successfully for all tested file sizes. CID integrity has been verified in all tests. Upload time increases with file size but remains within acceptable bounds for a civic reporting context.
+
+\subsection{Queue and SSE Performance}
+
+The BullMQ Flow pipeline has completed successfully for all submitted test reports. The exponential-backoff retry mechanism has successfully recovered from transient failures in both the IPFS and blockchain steps. SSE event delivery latency has been measured at under 200 ms in all tests. Job state has been correctly recovered from Redis after a relayer process restart, confirming queue durability.
+
+\subsection{Cryptographic Security}
+
+All signature forgery attempts have been rejected by the relayer's dual-layer verification engine. All nullifier reuse attempts have been reverted by the smart contract. These results confirm that the system correctly enforces the one-ticket-one-action invariant and prevents unauthorized submissions.
+
 \section{Comparative Benchmark Analysis}
-Proposed system vs. centralized platforms (*FixMyStreet*, *SeeClickFix*), public Ethereum mainnet, and police complaint systems + Comprehensive Comparison Matrix Table.
+\label{sec:comparison}
+
+\subsection{Comparison with Centralized Reporting Platforms}
+
+FixMyStreet and SeeClickFix are widely used centralized citizen reporting systems. They provide intuitive user interfaces and clear reporting workflows. However, they store all data on centralized servers, which introduces single points of failure and makes records susceptible to unauthorized modification. They also require users to disclose their identities, which can discourage reporting of sensitive issues. The proposed system addresses these limitations through its permissioned blockchain ledger, which provides an immutable and transparent record, and through its ticket-based anonymous authentication, which fully decouples citizen identity from on-chain activity.
+
+\subsection{Comparison with Public Blockchain Approaches}
+
+Public, permissionless blockchains such as the Ethereum mainnet offer maximum decentralization but are poorly suited for frequent local governance interactions. Their transaction fees are unpredictable and can be significant. Their throughput is limited (15--30 TPS), and their finality times are long. The proposed system avoids these problems by using a private PoA network with no public gas fees, deterministic 5-second block times, and a backend relayer that pays transaction costs on behalf of citizens.
+
+\subsection{Comparison with Domain-Specific Blockchain Complaint Systems}
+
+Existing blockchain-based complaint management systems reviewed in the literature are primarily designed for specific domains such as law enforcement. They focus on administrative efficiency and restrict access to government personnel. They do not typically support community-driven validation or multimedia evidence management at scale. The proposed system provides a generalized framework for local governance that supports community voting at three critical lifecycle stages, handles multimedia evidence through IPFS off-chain storage, and enables public opinion polling.
+
+\subsection{Comprehensive Comparison Matrix}
+
+Table~\ref{tab:comparison-matrix} presents a structured feature comparison between the proposed system and existing approaches.
+
+\begin{table}[h!]
+\centering
+\caption{Feature Comparison Matrix}
+\label{tab:comparison-matrix}
+\begin{tabular}{|p{4.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|}
+\hline
+\textbf{Feature} & \textbf{FixMyStreet} & \textbf{Public Blockchain} & \textbf{Police Complaint System} & \textbf{Proposed System} \\
+\hline
+Citizen anonymity & No & Partial & No & Yes \\
+\hline
+Data immutability & No & Yes & Yes & Yes \\
+\hline
+Decentralized governance & No & Yes & No & Yes \\
+\hline
+Community validation voting & No & No & No & Yes \\
+\hline
+AI content moderation & No & No & Partial & Yes \\
+\hline
+Off-chain media storage & No & No & Partial & Yes (IPFS) \\
+\hline
+Gasless user interaction & Yes & No & Yes & Yes \\
+\hline
+Real-time submission feedback & Partial & No & No & Yes (SSE) \\
+\hline
+Multi-sig governance & No & Varies & No & Yes \\
+\hline
+Sybil attack resistance & No & Varies & No & Yes \\
+\hline
+Public opinion polling & No & No & No & Yes \\
+\hline
+Transparent audit trail & No & Yes & Partial & Yes \\
+\hline
+Transaction throughput & High & Low & High & High \\
+\hline
+Transaction fees for user & No & Yes & No & No \\
+\hline
+\end{tabular}
+\end{table}
+
 \section{Fulfillment of Project Objectives}
+\label{sec:objectives-fulfillment}
 
-Objective-by-objective evaluation.
+\textbf{Objective 1 — Permissioned PoA Blockchain:}
+A private permissioned blockchain is implemented using Geth (Clique PoA) with three validator nodes. Block time is set to five seconds. The network has been deployed and tested on VPS infrastructure. This objective is fully achieved.
+
+\textbf{Objective 2 — Smart Contracts for Reporting Workflows:}
+Three smart contracts are implemented and deployed: \texttt{Reporting.sol}, \texttt{OpinionPolling.sol}, and \texttt{AuthorityMultiSig.sol}. Together, they automate the full report lifecycle, community voting, opinion polling, and two-tier governance. All FSM transitions have been validated. This objective is fully achieved.
+
+\textbf{Objective 3 — User-Friendly DApp Interfaces:}
+A responsive web DApp is implemented using Next.js 14 and React. It provides interfaces for citizen authentication, anonymous report submission with real-time SSE progress feedback, a community feed with filtering and voting, an authority dashboard, and a governance dashboard for Super Admins. The backend relayer eliminates the need for users to manage wallets or pay gas fees. This objective is fully achieved.
+
+\textbf{Objective 4 — AI-Based Content Moderation:}
+An AI oracle ensemble is implemented as four containerized microservices. The ensemble assesses submitted text and images for toxicity, spam, civic relevance, and unsafe visual content before any data is stored on-chain. All classification test cases have passed. This objective is fully achieved.
+
+In addition to the original four objectives, the queue-based asynchronous submission pipeline with SSE real-time notifications is implemented as a significant enhancement beyond the original project scope. This improvement substantially improves user experience in blockchain-based applications, where transaction confirmation times would otherwise require the user to wait silently.
+
 \section{Novel Architectural Contributions}
-** (1) Sybil-resistant anonymous reporting without ZKP client latency; (2) Multi-node AI oracle consensus; (3) Community-enforced FSM government accountability.
-\section{Real-World Governance Impact \& Practical Applicability}** Feasibility for municipal councils in Sri Lanka.
-\section{Ethical, Legal, and Privacy Considerations}** GDPR / Sri Lanka Data Protection Act compliance \& resolving "toxic immutability".
-\section{System Limitations\& Engineering Trade-offs}**
+\label{sec:novel-contributions}
 
-% \chapter{Conclusion and Future Work}
+\subsection{Sybil-Resistant Anonymous Reporting Without Client-Side ZKP Latency}
 
-% \section{Conclusion}
+The system achieves Sybil-resistant anonymous reporting without requiring citizens to generate zero-knowledge proofs on their own devices. Proof generation in standard ZKP libraries (such as Groth16 or PLONK) is computationally expensive on mobile browsers and can take several seconds. The proposed system achieves the same anonymity guarantee using government-signed one-time tickets. The government signs each ticket using ECDSA, and the ticket hash is recorded as a nullifier on-chain. This provides verifiable, non-reusable authorization without client-side proving overhead.
 
-% This project aims to demonstrate a blockchain based, community assisted yet privacy-preserved reporting framework for local governments. We aim to mitigate issues in centralized reporting platforms such as lack of transparency, weak data integrity, privacy preservation, and reliability of reports.
-% This reporting framework based on a private blockchain, smart contracts, an identity service simulation, a backend relayer, IPFS, AI-assisted moderation, and a web-based DApp. Each module's responsibilities are well defined.
+\subsection{Multi-Node AI Oracle Consensus for Decentralized Content Moderation}
 
-% The blockchain and smart contracts lay the foundation of tamper-evident report records and workflow. The GovID simulator and ticket-based system enable privacy preservation. The relayer improves UX by handling blockchain transactions on behalf of citizens. IPFS provides scalable off-chain storage external to the blockchain. The AI oracle service helps moderate spam or inappropriate reports before an incident is permanently recorded on-chain.
-% At the time of writing, several major achievements have been made. 
-% The main insight from this project is that blockchain alone is not enough for a
-% practical civic reporting system. It must be combined with privacy mechanisms,
-% off-chain storage, moderation, and user-friendly interfaces.
+The AI moderation layer uses three independent oracle workers with a rule-based aggregation policy. No single oracle has unilateral power to accept or reject a report. The safety override ensures that critical toxicity always results in rejection. The majority voting rule reduces the effect of individual model errors or biases. The aggregator signs its decision, creating a tamper-evident, auditable moderation record. This is a practical step toward decentralized pre-submission content filtering on immutable ledgers.
 
-% \section{Future Work}
+\subsection{Community-Enforced FSM Accountability}
 
-% The next major task is to complete full system integration. The DApp, GovID simulator, backend relayer, AI oracle service, IPFS, smart contracts, and blockchain must work together in one complete report submission flow. The government-side workflow should also be completed.  This includes report review, issue assignment, resolution updates, closure, and citizen feedback.The opinion polling functionality should also implemented.
+The eight-state FSM prevents authorities from unilaterally closing reports. Community voting is required at three critical lifecycle points:
+\begin{itemize}
+    \item \textit{Validation voting} ($S_0$): filters out spam before the report becomes visible to authorities.
+    \item \textit{Verification voting} ($S_5$): prevents authorities from marking issues as resolved without physical confirmation.
+    \item \textit{Rejection review voting} ($S_4$): gives citizens the right to appeal an authority rejection.
+\end{itemize}
+This structure creates a mathematically enforced accountability loop between citizens and municipal officials, embedded directly into the smart contract logic.
 
-% The current identity system should be improved in future work. A real zero- knowledge proof or self-sovereign identity mechanism can replace the simulated GovID service. A future version of AI-based content moderation service may use vision-language models to compare the submitted image with the selected report category and description. The oracle deployment can also be improved by hosting oracle workers under different administrative domains instead of running them as containers on the same VPS. This would make the oracle layer closer to a decentralized oracle network. More testing is required after integration. This includes blockchain transaction latency, IPFS upload time, oracle response time, and complete report submission time. Security testing is also required before any real-world deployment. Smart con- tracts, APIs, private keys, relayer logic, and deployment infrastructure must be audited carefully. Finally, the DApp should be improved through usability testing.
-% \section{Final Remarks}
+\subsection{Asynchronous BullMQ Queue with Real-Time SSE Progress Streaming}
 
-%  The proposed system provides a strong foundation for a transparent and privacy- preserving local governance reporting platform. Although the prototype is still under development, the current progress shows that the architecture is feasible.
+The integration of a Redis-backed BullMQ Flow Queue with an SSE notification gateway represents a novel approach to improving user experience in blockchain-based civic applications. The queue decouples report submission from the multi-step processing pipeline. Citizens receive an immediate acknowledgment (the \texttt{jobId}), followed by live step-by-step progress updates as AI moderation, IPFS upload, and blockchain submission complete. This pattern addresses one of the most significant usability barriers in Web3 applications: the opacity and latency of blockchain transaction confirmation.
 
-% With further integration, testing, and improvement, this framework can support more trustworthy citizen participation and better accountability in local governance.
+\section{Real-World Governance Impact and Practical Applicability}
+\label{sec:real-world-impact}
+
+The proposed framework is designed for municipal governance contexts where citizens need a trusted, private, and transparent channel to report public infrastructure issues. In a real-world deployment, the system supports the following civic use cases:
+
+\begin{itemize}
+    \item Reporting road hazards (potholes, broken pavements, road flooding).
+    \item Reporting sanitation issues (uncollected garbage, drainage blockages, water contamination).
+    \item Reporting street lighting failures.
+    \item Reporting illegal dumping or environmental violations.
+    \item Participating in opinion polls on municipal budget allocations or zoning proposals.
+\end{itemize}
+
+The project team has discussed a potential pilot deployment within a faculty environment at the University of Ruhuna, pending Faculty Board approval. Such a pilot would provide real-world usability data and allow the system to be evaluated under authentic civic conditions.
+
+The system is particularly applicable to Sri Lankan municipal councils, where centralized complaint management systems are common but often lack transparency, accountability, and citizen engagement features. The framework's use of a private PoA blockchain means that it does not require expensive public network infrastructure, making it feasible for resource-constrained local government environments.
+
+\section{Ethical, Legal, and Privacy Considerations}
+\label{sec:ethics-legal}
+
+\subsection{Privacy and Data Minimization}
+
+The blockchain stores only pseudonymous identifiers, ticket nullifier hashes, IPFS content identifiers, and state metadata. No personally identifiable information (\ac{PII}) is stored on-chain. The citizen's real-world identity is verified off-chain by the ZKP GovID Simulator and is never transmitted to the blockchain or to any other service in the system. This design aligns with the data minimization principle of the General Data Protection Regulation (GDPR) and the Sri Lanka Personal Data Protection Act No.~9 of 2022.
+
+\subsection{The Problem of Toxic Immutability}
+
+Blockchain immutability presents an ethical challenge: once harmful or illegal content is anchored on-chain, it cannot be removed. The proposed system addresses this through a two-layer strategy. First, the AI oracle ensemble filters content before it is stored or anchored. Second, all large content is stored off-chain in IPFS. If content is subsequently identified as illegal or harmful, it can be removed from IPFS (by unpinning the content) while the on-chain audit trail — which records only the CID hash — remains intact. This preserves accountability while allowing legal compliance.
+
+\subsection{AI Bias and Moderation Fairness}
+
+The civic relevance and toxicity models used in the oracle ensemble are pre-trained on large text corpora that may not fully represent the local linguistic context of Sri Lankan civic reporting. Low-quality or borderline reports may be incorrectly rejected. To mitigate this, the system allows citizens to resubmit rejected reports with improved descriptions. The aggregator also returns a structured response that indicates which oracle rejected the report and why, providing a basis for future explainability improvements.
+
+\subsection{Accountability and Anonymity Balance}
+
+The system uses ticket-based pseudonymity rather than full anonymity. Tickets are signed by the government authority, which means a trust anchor exists between the citizen and the issuing authority. Citizens are anonymous to the blockchain but are accountable to the government identity service. This balance prevents abuse (a single citizen cannot submit unlimited reports) while preserving the privacy of civic reporting on-chain.
+
+\section{System Limitations and Engineering Trade-offs}
+\label{sec:limitations-tradeoffs}
+
+\subsection{Simulated Zero-Knowledge Identity}
+
+The ZKP GovID Simulator is a mock service that simulates a government identity registry. It does not implement actual zero-knowledge proofs. In a production deployment, a real ZKP protocol (such as Semaphore or Iden3) would be needed so that citizens can generate proofs locally without trusting a centralized simulator.
+
+\subsection{Co-Located Oracle Ensemble}
+
+The three AI oracle workers and the aggregator are deployed within the same administrative environment on Server 2. Although they are logically separated as independent Docker containers, they share the same underlying infrastructure. A truly decentralized oracle network would require each oracle to be hosted by a separate organization, which is not implemented in the current prototype.
+
+\subsection{Unimodal Text Moderation}
+
+The current AI moderation pipeline assesses text and images independently. There is no cross-modal verification that checks whether the uploaded image is semantically consistent with the text description and category. A civic report could potentially include a valid text description but a mismatched or fabricated image.
+
+\subsection{Single Redis Instance}
+
+The BullMQ queue system depends on a single Redis instance. In the current prototype, this is a single point of failure for the async pipeline. In a production deployment, Redis replication or clustering would be required for high availability.
+
+\subsection{Prototype Scale}
+
+The system is tested in a controlled experimental environment with a small number of concurrent users. The performance of the 3-node PoA network under large-scale real-world workloads (for example, thousands of simultaneous votes during a public emergency) has not been fully stress-tested.
