@@ -98,12 +98,12 @@ These layer boundaries are drawn along trust and technology lines rather than ar
 
 The blockchain uses chain ID 1337 and a five-second Clique period. Three validator nodes seal blocks, and a fourth node does not mine but instead exposes the JSON-RPC interface used by the rest of the system, as shown in Figure~\ref{fig:validator-topology}. A five-second block period is short enough to give citizens fast confirmation feedback for a civic reporting workload, while still being long enough for three validators to agree reliably without specialised hardware. Separating the RPC-only node from the three sealing validators means that read traffic from the dApp and write traffic from the relayer can never compete with, or accidentally disrupt, the block-sealing process; if the RPC node is restarted or briefly overloaded, block production continues unaffected on the other three nodes. Direct reads are made by the dApp through this RPC interface. Citizen writes are normally sent through the relayer. Authority transactions are signed with MetaMask.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.8\textwidth,height=0.5\textheight,keepaspectratio]{Images/Chapter 3/validator-topology.png}
-%     \caption{Private PoA validator and RPC node topology}
-%     \label{fig:validator-topology}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=1.0\textheight,keepaspectratio]{Images/Chapter 3/validator-topology.png}
+    \caption{Private PoA validator and RPC node topology}
+    \label{fig:validator-topology}
+\end{figure}
 
 \section{Trust Boundaries}
 \label{sec:trust-boundaries}
@@ -177,12 +177,12 @@ where \(H_R\) is the composite report hash, \(d\) is the report description, \(t
 \section{Report Lifecycle}
 \label{sec:report-lifecycle}
 
-The lifecycle of a standard report is illustrated in Figure~\ref{fig:report-lifecycle-diagram}. Standard reports are controlled by the eight statuses shown in Table~\ref{tab:report-statuses}.
+The lifecycle of a standard report is illustrated in Figure~\ref{fig:report-life-cycle-diagram}. Standard reports are controlled by the eight statuses shown in Table~\ref{tab:report-statuses}.
 
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.7\textwidth,height=0.65\textheight,keepaspectratio]{Images/Chapter 3/report-lifecycle.png}
+    \includegraphics[width=0.7\textwidth,height=0.65\textheight,keepaspectratio]{Images/Chapter 3/report-life-cycle.png}
     \caption{State lifecycle of a standard civic report}
     \label{fig:report-lifecycle-diagram}
 \end{figure}
@@ -237,7 +237,7 @@ A standard report is processed as follows, and Figure~\ref{fig:report-submission
 
 \begin{sidewaysfigure}[!htb]
     \centering
-    \includegraphics[width=0.95\textwidth,height=0.8\textheight,keepaspectratio]{Images/Chapter 3/report-submission-sequence.png}
+    \includegraphics[width=1.0\textwidth,height=1.0\textheight,keepaspectratio]{Images/Chapter 3/report-submission-sequence.png}
     \caption{Processing sequence for a standard citizen report}
     \label{fig:report-submission-sequence}
 \end{sidewaysfigure}
@@ -246,7 +246,7 @@ Figure~\ref{fig:ai-moderation-flow} shows how the three classifiers and the aggr
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.7\textwidth,height=0.5\textheight,keepaspectratio]{Images/Chapter 3/ai-moderation-flow.png}
+    \includegraphics[width=0.9\textwidth,height=1.0\textheight,keepaspectratio]{Images/Chapter 3/ai-moderation-flow.png}
     \caption{AI content moderation and fail-closed aggregation}
     \label{fig:ai-moderation-flow}
 \end{figure}
@@ -265,12 +265,12 @@ This three-step pipeline is run asynchronously, outside the request-response cyc
 
 Emergency reports use the same relayer checks, moderation pipeline, and IPFS storage process, so the same integrity and safety guarantees described above still apply. However, the EmergencyReporting contract is used, and a submitted emergency becomes \texttt{Open} directly rather than waiting for standard community validation, as shown in Figure~\ref{fig:emergency-workflow}. This shortcut exists because the multi-hour community voting window that protects the standard workflow from spam would be actively harmful for a genuine emergency, such as a gas leak or a collapsing structure, where every additional hour of delay increases risk to public safety.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.6\textwidth,height=0.85\textheight,keepaspectratio]{Images/Chapter 3/emergency-workflow.png}
-%     \caption{Emergency report submission and response workflow}
-%     \label{fig:emergency-workflow}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=1.0\textheight,keepaspectratio]{Images/Chapter 3/emergency-workflow.png}
+    \caption{Emergency report submission and response workflow}
+    \label{fig:emergency-workflow}
+\end{figure}
 
 Four emergency states are used, as summarized in Table~\ref{tab:emergency-statuses} and Figure~\ref{fig:emergency-lifecycle}.
 
@@ -294,12 +294,12 @@ Four emergency states are used, as summarized in Table~\ref{tab:emergency-status
     \end{tabular}
 \end{table}
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.6\textwidth,height=0.5\textheight,keepaspectratio]{Images/Chapter 3/emergency-lifecycle.png}
-%     \caption{State lifecycle of an emergency report}
-%     \label{fig:emergency-lifecycle}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\textwidth,height=0.95\textheight,keepaspectratio]{Images/Chapter 3/emergency-lifecycle.png}
+    \caption{State lifecycle of an emergency report}
+    \label{fig:emergency-lifecycle}
+\end{figure}
 
 An authority can start work, resolve an emergency, or reclassify a false emergency. Resolution can be made directly from \texttt{Open} when a rapid response is needed, since a fast-moving emergency may already be handled by the time an authority formally logs progress.
 
@@ -310,12 +310,12 @@ Because the emergency channel deliberately skips community validation for the sa
 
 Community voting is used in three standard-report phases: initial validation, solution verification, and authority-rejection review. Table~\ref{tab:voting-phases} summarizes the outcome of each phase, and Figures~\ref{fig:community-validation-workflow} and~\ref{fig:post-resolution-workflow} show the underlying vote-processing steps.
 
-\begin{table}[!htb]
+\begin{table}[!hb]
     \centering
     \caption{Community voting phases for a standard report}
     \label{tab:voting-phases}
     \small
-    \begin{tabular}{p{0.20\textwidth}|p{0.20\textwidth}|p{0.24\textwidth}|p{0.24\textwidth}}
+    \begin{tabular}{p{0.15\textwidth}|p{0.31\textwidth}|p{0.26\textwidth}|p{0.26\textwidth}}
         
         Phase & Starting status & If the community accepts & If the community rejects \\
         \hline
@@ -330,23 +330,23 @@ Community voting is used in three standard-report phases: initial validation, so
 
 A separate one-use government-signed ticket is supplied for each vote. The relayer checks the ticket and the citizen signature. The ticket ID is used as a vote nullifier, while the pseudonym is also checked to enforce one vote per citizen in the relevant phase.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.65\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter 3/community-validation-workflow.png}
-%     \caption{Community validation voting workflow for a newly submitted report}
-%     \label{fig:community-validation-workflow}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=0.95\textheight,keepaspectratio]{Images/Chapter 3/community-validation-workflow.png}
+    \caption{Community validation voting workflow for a newly submitted report}
+    \label{fig:community-validation-workflow}
+\end{figure}
 
 The default method is a simple majority, where the positive count must be greater than the negative count. The contract also supports a two-thirds supermajority, a minimum-vote threshold, and a hybrid of two methods. These options exist because not every decision carries the same weight: a simple majority is adequate for the everyday validation of routine reports, while a deployment that wants stronger confidence before, for example, permanently closing a report can configure a supermajority or a minimum-participation threshold without any contract changes.
 
 Expired windows can be finalized by a direct call, by lazy evaluation when a late vote is received, or by batch finalization. Providing three ways to trigger finalization means that a report's progress does not depend on any single actor remembering to close its voting window: a citizen's late vote can trigger it, a scheduled batch job can trigger it, and a direct call remains available as a manual option.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.65\textwidth,height=0.75\textheight,keepaspectratio]{Images/Chapter 3/post-resolution-workflow.png}
-%     \caption{Post-resolution verification and rejection-review workflow}
-%     \label{fig:post-resolution-workflow}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=0.95\textheight,keepaspectratio]{Images/Chapter 3/post-resolution-workflow.png}
+    \caption{Post-resolution verification and rejection-review workflow}
+    \label{fig:post-resolution-workflow}
+\end{figure}
 
 For validation, a positive result changes \texttt{PendingValidation} to \texttt{Open}; otherwise it changes to \texttt{CommunityRejected}. For solution verification, acceptance changes \texttt{PendingVerification} to \texttt{Closed}; rejection changes it to \texttt{Reopened}. For rejection review, an upheld rejection changes \texttt{PendingRejectionReview} to \texttt{Closed}; a successful appeal changes it to \texttt{Reopened}.
 
@@ -355,12 +355,12 @@ For validation, a positive result changes \texttt{PendingValidation} to \texttt{
 
 An authorized worker uses MetaMask to act on reports, as shown in Figure~\ref{fig:authority-workflow}. An \texttt{Open} or \texttt{Reopened} report can be claimed and changed to \texttt{InProgress}. Progress comments and optional image CIDs can be appended without changing the status. A completed action is submitted with evidence and changes the report to \texttt{PendingVerification}. An invalid report can be changed to \texttt{PendingRejectionReview}.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.75\textwidth,height=0.7\textheight,keepaspectratio]{Images/Chapter 3/authority-workflow.png}
-%     \caption{Authority action and multisig governance workflow}
-%     \label{fig:authority-workflow}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=0.95\textheight,keepaspectratio]{Images/Chapter 3/authority-workflow.png}
+    \caption{Authority action and multisig governance workflow}
+    \label{fig:authority-workflow}
+\end{figure}
 
 Authority access is governed by the AuthorityMultiSig contract. Super Admins submit and vote on proposals. A strict majority is required:
 
@@ -382,12 +382,12 @@ The OpinionPolling contract is used for public consultation, and it is kept as i
 
 An authorized authority creates a poll with an IPFS metadata CID, a future deadline, and either a true/false or multi-choice type. A citizen vote contains the poll ID, option index, and a one-use nullifier. The contract rejects a reused nullifier for the same poll and increases the selected option count. Figure~\ref{fig:opinion-polling-workflow} shows the full workflow from poll creation to finalization.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.7\textwidth,height=0.85\textheight,keepaspectratio]{Images/Chapter 3/opinion-polling-workflow.png}
-%     \caption{Public opinion polling workflow}
-%     \label{fig:opinion-polling-workflow}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=0.95\textheight,keepaspectratio]{Images/Chapter 3/opinion-polling-workflow.png}
+    \caption{Public opinion polling workflow}
+    \label{fig:opinion-polling-workflow}
+\end{figure}
 
 Poll results are public counts, and government identity details are never stored alongside a vote: only the poll ID, the chosen option, and a one-use nullifier are recorded. This gives citizens a low-friction, ticket-based way to make their opinion count publicly without exposing who cast which vote, using the same nullifier mechanism already trusted elsewhere in the system for reports and validation votes. A poll is marked inactive when it is finalized.
 
