@@ -1,0 +1,20 @@
+%% Figure 4.1: Responsibilities and governance relationships of the four smart contracts.
+flowchart TB
+    SuperAdmins["Super Admins"]
+    MultiSig["AuthorityMultiSig"]
+    Reporting["Reporting"]
+    Emergency["EmergencyReporting"]
+    Polling["OpinionPolling"]
+    Authorities["Authority workers"]
+    Relayer["Authorized relayer"]
+
+    SuperAdmins -->|"Submit and approve proposals"| MultiSig
+    MultiSig -->|"Manage authorities and voting rules"| Reporting
+    MultiSig -->|"Manage authorities"| Emergency
+    Authorities --> Reporting
+    Authorities --> Emergency
+    Authorities --> Polling
+    Relayer --> Reporting
+    Relayer --> Emergency
+    Relayer --> Polling
+    Polling -->|"Check authority role"| Reporting

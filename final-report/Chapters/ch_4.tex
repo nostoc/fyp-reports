@@ -1,532 +1,786 @@
-\chapter{System Implementation and Technical Realization}
+\chapter{System Implementation}
 \label{ch:implementation}
 
-This chapter describes the technical implementation of each subsystem in the proposed framework. The system is implemented as a set of modular, containerized services. Each service is developed and tested independently before being connected into a complete reporting pipeline. The implementation follows the architectural design described in Chapter~\ref{ch:architecture}.
+\section{Introduction}
+\label{sec:implementation-introduction}
 
-\section{Private Permissioned Blockchain Infrastructure}
-\label{sec:blockchain-impl}
+This chapter explains how the design in Chapter~\ref{ch:architecture} is implemented. The blockchain, smart contracts, identity simulator, relayer, AI services, IPFS service, and web clients are described. Only implemented behaviour is presented. The identity component is described as a simulator, and the AI component is described as an off-chain aggregator rather than a decentralized oracle network.
 
-The blockchain layer is the foundation of the proposed framework. It provides an immutable, tamper-evident ledger for recording civic reports, community votes, authority actions, and governance decisions.
+\section{Technology Choices}
+\label{sec:technology-choices}
 
-\subsection{Network Setup and Configuration}
+The main technologies are listed in Table~\ref{tab:technology-choices}.
 
-The blockchain network is implemented using Go Ethereum (Geth), version 1.13.15. The Clique \ac{PoA} consensus algorithm is used. Clique is a lightweight consensus mechanism designed for private networks. It assigns block-sealing authority to a set of pre-approved validator accounts. No mining or staking is required.
+\begin{table}[!htbp]
+    \centering
+    \caption{Main implementation technologies}
+    \label{tab:technology-choices}
+    \small
+    \begin{tabular}{|p{0.24\textwidth}|p{0.25\textwidth}|p{0.41\textwidth}|}
+        \hline
+        \textbf{Part} & \textbf{Technology} & \textbf{Reason for selection} \\
+        \hline
+        Blockchain & Geth and Clique PoA & A private network with known validators and a short block period is supported. \\
+        \hline
+        Smart contracts & Solidity, Hardhat, and OpenZeppelin & Contract development, testing, deployment, ownership, and reentrancy protection are supported. \\
+        \hline
+        Relayer & NestJS, TypeScript, ethers.js & HTTP handling, signature checks, blockchain access, and modular services are provided. \\
+        \hline
+        Background work & BullMQ and Redis & Slow report-processing steps are run in a controlled order outside the request cycle. \\
+        \hline
+        AI services & Python and FastAPI & Transformer inference, image processing, and small independent services are supported. \\
+        \hline
+        Storage & IPFS and an Express service & Complaint envelopes are stored by content and are retrieved through CIDs. \\
+        \hline
+        Citizen and authority client & Next.js, React, Tailwind CSS, and ethers.js & Responsive interfaces and blockchain access are provided in one dApp. \\
+        \hline
+        Identity portal & Vite and React & A separate interface is provided for the government identity simulator. \\
+        \hline
+    \end{tabular}
+\end{table}
 
-The network is initialized using a custom \texttt{genesis.json} file. This file defines the chain identifier, the initial authorized sealers, and the block period. The block time is set to five seconds. This provides deterministic and fast block finality, which is essential for a responsive civic reporting system.
+\section{Private PoA Implementation}
+\label{sec:poa-implementation}
 
-\subsection{Node Topology}
+The private blockchain is implemented with Geth version 1.13.15 and Clique Proof-of-Authority consensus. The genesis configuration sets chain ID 1337 and a block period of five seconds. Three sealer addresses are placed in the Clique \texttt{extraData} field.
 
-The network consists of four nodes deployed on virtual private server (VPS) infrastructure:
+Four Geth nodes are configured. Nodes 1, 2, and 3 run with block sealing enabled and use separate validator accounts. Node 4 does not run with block sealing enabled. It exposes the HTTP JSON-RPC endpoint on port 8545 and is used by application services. The nodes use network ID 1337 and fixed peer addresses. The RPC node is therefore separated from the three consensus participants.
 
-\begin{enumerate}
-    \item \textbf{Validator Node 1 — Municipal Authority}: Represents local government infrastructure departments. This node participates in block sealing.
-    \item \textbf{Validator Node 2 — Regional Oversight}: Represents a regional or provincial supervisory body. This node participates in block sealing.
-    \item \textbf{Validator Node 3 — Civic NGO}: Represents an independent civil society organization. This node participates in block sealing and prevents unilateral government censorship.
-    \item \textbf{RPC Node (Node 4)}: A non-validator node that exposes a secure JSON-RPC endpoint. All off-chain services (the backend relayer, the DApp) connect to the blockchain through this node only. This separates the consensus layer from the application-facing layer.
-\end{enumerate}
+The network is private and permissioned. Clique gives predictable confirmation time for the prototype, but its safety depends on the operation of the known validators. It is not presented as public-chain decentralization.
 
-Each node is assigned a unique cryptographic identity. The addresses of the three validator nodes are recorded in the genesis block as authorized sealers. The peer connections between nodes are established using static node configuration (\texttt{static-nodes.json}) to ensure a stable and private network topology. The entire network operates within a private subnet and is not connected to any public Ethereum network.
+\section{Smart Contract Implementation}
+\label{sec:contract-implementation}
 
-Figure~\ref{fig:validator-nodes} (see Chapter~\ref{ch:architecture}) shows the 3-validator network topology.
+Four contracts are deployed: \texttt{Reporting}, \texttt{EmergencyReporting}, \texttt{AuthorityMultiSig}, and \texttt{OpinionPolling}. The source files use Solidity pragma \texttt{\string^0.8.20}. The current Hardhat configuration compiles with Solidity 0.8.28, the London EVM target, optimization, and the intermediate-representation pipeline.
 
-\section{Smart Contract Architecture}
-\label{sec:smart-contracts-impl}
+\subsection{Reporting Contract}
+\label{subsec:reporting-contract}
 
-Three Solidity smart contracts are deployed on the private PoA blockchain. They are compiled using Solidity version 0.8.20 and the Hardhat development framework. OpenZeppelin libraries are used for access control and security utilities.
+The Reporting contract stores standard civic reports. Each report includes an ID, IPFS CID, report hash, submission nullifier, citizen pseudonym, relayer address, status, timestamps, phase deadline, assigned authority, vote counters, latest authority comment, and latest authority image CID. A separate append-only mapping stores the full authority action history.
 
-\subsection{Reporting.sol}
+The following eight statuses are implemented:
 
-\texttt{Reporting.sol} is the primary smart contract. It manages the entire lifecycle of civic issue reports.
+\begin{quote}
+\texttt{PendingValidation}, \texttt{CommunityRejected}, \texttt{Open},
+\texttt{InProgress}, \texttt{PendingRejectionReview},
+\texttt{PendingVerification}, \texttt{Closed}, and \texttt{Reopened}.
+\end{quote}
 
-\subsubsection*{Report Data Structure}
+Standard submissions are created as \texttt{PendingValidation}. The default voting window is six hours. Four voting methods are available: simple majority, two-thirds supermajority, minimum threshold, and a hybrid of two methods. The simple-majority method is selected by default.
 
-Each civic report is stored in a \texttt{Report} struct on-chain. The struct contains:
+Mappings are maintained for used submission nullifiers and for used vote nullifiers in validation, verification, and rejection-review phases. Citizen pseudonym mappings also prevent one pseudonym from voting twice in the same phase. Validation revotes are limited to quorum-failure cases and are capped at three cycles.
 
-\begin{itemize}
-    \item A unique integer \texttt{reportId}.
-    \item The IPFS URI (\texttt{ipfsUri}) pointing to the off-chain report content.
-    \item The payload hash (\texttt{payloadHash}) computed from the report description and ticket.
-    \item The citizen's derived pseudonym (\texttt{citizenPseudonym}).
-    \item Voting counters for validation, verification, and rejection review phases.
-    \item The address of the assigned authority (\texttt{assignedAuthority}).
-    \item The current lifecycle state (\texttt{ReportStatus} enum).
-    \item The phase deadline timestamp (\texttt{phaseDeadline}).
-    \item An append-only array of \texttt{AuthorityAction} entries, which records each authority interaction with a comment and an optional image CID.
-\end{itemize}
+Authorized relayers submit reports and votes. Authorized authorities start work, add updates, mark reports as solved, and reject reports. Status checks are made before each change. OpenZeppelin ownership and reentrancy protection are used.
 
-To keep gas costs low, large data (images, long text) are not stored on-chain. Only the IPFS URI and cryptographic hashes are stored in the struct.
+\subsection{EmergencyReporting Contract}
+\label{subsec:emergency-contract}
 
-\subsubsection*{Role-Based Access Control}
+The EmergencyReporting contract stores urgent reports separately. A valid emergency submission is created directly as \texttt{Open}; community validation is not performed first. The four emergency statuses are \texttt{Open}, \texttt{InProgress}, \texttt{Resolved}, and \texttt{Reclassified}.
 
-The contract uses OpenZeppelin's \texttt{AccessControl} module to define two operational roles:
+An emergency can be resolved from \texttt{Open} or \texttt{InProgress}. A false emergency can be reclassified. When reclassification is recorded, the citizen pseudonym is blocked from new emergency submissions for 30 days:
 
-\begin{itemize}
-    \item \texttt{RELAYER\_ROLE}: Assigned to the backend relayer wallet. Only this role is permitted to call \texttt{submitReport()}, \texttt{castValidationVote()}, \texttt{castVerificationVote()}, and \texttt{castRejectionReviewVote()}.
-    \item \texttt{AUTHORITY\_ROLE}: Assigned to municipal authority workers through the multi-sig governance contract. Only this role is permitted to call \texttt{startWork()}, \texttt{addAuthorityUpdate()}, \texttt{markAsSolved()}, and \texttt{rejectIssue()}.
-\end{itemize}
-
-The ownership of \texttt{Reporting.sol} is transferred to \texttt{AuthorityMultiSig.sol} at deployment time, so only the governance contract can grant or revoke the \texttt{AUTHORITY\_ROLE}.
-
-\subsubsection*{Eight-State Finite State Machine}
-
-The report lifecycle is enforced by an eight-state \ac{FSM} as described in Chapter~\ref{ch:architecture}. The \texttt{\_finalizeSingleReport()} function is the central state transition function. It evaluates the current voting counts and the phase deadline to determine the correct next state.
-
-\subsubsection*{Configurable Voting Method}
-
-The voting outcome for all three community voting phases is determined by a configurable \texttt{VotingMethod} enum. The method is set by the contract owner using the \texttt{setVotingConfig()} function and applies globally to all reports. Four strategies are supported:
-
-\begin{itemize}
-    \item \textbf{Majority51} (default): A simple majority rule. The positive side wins if its vote count exceeds the negative count. No minimum participation is required.
-    \item \textbf{SuperMajority66}: The positive side must receive at least two-thirds of the total cast votes. Formally: $\text{positive} \times 3 \geq \text{total} \times 2$.
-    \item \textbf{Threshold}: A hard quorum must first be met ($\text{total} \geq \texttt{minVotesRequired}$). If the quorum is not met, the phase deadline is extended. Once the quorum is met, simple majority applies.
-    \item \textbf{Hybrid}: Both of two configurable sub-methods (\texttt{h1} and \texttt{h2}) must independently pass for the positive side to win. Sub-methods cannot themselves be \texttt{Hybrid} to prevent infinite recursion.
-\end{itemize}
-
-The voting window duration is also configurable through \texttt{setVotingWindowDuration(duration)}. The default window is 6 hours. This allows the government authority to adjust the voting parameters to suit real-world consultation timelines without redeploying the contract.
-
-\subsubsection*{Nullifier Tracking and Sybil Resistance}
-
-Four persistent mappings track used ticket nullifiers to prevent Sybil attacks and replay attacks:
-
-\begin{itemize}
-    \item \texttt{usedSubmissionNullifiers}: Prevents a ticket from being used for more than one report submission.
-    \item \texttt{usedValidationVoteNullifiers}: Prevents double voting in the community validation phase.
-    \item \texttt{usedVerificationVoteNullifiers}: Prevents double voting in the post-resolution verification phase.
-    \item \texttt{usedRejectionReviewVoteNullifiers}: Prevents double voting in the authority rejection appeal phase.
-\end{itemize}
-
-All state-changing functions follow the \ac{CEI} pattern: conditions are checked first, state mappings are updated next, and external interactions occur last. This pattern prevents reentrancy attacks.
-
-\subsection{EmergencyReporting.sol}
-
-\texttt{EmergencyReporting.sol} is a dedicated smart contract for civic emergency reports. Emergency reports represent situations that require immediate authority action without waiting for a community validation vote.
-
-\subsubsection*{Emergency Report Data Structure}
-
-Each emergency report is stored in an \texttt{EmergencyReport} struct containing the report ID, IPFS CID, report hash, submission nullifier, citizen pseudonym, relayer address, the current status, creation and update timestamps, the assigned authority address, the latest authority comment and image CID, and a reclassification flag.
-
-\subsubsection*{Simplified Four-State Lifecycle}
-
-Unlike the main \texttt{Reporting.sol} contract, \texttt{EmergencyReporting.sol} uses a simplified four-state lifecycle:
-\begin{enumerate}
-    \item \textbf{Open}: The report is submitted and immediately visible to authorities — no community validation vote is required.
-    \item \textbf{InProgress}: An authority has claimed the report and started physical remediation.
-    \item \textbf{Resolved}: The authority has completed the response.
-    \item \textbf{Reclassified}: The authority has determined the report was not a genuine emergency (a false alarm).
-\end{enumerate}
-
-An authority can also resolve a report directly from the \texttt{Open} state, bypassing the \texttt{InProgress} step, to accommodate rapid responses.
-
-\subsubsection*{False Alarm Penalty Box}
-
-To prevent abuse of the emergency reporting channel, the contract implements a 30-day penalty box mechanism. If an authority calls \texttt{reclassifyEmergency(reportId, comment)}, the submitting citizen's pseudonym is recorded in the \texttt{emergencyPenaltyBox} mapping with an unlock timestamp set 30 days in the future:
 \begin{equation}
-    \texttt{penaltyUntil} = \texttt{block.timestamp} + 30 \times 24 \times 60 \times 60\,\text{s}
-\end{equation}
-Any subsequent emergency report submission by the same pseudonym before the penalty expires is rejected with a custom \texttt{EmergencyReportingLocked} error. After 30 days, the pseudonym is automatically unblocked and may submit emergency reports again.
-
-\subsubsection*{Access Control}
-
-\texttt{EmergencyReporting.sol} uses simple boolean mappings (\texttt{authorizedRelayers} and \texttt{authorizedAuthorities}) rather than the multi-sig governance of \texttt{Reporting.sol}. This allows the owner to quickly add or remove relayers and authority workers through the \texttt{setRelayer()} and \texttt{setAuthority()} functions.
-
-\subsection{OpinionPolling.sol}
-
-\texttt{OpinionPolling.sol} manages the public opinion polling workflow. It is used by authorized municipal officials to create polls on civic proposals and collect anonymous community responses.
-
-Each poll is stored in a \texttt{Poll} struct containing the IPFS metadata CID, the deadline timestamp, the poll type (\texttt{TrueFalse} or \texttt{MultiChoice}), and a result mapping from option index to vote count. A separate nullifier mapping (\texttt{nullifierVoted[pollId][nullifier]}) is maintained to prevent double voting.
-
-The contract verifies the caller's authority credentials against the \texttt{Reporting.sol} access registry before allowing poll creation. Votes are cast through the \texttt{castVote(pollId, optionIndex, nullifier)} function, which is called by the backend relayer on behalf of the citizen.
-
-\subsection{AuthorityMultiSig.sol}
-
-\texttt{AuthorityMultiSig.sol} governs all administrative actions within the system. It implements a two-tier multi-signature governance model:
-
-\begin{itemize}
-    \item \textbf{Super Admins}: Senior municipal officials (such as the Mayor or Chief Executive) who are authorized to submit and vote on governance proposals.
-    \item \textbf{Authority Workers}: Municipal engineering staff who are authorized to act on civic reports.
-\end{itemize}
-
-Governance actions — including adding an authority (\texttt{AddAuthority}), removing an authority (\texttt{RemoveAuthority}), updating a Super Admin, and modifying the on-chain profile of an official — require a quorum of Super Admin votes. The quorum is computed dynamically as:
-\begin{equation}
-    \text{Quorum} = \Big\lfloor \frac{\texttt{superAdminCount}}{2} \Big\rfloor + 1
+    T_{\mathrm{unlock}} = T_{\mathrm{block}} + 30 \times 24 \times 60 \times 60,
+    \label{eq:emergency-penalty}
 \end{equation}
 
-Once a proposal reaches quorum, it is executed automatically. For \texttt{AddAuthority} and \texttt{RemoveAuthority} proposals, the contract makes a cross-contract call to \texttt{IReporting.setAuthority(target, authorized)}, which updates the \texttt{AUTHORITY\_ROLE} registry in \texttt{Reporting.sol}.
+where \(T_{\mathrm{unlock}}\) is the unlock time and \(T_{\mathrm{block}}\) is the current block timestamp in seconds.
 
-Each Super Admin and Authority Worker is associated with an immutable on-chain \texttt{Profile} struct containing their \texttt{name}, \texttt{position}, and \texttt{department}. Citizens can view these profiles through the DApp to verify which official is assigned to handle a reported civic issue.
+\subsection{AuthorityMultiSig Contract}
+\label{subsec:multisig-contract}
 
-\section{Identity Decoupling and ZKP GovID Simulator}
-\label{sec:identity-impl}
+The AuthorityMultiSig contract manages Super Admins, authority workers, profiles, and voting configuration. A proposal is created for adding or removing a Super Admin, adding or removing an authority worker, or changing the standard-report voting method. The proposer automatically gives the first approval.
 
-The ZKP GovID Simulator is a Node.js/Express service that simulates a national government identity registry. It is responsible for authenticating citizens and issuing cryptographic credentials that are used for anonymous but verifiable interactions on the blockchain.
+The required approval count is recalculated from the current Super Admin count by Equation~\ref{eq:governance-quorum}. A proposal is executed when its yes-vote count reaches this strict majority. Authority changes are sent to the Reporting contract and, when configured, to the EmergencyReporting contract. The Reporting contract is owned by the multisig contract after deployment, so governed calls can change its protected configuration.
 
-\subsection{Citizen Authentication}
+\subsection{OpinionPolling Contract}
+\label{subsec:polling-contract}
 
-Citizens authenticate by submitting their Government Identity Number (\texttt{govId}) and password to the \texttt{/api/govid/verify-citizen} endpoint. The service checks these credentials against a mock citizen database. This step simulates the interface between the system and a real national identity infrastructure.
+The OpinionPolling contract stores a poll ID, creator, IPFS metadata CID, deadline, poll type, and active flag. True/false and multi-choice polls are supported. Poll creation is limited to an address that is authorized by the Reporting contract.
 
-\subsection{Citizen Seed and Keypair Derivation}
+Vote counts are stored by poll ID and option index. A mapping from poll ID and nullifier to a Boolean value prevents the same nullifier from being used twice in one poll. The contract records counts only; it does not implement a zero-knowledge voting proof.
 
-Upon successful authentication, the simulator generates a unique 256-bit \texttt{citizenSeed}. This seed is returned to the DApp. The DApp uses the \texttt{ethers.js} library to deterministically derive an anonymous ECDSA key pair from the seed. This key pair is stored only in the browser's local storage. The seed and the derived keys are never sent to any server, ensuring that the citizen's blockchain identity is known only to the citizen's own device.
+\section{Citizen Identity Simulator}
+\label{sec:identity-simulator-implementation}
 
-\subsection{Ticket Batch Generation and Signing}
+The identity service is implemented with Node.js, Express, ethers.js, and a simulated citizen database. A government ID and password are checked against an active simulated record. After successful checking, a configurable batch of ticket IDs is created. The default batch size is ten.
 
-The simulator also generates a batch of ten one-time ticket identifiers (\texttt{zkpTicketId\textsubscript{1}} $\ldots$ \texttt{zkpTicketId\textsubscript{10}}). Each ticket is a cryptographic hash. The simulator signs each ticket using the government authority's ECDSA private key. These signed tickets are returned to the DApp along with the \texttt{citizenSeed}.
+For each ticket, a UUID is generated and hashed with \texttt{ethers.id}. The resulting 32-byte ticket ID is signed by the configured government wallet. The signed ticket and its issue record are stored by the simulator. A previously assigned citizen seed is also returned.
 
-Each signed ticket functions as a government-endorsed authorization token. The citizen uses one ticket per report submission, one per vote, and so on. Once a ticket's nullifier has been recorded on-chain, it cannot be reused.
+The dApp derives a citizen private key by hashing the citizen seed together with a configured wallet salt. An Ethereum wallet is created from the result. This process gives the same wallet for the same seed and salt.
 
-\section{Backend Relayer Middleware Implementation}
-\label{sec:relayer-impl}
+This implementation is not a real zero-knowledge proof. The simulator directly verifies the government ID and password. Government-signed tickets are later used as one-use nullifiers. They do not prove an identity statement through zero knowledge. Integration with a real anonymous credential or zero-knowledge system is left as future work.
 
-The backend relayer is implemented using the NestJS framework with TypeScript. It is the central middleware component of the system. All citizen-facing interactions with the blockchain and off-chain services are routed through the relayer.
+\section{Relayer Cryptography and Queue Processing}
+\label{sec:relayer-queue-implementation}
 
-\subsection{Dual-Layer Cryptographic Verification}
-
-All incoming report payloads are verified by a dual-layer signature verification engine before any processing begins:
+The backend relayer is implemented with NestJS and ethers.js. Citizen-facing blockchain writes are submitted through this service. Three checks are made before a report is queued.
 
 \begin{enumerate}
-    \item \textbf{Government Ticket Verification}: The relayer fetches the government authority's ECDSA public key and verifies the ticket signature. If the signature is invalid, the request is rejected immediately. This confirms that the submitting citizen holds a valid government-issued credential.
-    \item \textbf{Citizen Payload Integrity Verification}: The relayer reconstructs the composite report hash and verifies the citizen's ECDSA signature over it. This confirms that the report content has not been tampered with in transit.
+    \item The government signature is recovered from the ticket ID and is compared with the configured government address.
+    \item Each uploaded image is hashed with Keccak-256 and is compared with the corresponding hash supplied by the dApp.
+    \item The composite report hash is rebuilt according to Equation~\ref{eq:report-hash}. The citizen signature is recovered and is compared with the supplied citizen wallet address.
 \end{enumerate}
 
-Only after both verifications pass does the relayer enqueue the report for processing.
+After these checks, the citizen pseudonym is derived according to Equation~\ref{eq:pseudonym}. Image buffers are converted to base64 before queue storage so that they can pass through Redis.
 
-\subsection{Asynchronous Processing with BullMQ Flow Queues}
-\label{subsec:bullmq-impl}
+A BullMQ flow contains three ordered child jobs. The AI moderation job is run first, the IPFS upload job is run second, and the blockchain submission job is run third. The AI step has one attempt because a moderation rejection is treated as a final decision. The IPFS and blockchain steps allow three attempts. A failed child is configured to fail its parent flow.
 
-After verification, the relayer does not process the report synchronously. Instead, it enqueues the report as an asynchronous BullMQ Flow Job in a Redis-backed queue and immediately returns a \texttt{jobId} to the DApp. The DApp uses this \texttt{jobId} to track progress via \ac{SSE}.
+The HTTP response contains a job ID without waiting for all three steps. Progress objects are emitted inside the relayer and are sent through an SSE endpoint. Each SSE stream is filtered by the citizen wallet address. A separate vote queue is used for citizen vote transactions.
 
-The queue module (\texttt{ReportQueueModule}) is implemented using the \texttt{@nestjs/bullmq} integration. Redis connection parameters (host, port, password) are configured through environment variables. Two queues are registered:
+\section{AI Moderation Implementation}
+\label{sec:ai-implementation}
 
-\begin{itemize}
-    \item \texttt{report-processing}: The main queue for report flow parent jobs.
-    \item \texttt{report-step-processing}: The step queue for the three child jobs.
-\end{itemize}
+The AI component is implemented as one decision aggregator and three classifier services: safety, spam, and civic relevance. These services run off-chain. They are not blockchain validators, and they do not form a decentralized oracle network.
 
-The \texttt{ReportFlowProducer} service uses the BullMQ \texttt{FlowProducer} API to enqueue a nested job tree with the following structure:
+\subsection{Request Protection and Aggregation}
+\label{subsec:ai-aggregation}
 
-% \begin{verbatim}
-% Parent: Report [<category>] - rpt_<ticketHash>
-%   └─ Step 3: step3-blockchain-submit (rpt_<ticketHash>-chain)
-%        └─ Step 2: step2-ipfs-upload (rpt_<ticketHash>-ipfs)
-%             └─ Step 1: step1-ai-moderation (rpt_<ticketHash>-ai)
-% \end{verbatim}
+The relayer sends a moderation request with an API key, relayer signature, timestamp, and random nonce. A canonical request object is hashed and signed by the relayer. The aggregator recovers the signer address and compares it with the trusted relayer address. The timestamp is checked against a configurable maximum age. Used nonces are stored in SQLite and are rejected on reuse.
 
-BullMQ executes the tree bottom-up: Step 1 runs first, its result is read by Step 2, Step 2's result is read by Step 3, and finally the parent summary job runs. This dependency chain is enforced by BullMQ natively — a parent job is only moved to the active state after all its children have completed successfully.
+Each classifier is called by the aggregator. A service error or unavailable service produces a rejection result. Safety rejection, civic-relevance rejection, spam rejection, or any critical violation causes a final rejection. Otherwise, acceptance requires at least two accept votes and no reject vote. The implementation is therefore fail-closed. The returned decision contains hashes and an optional aggregator signature, but this off-chain decision is not blockchain consensus.
 
-Each child step returns a typed result object. These results are passed to the next step using the \texttt{job.getChildrenValues()} API:
+\subsection{Safety Service}
+\label{subsec:safety-service}
 
-\begin{itemize}
-    \item Step 1 returns \texttt{AiStepResult}: \texttt{\{isApproved, blurredMedia\}}.
-    \item Step 2 returns \texttt{IpfsStepResult}: \texttt{\{cid, ipfsUri\}}.
-    \item Step 3 returns \texttt{BlockchainStepResult}: \texttt{\{transactionHash, blockNumber\}}.
-\end{itemize}
+Text safety is checked with \texttt{unitary/toxic-bert}. The first 512 characters are passed to the model pipeline. The implemented unsafe thresholds are shown in Table~\ref{tab:safety-thresholds}.
 
-Each step is configured with \texttt{failParentOnFailure: true} and up to three retry attempts using exponential backoff:
-\begin{equation}
-    \Delta t(k) = 2000 \times 4^{k-1} \text{ ms}, \quad k \in \{1, 2, 3\}
-\end{equation}
-This gives delays of 2\,s, 8\,s, and 32\,s between attempts. Step 1 (AI moderation) uses only one attempt, as an AI rejection is a deterministic content decision and not a transient failure.
-
-An additional \textbf{Vote Queue} (\texttt{vote-queue}) handles community votes asynchronously. The \texttt{VoteQueueProcessor} receives vote job data (report ID, vote phase, nullifier, decision, pseudonym) and submits the vote transaction to the blockchain with up to three retry attempts.
-
-\subsection{Real-Time Progress Notification (SSE Gateway)}
-\label{subsec:sse-impl}
-
-The \texttt{ReportStatusGateway} controller implements the \ac{SSE} notification layer. It uses an RxJS \texttt{Subject} as a push-based event bus. The processing flow is:
-
-\begin{enumerate}
-    \item At each pipeline step, the queue worker emits a \texttt{ReportJobProgress} object through the NestJS \texttt{EventEmitter2} bus.
-    \item The \texttt{@OnEvent(REPORT\_JOB\_PROGRESS\_EVENT)} handler in \texttt{ReportStatusGateway} receives this event and calls \texttt{progressSubject.next(progress)}.
-    \item Any DApp client connected to \texttt{GET /report/status/stream?citizenAddress=<address>} receives the event through an RxJS pipeline that filters by \texttt{citizenPubKey}.
-    \item The DApp renders the received progress step and percentage in a live progress bar.
-\end{enumerate}
-
-The structured progress payload (\texttt{ReportJobProgress}) contains:
-
-\begin{itemize}
-    \item \texttt{jobId}: The root job identifier (e.g., \texttt{rpt\_a1b2c3d4}).
-    \item \texttt{citizenPubKey}: The citizen's derived wallet address (used for routing).
-    \item \texttt{step}: The current pipeline stage (e.g., \texttt{ai\_moderation\_passed}).
-    \item \texttt{percent}: An integer from 0 to 100 indicating overall progress.
-    \item \texttt{message}: A human-readable status description (e.g., ``AI moderation passed. Content approved.'').
-    \item \texttt{data}: Optional structured payload, such as the IPFS CID or blockchain transaction hash.
-\end{itemize}
-
-\subsection{Authority Funding Service and Cron Orchestration}
-
-The relayer also contains two automated background services:
-
-\begin{enumerate}
-    \item \textbf{AuthorityFundingService}: This service listens for \texttt{ProposalExecuted} events emitted by \texttt{AuthorityMultiSig.sol} via a WebSocket connection. When an \texttt{AddAuthority} proposal is executed, the service automatically transfers 5.0 ETH from the relayer treasury to the new Authority Worker's wallet. This ensures the worker has sufficient gas to submit blockchain transactions immediately after being granted access.
-    \item \textbf{CronService}: Two scheduled jobs are run daily:
-    \begin{itemize}
-        \item \textit{Balance monitoring}: Every day at 01:00 (Colombo time zone), the service checks the ETH balances of all registered Super Admins and Authority Workers and replenishes any account below 1.0 ETH.
-        \item \textit{Batch voting finalization}: Every day at midnight, the service calls \texttt{batchFinalizeVotingWindows()} on \texttt{Reporting.sol} for all reports in voting phases ($S_0$, $S_4$, $S_5$) whose \texttt{phaseDeadline} has elapsed. This prevents reports from remaining stuck in pending states.
-    \end{itemize}
-\end{enumerate}
-
-\subsection{BullStudio Monitoring Dashboard}
-
-A BullStudio monitoring dashboard is integrated into the relayer at the path \texttt{/ops/bullstudio}. It is protected by session-based authentication. The dashboard displays the status of jobs in both the \texttt{report-processing} and \texttt{report-step-processing} queues. It shows waiting, active, completed, and failed job counts, and provides a view of individual job details, logs, and retry history. This tool is used for system monitoring and debugging during testing and deployment.
-
-\section{Off-Chain IPFS Storage Integration}
-\label{sec:ipfs-impl}
-
-The IPFS storage service is implemented as a dedicated NestJS module (\texttt{IpfsModule}). It provides an abstraction layer over the IPFS HTTP API.
-
-\subsection{Service Architecture}
-
-The IPFS service consists of two Docker containers:
-\begin{enumerate}
-    \item \textbf{IPFS Node}: A standard IPFS daemon (version 0.41.0) that manages the peer-to-peer content store.
-    \item \textbf{IPFS HTTP Service}: A lightweight NestJS service (exposed on port 4000) that provides a REST API for file upload and retrieval. It communicates with the IPFS node through its RPC API on port 5001.
-\end{enumerate}
-
-\subsection{Upload Pipeline with AI Face Blurring}
-
-The upload pipeline is integrated with the AI moderation step. After AI moderation is approved, the queue worker reads the \texttt{blurredMedia} array from the AI step result. If the AI oracle has detected and blurred any human faces in the submitted images, the blurred versions (returned as base64-encoded data) replace the original image buffers before the IPFS upload begins. This ensures that face data is not permanently stored in IPFS.
-
-The \texttt{IpfsService.uploadComplaint()} method bundles the report description, category, location, and processed images into a complaint object and uploads it to IPFS. The returned \texttt{CID} and \texttt{ipfsUri} are stored in the step result and passed to the blockchain submission step.
-
-\subsection{CID Integrity Verification}
-
-The CID is cryptographically derived from the content of the uploaded file. The blockchain submission step stores this \texttt{ipfsUri} on-chain in the \texttt{Report} struct. At any time, a verifier can retrieve the content from IPFS by its CID and recompute the hash to confirm that the stored data has not been modified.
-
-\section{AI Content Moderation Service Ensemble}
-\label{sec:ai-impl}
-
-The AI moderation service is implemented as a network of four containerized microservices. All four containers are deployed on a dedicated VPS and communicate through an internal Docker network.
-
-\subsection{Classifier Worker Implementations and Model Hyperparameters}
-\label{subsec:oracle-hyperparameters}
-
-Each classifier worker uses pre-trained transformer or sentence-embedding models with tuned decision thresholds. The thresholds are set as environment variables so they can be adjusted without rebuilding the containers.
-
-\subsubsection*{Safety Classifier Service (Worker 1)}
-
-The Safety Classifier Service uses two models:
-
-\begin{enumerate}
-    \item \textbf{Text Safety — \texttt{unitary/toxic-bert}}: A BERT-based multi-label classifier fine-tuned on the Jigsaw Toxic Comment dataset. It outputs six independent toxicity probability scores. Table~\ref{tab:safety-text-thresholds} shows the per-label decision thresholds used to classify text as unsafe.
-
-    \begin{table}[h!]
+\begin{table}[!htbp]
     \centering
-    \caption{Safety Classifier Service: unitary/toxic-bert Decision Thresholds}
-    \label{tab:safety-text-thresholds}
-    \begin{tabular}{|l|l|l|}
-    \hline
-    \textbf{Label} & \textbf{Threshold} & \textbf{Effect} \\
-    \hline
-    \texttt{toxic} & $\geq 0.50$ & Content flagged as unsafe \\
-    \hline
-    \texttt{severe\_toxic} & $\geq 0.50$ & Critical violation (override) \\
-    \hline
-    \texttt{obscene} & $\geq 0.60$ & Content flagged as unsafe \\
-    \hline
-    \texttt{threat} & $\geq 0.40$ & Critical violation (override) \\
-    \hline
-    \texttt{insult} & $\geq 0.60$ & Content flagged as unsafe \\
-    \hline
-    \texttt{identity\_hate} & $\geq 0.40$ & Critical violation (override) \\
-    \hline
+    \caption{Implemented Toxic-BERT thresholds}
+    \label{tab:safety-thresholds}
+    \small
+    \begin{tabular}{|l|c|l|}
+        \hline
+        \textbf{Label} & \textbf{Threshold} & \textbf{Critical} \\
+        \hline
+        \texttt{toxic} & 0.50 & No \\
+        \hline
+        \texttt{severe\_toxic} & 0.50 & Yes \\
+        \hline
+        \texttt{obscene} & 0.60 & No \\
+        \hline
+        \texttt{threat} & 0.40 & Yes \\
+        \hline
+        \texttt{insult} & 0.60 & No \\
+        \hline
+        \texttt{identity\_hate} & 0.40 & Yes \\
+        \hline
     \end{tabular}
-    \end{table}
+\end{table}
 
-    Text is truncated to 512 tokens before inference to match the model's maximum input length. A \textit{critical violation} from \texttt{severe\_toxic}, \texttt{threat}, or \texttt{identity\_hate} triggers a direct aggregator-level \texttt{REJECT} override.
+Image safety is checked with \texttt{Falconsai/nsfw\_image\_detection}. The maximum score for the labels \texttt{nsfw}, \texttt{porn}, \texttt{sexy}, and \texttt{hentai} is used. An image is rejected when this score is at least 0.70.
 
-    \item \textbf{Image Safety — \texttt{Falconsai/nsfw\_image\_detection}}: An image classification model that outputs probability scores for the labels \texttt{nsfw}, \texttt{porn}, \texttt{sexy}, and \texttt{hentai}. The maximum score across these labels is taken as the composite NSFW score. An image is classified as unsafe if its NSFW score is $\geq 0.70$.
+Accepted images are processed for faces with OpenCV Haar cascades. Frontal, alternative frontal, left-profile, and mirrored right-profile checks are used. Overlapping boxes are reduced, and Gaussian blur is applied to detected face areas. The processed images are returned to the relayer for IPFS storage.
 
-    \item \textbf{Face Blurring — OpenCV Haar Cascades}: Safe images are processed for face detection using four OpenCV Haar cascade classifiers: \texttt{haarcascade\_frontalface\_default.xml}, \texttt{haarcascade\_frontalface\_alt.xml}, \texttt{haarcascade\_frontalface\_alt2.xml}, and \texttt{haarcascade\_profileface.xml} (applied twice: on the original and horizontally flipped image for right-profile detection). Face detection parameters are: \texttt{scaleFactor = 1.05}, \texttt{minNeighbors = 3}, \texttt{minSize = (20, 20)} pixels. Overlapping detections are deduplicated using Non-Maximum Suppression (NMS) with an overlap threshold of 0.4. Detected face regions are blurred with a Gaussian kernel sized proportionally to the face bounding box, with a minimum kernel size of $19 \times 19$.
-\end{enumerate}
+\subsection{Spam Service}
+\label{subsec:spam-service}
 
-\subsubsection*{Spam and Abuse Classifier Service (Worker 2)}
+Spam is checked with \texttt{mrm8488/bert-tiny-finetuned-sms-spam-detection} and a rule score. The default thresholds are 0.85 for a strong model rejection, 0.65 for model support, 0.60 for a rule-only rejection, and 0.25 for rule support.
 
-The Spam and Abuse Classifier Service combines an NLP model with a rule-based scoring engine:
+Rules add scores for very short text, known spam phrases, promotional words, URLs, repeated characters, and excessive symbols. The final rule score is capped at 1.0. A report is rejected when the model is strongly confident, when the rule score reaches the rejection threshold, or when both supporting thresholds are reached.
+
+\subsection{Civic Relevance Service}
+\label{subsec:civic-service}
+
+Text relevance is checked with \texttt{sentence-transformers/all-MiniLM-L6-v2}. Normalized text embeddings are compared with precomputed reference embeddings by cosine similarity. The reference set covers common local issues and a general civic category.
+
+The default text relevance threshold is 0.38. A lower maximum similarity causes rejection. The selected-category match threshold is 0.40. A category mismatch produces an explanation but does not reject text that is otherwise civic.
+
+CLIP-based image relevance is disabled and is not evaluated in this implementation. Images are checked for safety, but an image-to-civic-category relevance claim is not made.
+
+\section{IPFS Implementation}
+\label{sec:ipfs-implementation}
+
+The IPFS layer contains an IPFS node and an Express HTTP service. For a complaint upload, description, category, and location are required. Up to five images are accepted by the storage endpoint. Each image entry contains its original name, MIME type, byte size, and base64 data.
+
+One JSON envelope is formed with the following fields:
+
+\begin{quote}
+\texttt{type}, \texttt{description}, \texttt{category}, \texttt{location},
+\texttt{imageCount}, \texttt{images}, and \texttt{storedAt}.
+\end{quote}
+
+The complete envelope is added and pinned as one IPFS object with CID version 1. One CID is returned for both metadata and images. If blurred images are returned by the safety service, they replace the original buffers before this envelope is uploaded.
+
+No authentication is implemented at the IPFS HTTP service level. CORS and HTTP security headers are present, but they do not authenticate clients. The service is therefore assumed to be protected by network isolation. This assumption is a deployment limit, not a production security control.
+
+\section{Web Client Implementation}
+\label{sec:web-client-implementation}
+
+The main citizen and authority dApp is implemented with Next.js, React, Tailwind CSS, and ethers.js. Citizens can authenticate through the simulator, submit standard or emergency reports, follow queue progress, read reports, vote, and view their own pseudonymous reports. Authorities can view actionable reports, post updates, submit results, and use governance and polling functions.
+
+Direct blockchain reads are made through a JSON-RPC provider. Citizen writes are sent to the relayer so that citizens do not need gas or direct wallet transaction handling. Authority and Super Admin actions are signed through MetaMask.
+
+The citizen wallet is derived from the citizen seed. Session data can optionally be protected by a user PIN. The browser uses PBKDF2 with SHA-256 and 600,000 iterations to derive a 256-bit key, and AES-GCM is used for encryption. A random 16-byte salt and 12-byte initialization vector are stored with the ciphertext. This protects stored session data when the feature is used, but a weak PIN can still be guessed.
+
+A separate Vite and React portal is implemented for the government identity simulator. It is kept separate from the public dApp because it represents a different administrative boundary.
+
+\section{Deployment and Configuration}
+\label{sec:deployment-configuration}
+
+Services are containerized and are configured through environment variables. Blockchain configuration includes RPC URLs, contract addresses, chain ID, and relayer keys. Relayer configuration includes the government address, pseudonym salt, Redis connection, AI endpoint, API key, and IPFS endpoint. AI configuration includes trusted relayer details, model switches, thresholds, request age, nonce database path, and worker URLs.
+
+The Geth nodes are connected on a private network. The AI workers communicate with the aggregator through an internal service network. The IPFS HTTP endpoint is expected to be isolated because application-level authentication is absent.
+
+Optional Planka workforce tracking is feature-flagged through deployment configuration. When it is disabled or not configured, the blockchain workflow continues without it. When it is enabled, report status events can be mirrored to Planka cards. Planka is not a source of truth for report status.
+
+Secrets such as private keys, API keys, Redis passwords, government signing keys, and PIN-derived session keys must not be committed to source control. Separate values are required for development and deployment.
+
+\section{Implementation Constraints}
+\label{sec:implementation-constraints}
+
+The current implementation has the following limits.
 
 \begin{enumerate}
-    \item \textbf{NLP Model — \texttt{mrm8488/bert-tiny-finetuned-sms-spam-detection}}: A lightweight BERT-tiny model fine-tuned on SMS spam data. It is used as a signal alongside rule-based checks.
-
-    \item \textbf{Decision Thresholds}: Table~\ref{tab:spam-thresholds} shows the four configurable thresholds used to combine the AI model score and the rule-based score into a final spam decision.
-
-    \begin{table}[h!]
-    \centering
-    \caption{Spam Classifier Service: Hybrid Decision Thresholds}
-    \label{tab:spam-thresholds}
-    \begin{tabular}{|l|l|l|}
-    \hline
-    \textbf{Parameter} & \textbf{Value} & \textbf{Meaning} \\
-    \hline
-    \texttt{AI\_STRONG\_SPAM\_THRESHOLD} & 0.85 & AI score alone is sufficient to reject \\
-    \hline
-    \texttt{AI\_SUPPORTING\_SPAM\_THRESHOLD} & 0.65 & AI score supports rejection if rules agree \\
-    \hline
-    \texttt{RULE\_REJECT\_THRESHOLD} & 0.60 & Rule score alone is sufficient to reject \\
-    \hline
-    \texttt{RULE\_SUPPORT\_THRESHOLD} & 0.25 & Rule score supports rejection if AI agrees \\
-    \hline
-    \end{tabular}
-    \end{table}
-
-    \item \textbf{Rule-based signals} and their contribution to the spam score are: a text length below 5 words adds 0.35; a matched spam phrase adds 0.80; promotional language adds 0.35; more than one URL adds 0.60; one URL adds 0.25; repeated character patterns add 0.50; excessive symbols add 0.40. Scores are capped at 1.0.
+    \item The identity service is a simulator. Government ID and password values are directly checked, so production-grade zero knowledge is not provided.
+    \item Ticket nullifiers reduce repeated use, but privacy still depends on the simulator, relayer, browser, and stable pseudonym design.
+    \item Category and location are stored in the IPFS envelope but are not covered by the implemented citizen composite hash.
+    \item The AI models can produce false acceptance and false rejection. Model fallback rules also have limited language and context coverage.
+    \item CLIP image relevance is disabled and is not evaluated.
+    \item The AI aggregator is centralized off-chain. Its signature does not make the classifier services a decentralized oracle network.
+    \item The IPFS HTTP service has no application-level authentication and depends on network isolation.
+    \item Base64 images increase the size of the single complaint envelope. Large envelopes can increase storage and transfer cost.
+    \item The private PoA network has only three validators. Its availability and independence depend on those operators.
+    \item Browser storage, deterministic wallet derivation, and optional PIN protection require stronger recovery and device-security measures before production use.
+    \item Planka synchronization is optional and can become inconsistent with the blockchain if external requests fail.
 \end{enumerate}
 
-\subsubsection*{Civic Relevance Classifier Service (Worker 3)}
+\section{Summary}
+\label{sec:implementation-summary}
 
-\begin{enumerate}
-    \item \textbf{Embedding Model — \texttt{sentence-transformers/all-MiniLM-L6-v2}}: A compact sentence transformer model that maps text to 384-dimensional semantic embedding vectors. Civic reference descriptions for 9 issue categories are pre-embedded at startup and stored in memory.
+This chapter describes the implemented private Geth Clique network, four smart contracts, identity simulator, relayer, BullMQ pipeline, AI moderation services, IPFS envelope, and web clients. The system uses government-signed one-use ticket IDs as nullifiers and uses pseudonymous citizen wallets. Its important limits are stated: no real zero-knowledge proof is implemented, no decentralized oracle network is claimed, CLIP relevance is not evaluated, and IPFS service security depends on network isolation.
 
-    \item \textbf{Decision Thresholds}: Table~\ref{tab:civic-thresholds} shows the two configurable similarity thresholds.
 
-    \begin{table}[h!]
-    \centering
-    \caption{Civic Relevance Classifier Service: Cosine Similarity Thresholds}
-    \label{tab:civic-thresholds}
-    \begin{tabular}{|l|l|l|}
-    \hline
-    \textbf{Parameter} & \textbf{Value} & \textbf{Meaning} \\
-    \hline
-    \texttt{TEXT\_RELEVANCE\_THRESHOLD} & 0.38 & Minimum cosine similarity to a reference civic description \\
-    \hline
-    \texttt{CATEGORY\_MATCH\_THRESHOLD} & 0.40 & Minimum similarity for declared category to match text \\
-    \hline
-    \end{tabular}
-    \end{table}
+% \chapter{System Implementation and Technical Realization}
+% \label{ch:implementation}
 
-    The cosine similarity is computed between the report embedding and each reference embedding for the nine civic categories: Road Damage, Waste Management, Streetlight Issue, Drainage/Sewage, Water Supply, Flooding, Public Property Damage, Traffic/Road Safety, and Environmental Issues. A report is accepted if its maximum cosine similarity across all reference descriptions exceeds \texttt{TEXT\_RELEVANCE\_THRESHOLD = 0.38}. The category match threshold applies separately and does not cause rejection; it only adds a warning to the response.
-\end{enumerate}
+% This chapter describes the technical implementation of each subsystem in the proposed framework. The system is implemented as a set of modular, containerized services. Each service is developed and tested independently before being connected into a complete reporting pipeline. The implementation follows the architectural design described in Chapter~\ref{ch:architecture}.
 
-\subsection{Moderation Decision Aggregator}
-The Moderation Decision Aggregator is the single entry point for the backend relayer. It:
-\begin{enumerate}
-    \item Receives the signed moderation request from the relayer. The relayer signs the request with its private key, and the aggregator recovers and verifies the signer address.
-    \item Validates the request timestamp (to prevent stale requests) and nonce (to prevent replay attacks).
-    \item Forwards the moderation request to all three classifier workers in parallel.
-    \item Applies the following decision logic:
-    \begin{itemize}
-        \item If the Safety Classifier Service detects a critical violation, the final decision is \texttt{REJECT} regardless of other votes.
-        \item If the Civic Relevance Classifier Service determines the content is non-civic, the final decision is \texttt{REJECT}.
-        \item Otherwise, majority voting is applied: if two or more classifier workers return \texttt{ACCEPT}, the final decision is \texttt{ACCEPT}; otherwise it is \texttt{REJECT}.
-    \end{itemize}
-    \item Computes a \texttt{report\_hash}, a \texttt{decision\_hash}, and an \texttt{aggregator\_signature} over the final decision. These fields are returned to the relayer in the moderation response.
-\end{enumerate}
+% \section{Private Permissioned Blockchain Infrastructure}
+% \label{sec:blockchain-impl}
 
-\section{Web-Based Decentralized Application (DApp)}
-\label{sec:dapp-impl}
+% The blockchain layer is the foundation of the proposed framework. It provides an immutable, tamper-evident ledger for recording civic reports, community votes, authority actions, and governance decisions.
 
-The decentralized application (DApp) provides a responsive, mobile-first web interface for citizens, municipal authority workers, and Super Admins. Built using Next.js 14, React, Tailwind CSS, and \texttt{ethers.js}, the DApp abstracts blockchain interactions, gas fees, and key management away from end-users.
+% \subsection{Network Setup and Configuration}
 
-\subsection{Authentication Interface}
+% The blockchain network is implemented using Go Ethereum (Geth), version 1.13.15. The Clique \ac{PoA} consensus algorithm is used. Clique is a lightweight consensus mechanism designed for private networks. It assigns block-sealing authority to a set of pre-approved validator accounts. No mining or staking is required.
 
-The authentication interface enables citizens to login using their municipal GovID credentials (NID and password). Upon authentication against the ZKP GovID Simulator, the DApp stores the signed ticket batch and citizen seed in browser local storage. Figure~\ref{fig:ui-authentication} shows the web and mobile authentication interfaces.
+% The network is initialized using a custom \texttt{genesis.json} file. This file defines the chain identifier, the initial authorized sealers, and the block period. The block time is set to five seconds. This provides deterministic and fast block finality, which is essential for a responsive civic reporting system.
+
+% \subsection{Node Topology}
+
+% The network consists of four nodes deployed on virtual private server (VPS) infrastructure:
+
+% \begin{enumerate}
+%     \item \textbf{Validator Node 1 — Municipal Authority}: Represents local government infrastructure departments. This node participates in block sealing.
+%     \item \textbf{Validator Node 2 — Regional Oversight}: Represents a regional or provincial supervisory body. This node participates in block sealing.
+%     \item \textbf{Validator Node 3 — Civic NGO}: Represents an independent civil society organization. This node participates in block sealing and prevents unilateral government censorship.
+%     \item \textbf{RPC Node (Node 4)}: A non-validator node that exposes a secure JSON-RPC endpoint. All off-chain services (the backend relayer, the DApp) connect to the blockchain through this node only. This separates the consensus layer from the application-facing layer.
+% \end{enumerate}
+
+% Each node is assigned a unique cryptographic identity. The addresses of the three validator nodes are recorded in the genesis block as authorized sealers. The peer connections between nodes are established using static node configuration (\texttt{static-nodes.json}) to ensure a stable and private network topology. The entire network operates within a private subnet and is not connected to any public Ethereum network.
+
+% Figure~\ref{fig:validator-nodes} (see Chapter~\ref{ch:architecture}) shows the 3-validator network topology.
+
+% \section{Smart Contract Architecture}
+% \label{sec:smart-contracts-impl}
+
+% Three Solidity smart contracts are deployed on the private PoA blockchain. They are compiled using Solidity version 0.8.20 and the Hardhat development framework. OpenZeppelin libraries are used for access control and security utilities.
+
+% \subsection{Reporting.sol}
+
+% \texttt{Reporting.sol} is the primary smart contract. It manages the entire lifecycle of civic issue reports.
+
+% \subsubsection*{Report Data Structure}
+
+% Each civic report is stored in a \texttt{Report} struct on-chain. The struct contains:
+
+% \begin{itemize}
+%     \item A unique integer \texttt{reportId}.
+%     \item The IPFS URI (\texttt{ipfsUri}) pointing to the off-chain report content.
+%     \item The payload hash (\texttt{payloadHash}) computed from the report description and ticket.
+%     \item The citizen's derived pseudonym (\texttt{citizenPseudonym}).
+%     \item Voting counters for validation, verification, and rejection review phases.
+%     \item The address of the assigned authority (\texttt{assignedAuthority}).
+%     \item The current lifecycle state (\texttt{ReportStatus} enum).
+%     \item The phase deadline timestamp (\texttt{phaseDeadline}).
+%     \item An append-only array of \texttt{AuthorityAction} entries, which records each authority interaction with a comment and an optional image CID.
+% \end{itemize}
+
+% To keep gas costs low, large data (images, long text) are not stored on-chain. Only the IPFS URI and cryptographic hashes are stored in the struct.
+
+% \subsubsection*{Role-Based Access Control}
+
+% The contract uses OpenZeppelin's \texttt{AccessControl} module to define two operational roles:
+
+% \begin{itemize}
+%     \item \texttt{RELAYER\_ROLE}: Assigned to the backend relayer wallet. Only this role is permitted to call \texttt{submitReport()}, \texttt{castValidationVote()}, \texttt{castVerificationVote()}, and \texttt{castRejectionReviewVote()}.
+%     \item \texttt{AUTHORITY\_ROLE}: Assigned to municipal authority workers through the multi-sig governance contract. Only this role is permitted to call \texttt{startWork()}, \texttt{addAuthorityUpdate()}, \texttt{markAsSolved()}, and \texttt{rejectIssue()}.
+% \end{itemize}
+
+% The ownership of \texttt{Reporting.sol} is transferred to \texttt{AuthorityMultiSig.sol} at deployment time, so only the governance contract can grant or revoke the \texttt{AUTHORITY\_ROLE}.
+
+% \subsubsection*{Eight-State Finite State Machine}
+
+% The report lifecycle is enforced by an eight-state \ac{FSM} as described in Chapter~\ref{ch:architecture}. The \texttt{\_finalizeSingleReport()} function is the central state transition function. It evaluates the current voting counts and the phase deadline to determine the correct next state.
+
+% \subsubsection*{Configurable Voting Method}
+
+% The voting outcome for all three community voting phases is determined by a configurable \texttt{VotingMethod} enum. The method is set by the contract owner using the \texttt{setVotingConfig()} function and applies globally to all reports. Four strategies are supported:
+
+% \begin{itemize}
+%     \item \textbf{Majority51} (default): A simple majority rule. The positive side wins if its vote count exceeds the negative count. No minimum participation is required.
+%     \item \textbf{SuperMajority66}: The positive side must receive at least two-thirds of the total cast votes. Formally: $\text{positive} \times 3 \geq \text{total} \times 2$.
+%     \item \textbf{Threshold}: A hard quorum must first be met ($\text{total} \geq \texttt{minVotesRequired}$). If the quorum is not met, the phase deadline is extended. Once the quorum is met, simple majority applies.
+%     \item \textbf{Hybrid}: Both of two configurable sub-methods (\texttt{h1} and \texttt{h2}) must independently pass for the positive side to win. Sub-methods cannot themselves be \texttt{Hybrid} to prevent infinite recursion.
+% \end{itemize}
+
+% The voting window duration is also configurable through \texttt{setVotingWindowDuration(duration)}. The default window is 6 hours. This allows the government authority to adjust the voting parameters to suit real-world consultation timelines without redeploying the contract.
+
+% \subsubsection*{Nullifier Tracking and Sybil Resistance}
+
+% Four persistent mappings track used ticket nullifiers to prevent Sybil attacks and replay attacks:
+
+% \begin{itemize}
+%     \item \texttt{usedSubmissionNullifiers}: Prevents a ticket from being used for more than one report submission.
+%     \item \texttt{usedValidationVoteNullifiers}: Prevents double voting in the community validation phase.
+%     \item \texttt{usedVerificationVoteNullifiers}: Prevents double voting in the post-resolution verification phase.
+%     \item \texttt{usedRejectionReviewVoteNullifiers}: Prevents double voting in the authority rejection appeal phase.
+% \end{itemize}
+
+% All state-changing functions follow the \ac{CEI} pattern: conditions are checked first, state mappings are updated next, and external interactions occur last. This pattern prevents reentrancy attacks.
+
+% \subsection{EmergencyReporting.sol}
+
+% \texttt{EmergencyReporting.sol} is a dedicated smart contract for civic emergency reports. Emergency reports represent situations that require immediate authority action without waiting for a community validation vote.
+
+% \subsubsection*{Emergency Report Data Structure}
+
+% Each emergency report is stored in an \texttt{EmergencyReport} struct containing the report ID, IPFS CID, report hash, submission nullifier, citizen pseudonym, relayer address, the current status, creation and update timestamps, the assigned authority address, the latest authority comment and image CID, and a reclassification flag.
+
+% \subsubsection*{Simplified Four-State Lifecycle}
+
+% Unlike the main \texttt{Reporting.sol} contract, \texttt{EmergencyReporting.sol} uses a simplified four-state lifecycle:
+% \begin{enumerate}
+%     \item \textbf{Open}: The report is submitted and immediately visible to authorities — no community validation vote is required.
+%     \item \textbf{InProgress}: An authority has claimed the report and started physical remediation.
+%     \item \textbf{Resolved}: The authority has completed the response.
+%     \item \textbf{Reclassified}: The authority has determined the report was not a genuine emergency (a false alarm).
+% \end{enumerate}
+
+% An authority can also resolve a report directly from the \texttt{Open} state, bypassing the \texttt{InProgress} step, to accommodate rapid responses.
+
+% \subsubsection*{False Alarm Penalty Box}
+
+% To prevent abuse of the emergency reporting channel, the contract implements a 30-day penalty box mechanism. If an authority calls \texttt{reclassifyEmergency(reportId, comment)}, the submitting citizen's pseudonym is recorded in the \texttt{emergencyPenaltyBox} mapping with an unlock timestamp set 30 days in the future:
+% \begin{equation}
+%     \texttt{penaltyUntil} = \texttt{block.timestamp} + 30 \times 24 \times 60 \times 60\,\text{s}
+% \end{equation}
+% Any subsequent emergency report submission by the same pseudonym before the penalty expires is rejected with a custom \texttt{EmergencyReportingLocked} error. After 30 days, the pseudonym is automatically unblocked and may submit emergency reports again.
+
+% \subsubsection*{Access Control}
+
+% \texttt{EmergencyReporting.sol} uses simple boolean mappings (\texttt{authorizedRelayers} and \texttt{authorizedAuthorities}) rather than the multi-sig governance of \texttt{Reporting.sol}. This allows the owner to quickly add or remove relayers and authority workers through the \texttt{setRelayer()} and \texttt{setAuthority()} functions.
+
+% \subsection{OpinionPolling.sol}
+
+% \texttt{OpinionPolling.sol} manages the public opinion polling workflow. It is used by authorized municipal officials to create polls on civic proposals and collect anonymous community responses.
+
+% Each poll is stored in a \texttt{Poll} struct containing the IPFS metadata CID, the deadline timestamp, the poll type (\texttt{TrueFalse} or \texttt{MultiChoice}), and a result mapping from option index to vote count. A separate nullifier mapping (\texttt{nullifierVoted[pollId][nullifier]}) is maintained to prevent double voting.
+
+% The contract verifies the caller's authority credentials against the \texttt{Reporting.sol} access registry before allowing poll creation. Votes are cast through the \texttt{castVote(pollId, optionIndex, nullifier)} function, which is called by the backend relayer on behalf of the citizen.
+
+% \subsection{AuthorityMultiSig.sol}
+
+% \texttt{AuthorityMultiSig.sol} governs all administrative actions within the system. It implements a two-tier multi-signature governance model:
+
+% \begin{itemize}
+%     \item \textbf{Super Admins}: Senior municipal officials (such as the Mayor or Chief Executive) who are authorized to submit and vote on governance proposals.
+%     \item \textbf{Authority Workers}: Municipal engineering staff who are authorized to act on civic reports.
+% \end{itemize}
+
+% Governance actions — including adding an authority (\texttt{AddAuthority}), removing an authority (\texttt{RemoveAuthority}), updating a Super Admin, and modifying the on-chain profile of an official — require a quorum of Super Admin votes. The quorum is computed dynamically as:
+% \begin{equation}
+%     \text{Quorum} = \Big\lfloor \frac{\texttt{superAdminCount}}{2} \Big\rfloor + 1
+% \end{equation}
+
+% Once a proposal reaches quorum, it is executed automatically. For \texttt{AddAuthority} and \texttt{RemoveAuthority} proposals, the contract makes a cross-contract call to \texttt{IReporting.setAuthority(target, authorized)}, which updates the \texttt{AUTHORITY\_ROLE} registry in \texttt{Reporting.sol}.
+
+% Each Super Admin and Authority Worker is associated with an immutable on-chain \texttt{Profile} struct containing their \texttt{name}, \texttt{position}, and \texttt{department}. Citizens can view these profiles through the DApp to verify which official is assigned to handle a reported civic issue.
+
+% \section{Identity Decoupling and ZKP GovID Simulator}
+% \label{sec:identity-impl}
+
+% The ZKP GovID Simulator is a Node.js/Express service that simulates a national government identity registry. It is responsible for authenticating citizens and issuing cryptographic credentials that are used for anonymous but verifiable interactions on the blockchain.
+
+% \subsection{Citizen Authentication}
+
+% Citizens authenticate by submitting their Government Identity Number (\texttt{govId}) and password to the \texttt{/api/govid/verify-citizen} endpoint. The service checks these credentials against a mock citizen database. This step simulates the interface between the system and a real national identity infrastructure.
+
+% \subsection{Citizen Seed and Keypair Derivation}
+
+% Upon successful authentication, the simulator generates a unique 256-bit \texttt{citizenSeed}. This seed is returned to the DApp. The DApp uses the \texttt{ethers.js} library to deterministically derive an anonymous ECDSA key pair from the seed. This key pair is stored only in the browser's local storage. The seed and the derived keys are never sent to any server, ensuring that the citizen's blockchain identity is known only to the citizen's own device.
+
+% \subsection{Ticket Batch Generation and Signing}
+
+% The simulator also generates a batch of ten one-time ticket identifiers (\texttt{zkpTicketId\textsubscript{1}} $\ldots$ \texttt{zkpTicketId\textsubscript{10}}). Each ticket is a cryptographic hash. The simulator signs each ticket using the government authority's ECDSA private key. These signed tickets are returned to the DApp along with the \texttt{citizenSeed}.
+
+% Each signed ticket functions as a government-endorsed authorization token. The citizen uses one ticket per report submission, one per vote, and so on. Once a ticket's nullifier has been recorded on-chain, it cannot be reused.
+
+% \section{Backend Relayer Middleware Implementation}
+% \label{sec:relayer-impl}
+
+% The backend relayer is implemented using the NestJS framework with TypeScript. It is the central middleware component of the system. All citizen-facing interactions with the blockchain and off-chain services are routed through the relayer.
+
+% \subsection{Dual-Layer Cryptographic Verification}
+
+% All incoming report payloads are verified by a dual-layer signature verification engine before any processing begins:
+
+% \begin{enumerate}
+%     \item \textbf{Government Ticket Verification}: The relayer fetches the government authority's ECDSA public key and verifies the ticket signature. If the signature is invalid, the request is rejected immediately. This confirms that the submitting citizen holds a valid government-issued credential.
+%     \item \textbf{Citizen Payload Integrity Verification}: The relayer reconstructs the composite report hash and verifies the citizen's ECDSA signature over it. This confirms that the report content has not been tampered with in transit.
+% \end{enumerate}
+
+% Only after both verifications pass does the relayer enqueue the report for processing.
+
+% \subsection{Asynchronous Processing with BullMQ Flow Queues}
+% \label{subsec:bullmq-impl}
+
+% After verification, the relayer does not process the report synchronously. Instead, it enqueues the report as an asynchronous BullMQ Flow Job in a Redis-backed queue and immediately returns a \texttt{jobId} to the DApp. The DApp uses this \texttt{jobId} to track progress via \ac{SSE}.
+
+% The queue module (\texttt{ReportQueueModule}) is implemented using the \texttt{@nestjs/bullmq} integration. Redis connection parameters (host, port, password) are configured through environment variables. Two queues are registered:
+
+% \begin{itemize}
+%     \item \texttt{report-processing}: The main queue for report flow parent jobs.
+%     \item \texttt{report-step-processing}: The step queue for the three child jobs.
+% \end{itemize}
+
+% The \texttt{ReportFlowProducer} service uses the BullMQ \texttt{FlowProducer} API to enqueue a nested job tree with the following structure:
+
+% % \begin{verbatim}
+% % Parent: Report [<category>] - rpt_<ticketHash>
+% %   └─ Step 3: step3-blockchain-submit (rpt_<ticketHash>-chain)
+% %        └─ Step 2: step2-ipfs-upload (rpt_<ticketHash>-ipfs)
+% %             └─ Step 1: step1-ai-moderation (rpt_<ticketHash>-ai)
+% % \end{verbatim}
+
+% BullMQ executes the tree bottom-up: Step 1 runs first, its result is read by Step 2, Step 2's result is read by Step 3, and finally the parent summary job runs. This dependency chain is enforced by BullMQ natively — a parent job is only moved to the active state after all its children have completed successfully.
+
+% Each child step returns a typed result object. These results are passed to the next step using the \texttt{job.getChildrenValues()} API:
+
+% \begin{itemize}
+%     \item Step 1 returns \texttt{AiStepResult}: \texttt{\{isApproved, blurredMedia\}}.
+%     \item Step 2 returns \texttt{IpfsStepResult}: \texttt{\{cid, ipfsUri\}}.
+%     \item Step 3 returns \texttt{BlockchainStepResult}: \texttt{\{transactionHash, blockNumber\}}.
+% \end{itemize}
+
+% Each step is configured with \texttt{failParentOnFailure: true} and up to three retry attempts using exponential backoff:
+% \begin{equation}
+%     \Delta t(k) = 2000 \times 4^{k-1} \text{ ms}, \quad k \in \{1, 2, 3\}
+% \end{equation}
+% This gives delays of 2\,s, 8\,s, and 32\,s between attempts. Step 1 (AI moderation) uses only one attempt, as an AI rejection is a deterministic content decision and not a transient failure.
+
+% An additional \textbf{Vote Queue} (\texttt{vote-queue}) handles community votes asynchronously. The \texttt{VoteQueueProcessor} receives vote job data (report ID, vote phase, nullifier, decision, pseudonym) and submits the vote transaction to the blockchain with up to three retry attempts.
+
+% \subsection{Real-Time Progress Notification (SSE Gateway)}
+% \label{subsec:sse-impl}
+
+% The \texttt{ReportStatusGateway} controller implements the \ac{SSE} notification layer. It uses an RxJS \texttt{Subject} as a push-based event bus. The processing flow is:
+
+% \begin{enumerate}
+%     \item At each pipeline step, the queue worker emits a \texttt{ReportJobProgress} object through the NestJS \texttt{EventEmitter2} bus.
+%     \item The \texttt{@OnEvent(REPORT\_JOB\_PROGRESS\_EVENT)} handler in \texttt{ReportStatusGateway} receives this event and calls \texttt{progressSubject.next(progress)}.
+%     \item Any DApp client connected to \texttt{GET /report/status/stream?citizenAddress=<address>} receives the event through an RxJS pipeline that filters by \texttt{citizenPubKey}.
+%     \item The DApp renders the received progress step and percentage in a live progress bar.
+% \end{enumerate}
+
+% The structured progress payload (\texttt{ReportJobProgress}) contains:
+
+% \begin{itemize}
+%     \item \texttt{jobId}: The root job identifier (e.g., \texttt{rpt\_a1b2c3d4}).
+%     \item \texttt{citizenPubKey}: The citizen's derived wallet address (used for routing).
+%     \item \texttt{step}: The current pipeline stage (e.g., \texttt{ai\_moderation\_passed}).
+%     \item \texttt{percent}: An integer from 0 to 100 indicating overall progress.
+%     \item \texttt{message}: A human-readable status description (e.g., ``AI moderation passed. Content approved.'').
+%     \item \texttt{data}: Optional structured payload, such as the IPFS CID or blockchain transaction hash.
+% \end{itemize}
+
+% \subsection{Authority Funding Service and Cron Orchestration}
+
+% The relayer also contains two automated background services:
+
+% \begin{enumerate}
+%     \item \textbf{AuthorityFundingService}: This service listens for \texttt{ProposalExecuted} events emitted by \texttt{AuthorityMultiSig.sol} via a WebSocket connection. When an \texttt{AddAuthority} proposal is executed, the service automatically transfers 5.0 ETH from the relayer treasury to the new Authority Worker's wallet. This ensures the worker has sufficient gas to submit blockchain transactions immediately after being granted access.
+%     \item \textbf{CronService}: Two scheduled jobs are run daily:
+%     \begin{itemize}
+%         \item \textit{Balance monitoring}: Every day at 01:00 (Colombo time zone), the service checks the ETH balances of all registered Super Admins and Authority Workers and replenishes any account below 1.0 ETH.
+%         \item \textit{Batch voting finalization}: Every day at midnight, the service calls \texttt{batchFinalizeVotingWindows()} on \texttt{Reporting.sol} for all reports in voting phases ($S_0$, $S_4$, $S_5$) whose \texttt{phaseDeadline} has elapsed. This prevents reports from remaining stuck in pending states.
+%     \end{itemize}
+% \end{enumerate}
+
+% \subsection{BullStudio Monitoring Dashboard}
+
+% A BullStudio monitoring dashboard is integrated into the relayer at the path \texttt{/ops/bullstudio}. It is protected by session-based authentication. The dashboard displays the status of jobs in both the \texttt{report-processing} and \texttt{report-step-processing} queues. It shows waiting, active, completed, and failed job counts, and provides a view of individual job details, logs, and retry history. This tool is used for system monitoring and debugging during testing and deployment.
+
+% \section{Off-Chain IPFS Storage Integration}
+% \label{sec:ipfs-impl}
+
+% The IPFS storage service is implemented as a dedicated NestJS module (\texttt{IpfsModule}). It provides an abstraction layer over the IPFS HTTP API.
+
+% \subsection{Service Architecture}
+
+% The IPFS service consists of two Docker containers:
+% \begin{enumerate}
+%     \item \textbf{IPFS Node}: A standard IPFS daemon (version 0.41.0) that manages the peer-to-peer content store.
+%     \item \textbf{IPFS HTTP Service}: A lightweight NestJS service (exposed on port 4000) that provides a REST API for file upload and retrieval. It communicates with the IPFS node through its RPC API on port 5001.
+% \end{enumerate}
+
+% \subsection{Upload Pipeline with AI Face Blurring}
+
+% The upload pipeline is integrated with the AI moderation step. After AI moderation is approved, the queue worker reads the \texttt{blurredMedia} array from the AI step result. If the AI oracle has detected and blurred any human faces in the submitted images, the blurred versions (returned as base64-encoded data) replace the original image buffers before the IPFS upload begins. This ensures that face data is not permanently stored in IPFS.
+
+% The \texttt{IpfsService.uploadComplaint()} method bundles the report description, category, location, and processed images into a complaint object and uploads it to IPFS. The returned \texttt{CID} and \texttt{ipfsUri} are stored in the step result and passed to the blockchain submission step.
+
+% \subsection{CID Integrity Verification}
+
+% The CID is cryptographically derived from the content of the uploaded file. The blockchain submission step stores this \texttt{ipfsUri} on-chain in the \texttt{Report} struct. At any time, a verifier can retrieve the content from IPFS by its CID and recompute the hash to confirm that the stored data has not been modified.
+
+% \section{AI Content Moderation Service Ensemble}
+% \label{sec:ai-impl}
+
+% The AI moderation service is implemented as a network of four containerized microservices. All four containers are deployed on a dedicated VPS and communicate through an internal Docker network.
+
+% \subsection{Classifier Worker Implementations and Model Hyperparameters}
+% \label{subsec:oracle-hyperparameters}
+
+% Each classifier worker uses pre-trained transformer or sentence-embedding models with tuned decision thresholds. The thresholds are set as environment variables so they can be adjusted without rebuilding the containers.
+
+% \subsubsection*{Safety Classifier Service (Worker 1)}
+
+% The Safety Classifier Service uses two models:
+
+% \begin{enumerate}
+%     \item \textbf{Text Safety — \texttt{unitary/toxic-bert}}: A BERT-based multi-label classifier fine-tuned on the Jigsaw Toxic Comment dataset. It outputs six independent toxicity probability scores. Table~\ref{tab:safety-text-thresholds} shows the per-label decision thresholds used to classify text as unsafe.
+
+%     \begin{table}[h!]
+%     \centering
+%     \caption{Safety Classifier Service: unitary/toxic-bert Decision Thresholds}
+%     \label{tab:safety-text-thresholds}
+%     \begin{tabular}{|l|l|l|}
+%     \hline
+%     \textbf{Label} & \textbf{Threshold} & \textbf{Effect} \\
+%     \hline
+%     \texttt{toxic} & $\geq 0.50$ & Content flagged as unsafe \\
+%     \hline
+%     \texttt{severe\_toxic} & $\geq 0.50$ & Critical violation (override) \\
+%     \hline
+%     \texttt{obscene} & $\geq 0.60$ & Content flagged as unsafe \\
+%     \hline
+%     \texttt{threat} & $\geq 0.40$ & Critical violation (override) \\
+%     \hline
+%     \texttt{insult} & $\geq 0.60$ & Content flagged as unsafe \\
+%     \hline
+%     \texttt{identity\_hate} & $\geq 0.40$ & Critical violation (override) \\
+%     \hline
+%     \end{tabular}
+%     \end{table}
+
+%     Text is truncated to 512 tokens before inference to match the model's maximum input length. A \textit{critical violation} from \texttt{severe\_toxic}, \texttt{threat}, or \texttt{identity\_hate} triggers a direct aggregator-level \texttt{REJECT} override.
+
+%     \item \textbf{Image Safety — \texttt{Falconsai/nsfw\_image\_detection}}: An image classification model that outputs probability scores for the labels \texttt{nsfw}, \texttt{porn}, \texttt{sexy}, and \texttt{hentai}. The maximum score across these labels is taken as the composite NSFW score. An image is classified as unsafe if its NSFW score is $\geq 0.70$.
+
+%     \item \textbf{Face Blurring — OpenCV Haar Cascades}: Safe images are processed for face detection using four OpenCV Haar cascade classifiers: \texttt{haarcascade\_frontalface\_default.xml}, \texttt{haarcascade\_frontalface\_alt.xml}, \texttt{haarcascade\_frontalface\_alt2.xml}, and \texttt{haarcascade\_profileface.xml} (applied twice: on the original and horizontally flipped image for right-profile detection). Face detection parameters are: \texttt{scaleFactor = 1.05}, \texttt{minNeighbors = 3}, \texttt{minSize = (20, 20)} pixels. Overlapping detections are deduplicated using Non-Maximum Suppression (NMS) with an overlap threshold of 0.4. Detected face regions are blurred with a Gaussian kernel sized proportionally to the face bounding box, with a minimum kernel size of $19 \times 19$.
+% \end{enumerate}
+
+% \subsubsection*{Spam and Abuse Classifier Service (Worker 2)}
+
+% The Spam and Abuse Classifier Service combines an NLP model with a rule-based scoring engine:
+
+% \begin{enumerate}
+%     \item \textbf{NLP Model — \texttt{mrm8488/bert-tiny-finetuned-sms-spam-detection}}: A lightweight BERT-tiny model fine-tuned on SMS spam data. It is used as a signal alongside rule-based checks.
+
+%     \item \textbf{Decision Thresholds}: Table~\ref{tab:spam-thresholds} shows the four configurable thresholds used to combine the AI model score and the rule-based score into a final spam decision.
+
+%     \begin{table}[h!]
+%     \centering
+%     \caption{Spam Classifier Service: Hybrid Decision Thresholds}
+%     \label{tab:spam-thresholds}
+%     \begin{tabular}{|l|l|l|}
+%     \hline
+%     \textbf{Parameter} & \textbf{Value} & \textbf{Meaning} \\
+%     \hline
+%     \texttt{AI\_STRONG\_SPAM\_THRESHOLD} & 0.85 & AI score alone is sufficient to reject \\
+%     \hline
+%     \texttt{AI\_SUPPORTING\_SPAM\_THRESHOLD} & 0.65 & AI score supports rejection if rules agree \\
+%     \hline
+%     \texttt{RULE\_REJECT\_THRESHOLD} & 0.60 & Rule score alone is sufficient to reject \\
+%     \hline
+%     \texttt{RULE\_SUPPORT\_THRESHOLD} & 0.25 & Rule score supports rejection if AI agrees \\
+%     \hline
+%     \end{tabular}
+%     \end{table}
+
+%     \item \textbf{Rule-based signals} and their contribution to the spam score are: a text length below 5 words adds 0.35; a matched spam phrase adds 0.80; promotional language adds 0.35; more than one URL adds 0.60; one URL adds 0.25; repeated character patterns add 0.50; excessive symbols add 0.40. Scores are capped at 1.0.
+% \end{enumerate}
+
+% \subsubsection*{Civic Relevance Classifier Service (Worker 3)}
+
+% \begin{enumerate}
+%     \item \textbf{Embedding Model — \texttt{sentence-transformers/all-MiniLM-L6-v2}}: A compact sentence transformer model that maps text to 384-dimensional semantic embedding vectors. Civic reference descriptions for 9 issue categories are pre-embedded at startup and stored in memory.
+
+%     \item \textbf{Decision Thresholds}: Table~\ref{tab:civic-thresholds} shows the two configurable similarity thresholds.
+
+%     \begin{table}[h!]
+%     \centering
+%     \caption{Civic Relevance Classifier Service: Cosine Similarity Thresholds}
+%     \label{tab:civic-thresholds}
+%     \begin{tabular}{|l|l|l|}
+%     \hline
+%     \textbf{Parameter} & \textbf{Value} & \textbf{Meaning} \\
+%     \hline
+%     \texttt{TEXT\_RELEVANCE\_THRESHOLD} & 0.38 & Minimum cosine similarity to a reference civic description \\
+%     \hline
+%     \texttt{CATEGORY\_MATCH\_THRESHOLD} & 0.40 & Minimum similarity for declared category to match text \\
+%     \hline
+%     \end{tabular}
+%     \end{table}
+
+%     The cosine similarity is computed between the report embedding and each reference embedding for the nine civic categories: Road Damage, Waste Management, Streetlight Issue, Drainage/Sewage, Water Supply, Flooding, Public Property Damage, Traffic/Road Safety, and Environmental Issues. A report is accepted if its maximum cosine similarity across all reference descriptions exceeds \texttt{TEXT\_RELEVANCE\_THRESHOLD = 0.38}. The category match threshold applies separately and does not cause rejection; it only adds a warning to the response.
+% \end{enumerate}
+
+% \subsection{Moderation Decision Aggregator}
+% The Moderation Decision Aggregator is the single entry point for the backend relayer. It:
+% \begin{enumerate}
+%     \item Receives the signed moderation request from the relayer. The relayer signs the request with its private key, and the aggregator recovers and verifies the signer address.
+%     \item Validates the request timestamp (to prevent stale requests) and nonce (to prevent replay attacks).
+%     \item Forwards the moderation request to all three classifier workers in parallel.
+%     \item Applies the following decision logic:
+%     \begin{itemize}
+%         \item If the Safety Classifier Service detects a critical violation, the final decision is \texttt{REJECT} regardless of other votes.
+%         \item If the Civic Relevance Classifier Service determines the content is non-civic, the final decision is \texttt{REJECT}.
+%         \item Otherwise, majority voting is applied: if two or more classifier workers return \texttt{ACCEPT}, the final decision is \texttt{ACCEPT}; otherwise it is \texttt{REJECT}.
+%     \end{itemize}
+%     \item Computes a \texttt{report\_hash}, a \texttt{decision\_hash}, and an \texttt{aggregator\_signature} over the final decision. These fields are returned to the relayer in the moderation response.
+% \end{enumerate}
+
+% \section{Web-Based Decentralized Application (DApp)}
+% \label{sec:dapp-impl}
+
+% The decentralized application (DApp) provides a responsive, mobile-first web interface for citizens, municipal authority workers, and Super Admins. Built using Next.js 14, React, Tailwind CSS, and \texttt{ethers.js}, the DApp abstracts blockchain interactions, gas fees, and key management away from end-users.
+
+% \subsection{Authentication Interface}
+
+% The authentication interface enables citizens to login using their municipal GovID credentials (NID and password). Upon authentication against the ZKP GovID Simulator, the DApp stores the signed ticket batch and citizen seed in browser local storage. Figure~\ref{fig:ui-authentication} shows the web and mobile authentication interfaces.
+
+% % \begin{figure}[!htbp]
+% %     \centering
+% %     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+% %     \textit{[UI Screenshot Placeholder: Citizen Authentication & ZKP GovID Login Interface (Web Desktop View & Mobile Responsive View). Shows NID credential input, successful authentication state, and remaining single-use ticket count.]}
+% %     }}
+% %    % \vspace{1.5cm}
+% %     \caption{User Interface: Citizen Authentication and ZKP GovID Login (Web and Mobile Views)}
+% %     \label{fig:ui-authentication}
+% % \end{figure}
+
+% \subsection{Report Submission Interface}
+
+% The report submission form provides an intuitive, mobile-first interface for submitting civic complaints. Citizens select an issue category, type a detailed description, and attach photographic evidence. On submission, the client computes and signs the composite payload hash $\mathcal{H}_{\text{report}}$ before transmitting it to the relayer. Figure~\ref{fig:ui-report-submission} shows the submission interface.
+
+% % \begin{figure}[!htbp]
+% %     \centering
+% %     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+% %     \textit{[UI Screenshot Placeholder: Civic Report Submission Interface (Mobile Layout & Web View). Displays category selector, description input box, camera/file attachment preview, and Submit Report button.]}
+% %     \vspace{1.5cm}}}
+% %     \caption{User Interface: Civic Report Submission Form and Evidence Attachment}
+% %     \label{fig:ui-report-submission}
+% % \end{figure}
+
+% \subsection{Real-Time Submission Progress UI}
+
+% Upon submitting a report, the DApp opens a Server-Sent Events (SSE) stream to \texttt{/report/status/stream?citizenAddress=<address>} and displays an interactive progress bar. Figure~\ref{fig:ui-submission-progress} shows the real-time progress notification interface.
 
 % \begin{figure}[!htbp]
 %     \centering
 %     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-%     \textit{[UI Screenshot Placeholder: Citizen Authentication & ZKP GovID Login Interface (Web Desktop View & Mobile Responsive View). Shows NID credential input, successful authentication state, and remaining single-use ticket count.]}
-%     }}
-%    % \vspace{1.5cm}
-%     \caption{User Interface: Citizen Authentication and ZKP GovID Login (Web and Mobile Views)}
-%     \label{fig:ui-authentication}
-% \end{figure}
-
-\subsection{Report Submission Interface}
-
-The report submission form provides an intuitive, mobile-first interface for submitting civic complaints. Citizens select an issue category, type a detailed description, and attach photographic evidence. On submission, the client computes and signs the composite payload hash $\mathcal{H}_{\text{report}}$ before transmitting it to the relayer. Figure~\ref{fig:ui-report-submission} shows the submission interface.
-
-% \begin{figure}[!htbp]
-%     \centering
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-%     \textit{[UI Screenshot Placeholder: Civic Report Submission Interface (Mobile Layout & Web View). Displays category selector, description input box, camera/file attachment preview, and Submit Report button.]}
+%     \textit{[UI Screenshot Placeholder: Real-Time SSE Submission Progress Bar UI. Shows active pipeline stages: Queued (5\%), AI Moderation (33\%), IPFS Upload (66\%), Blockchain Submission (90\%), and Completed (100\%) with confirmed Transaction Hash.]}
 %     \vspace{1.5cm}}}
-%     \caption{User Interface: Civic Report Submission Form and Evidence Attachment}
-%     \label{fig:ui-report-submission}
+%     \caption{User Interface: Real-Time SSE Report Submission Progress Tracker}
+%     \label{fig:ui-submission-progress}
 % \end{figure}
 
-\subsection{Real-Time Submission Progress UI}
+% \subsection{Community Feed and Validation Interface}
 
-Upon submitting a report, the DApp opens a Server-Sent Events (SSE) stream to \texttt{/report/status/stream?citizenAddress=<address>} and displays an interactive progress bar. Figure~\ref{fig:ui-submission-progress} shows the real-time progress notification interface.
+% The public community feed displays submitted reports as interactive cards retrieved from the blockchain. Cards display report categories, description excerpts, status badges (\texttt{PENDING VALIDATION}, \texttt{OPEN}, \texttt{IN PROGRESS}, \texttt{CLOSED}), live upvote/downvote counts, countdown timers, and IPFS media thumbnails. Figure~\ref{fig:ui-community-feed} shows the community feed and peer-validation UI.
 
-\begin{figure}[!htbp]
-    \centering
-    \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-    \textit{[UI Screenshot Placeholder: Real-Time SSE Submission Progress Bar UI. Shows active pipeline stages: Queued (5\%), AI Moderation (33\%), IPFS Upload (66\%), Blockchain Submission (90\%), and Completed (100\%) with confirmed Transaction Hash.]}
-    \vspace{1.5cm}}}
-    \caption{User Interface: Real-Time SSE Report Submission Progress Tracker}
-    \label{fig:ui-submission-progress}
-\end{figure}
+% % \begin{figure}[!htbp]
+% %     \centering
+% %     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+% %     \textit{[UI Screenshot Placeholder: Community Feed and Peer-Validation Voting Interface (Desktop Grid View & Mobile Card View). Displays report filter tabs, status badges, countdown timer, upvote/downvote action buttons, and IPFS evidence modal.]}
+% %     \vspace{1.5cm}}}
+% %     \caption{User Interface: Public Community Feed and Peer-Validation Voting}
+% %     \label{fig:ui-community-feed}
+% % \end{figure}
 
-\subsection{Community Feed and Validation Interface}
+% \subsection{Authority Dashboard}
 
-The public community feed displays submitted reports as interactive cards retrieved from the blockchain. Cards display report categories, description excerpts, status badges (\texttt{PENDING VALIDATION}, \texttt{OPEN}, \texttt{IN PROGRESS}, \texttt{CLOSED}), live upvote/downvote counts, countdown timers, and IPFS media thumbnails. Figure~\ref{fig:ui-community-feed} shows the community feed and peer-validation UI.
+% Authenticated municipal staff access an Authority Dashboard that lists actionable reports in \texttt{Open} and \texttt{Reopened} states. Officers can claim issues (\texttt{startWork}), post progress updates (\texttt{addAuthorityUpdate}), attach completion photos and mark issues solved (\texttt{markAsSolved}), or reject invalid reports (\texttt{rejectIssue}). Figure~\ref{fig:ui-authority-dashboard} shows the Authority Dashboard interface.
 
 % \begin{figure}[!htbp]
 %     \centering
 %     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-%     \textit{[UI Screenshot Placeholder: Community Feed and Peer-Validation Voting Interface (Desktop Grid View & Mobile Card View). Displays report filter tabs, status badges, countdown timer, upvote/downvote action buttons, and IPFS evidence modal.]}
+%     \textit{[UI Screenshot Placeholder: Municipal Authority Dashboard Interface. Shows assigned task table, claim issue modal, mid-repair update log form, completion photo upload, and mark as solved button.]}
 %     \vspace{1.5cm}}}
-%     \caption{User Interface: Public Community Feed and Peer-Validation Voting}
-%     \label{fig:ui-community-feed}
+%     \caption{User Interface: Municipal Authority Resolution Dashboard}
+%     \label{fig:ui-authority-dashboard}
 % \end{figure}
 
-\subsection{Authority Dashboard}
+% \subsection{Public Opinion Polling Interface}
 
-Authenticated municipal staff access an Authority Dashboard that lists actionable reports in \texttt{Open} and \texttt{Reopened} states. Officers can claim issues (\texttt{startWork}), post progress updates (\texttt{addAuthorityUpdate}), attach completion photos and mark issues solved (\texttt{markAsSolved}), or reject invalid reports (\texttt{rejectIssue}). Figure~\ref{fig:ui-authority-dashboard} shows the Authority Dashboard interface.
+% Citizens participate in anonymous municipal polls, while authorized officials create new polls through the Opinion Polling UI. Figure~\ref{fig:ui-opinion-polling} displays the public opinion polling interface.
 
-\begin{figure}[!htbp]
-    \centering
-    \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-    \textit{[UI Screenshot Placeholder: Municipal Authority Dashboard Interface. Shows assigned task table, claim issue modal, mid-repair update log form, completion photo upload, and mark as solved button.]}
-    \vspace{1.5cm}}}
-    \caption{User Interface: Municipal Authority Resolution Dashboard}
-    \label{fig:ui-authority-dashboard}
-\end{figure}
+% % \begin{figure}[!htbp]
+% %     \centering
+% %     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
+% %     \textit{[UI Screenshot Placeholder: Anonymous Public Opinion Polling Interface. Shows official poll creation form for municipal authorities, citizen voting options (True/False & MultiChoice), live vote tallies, and poll expiry countdown.]}
+% %     \vspace{1.5cm}}}
+% %     \caption{User Interface: Anonymous Public Opinion Polling and Consultation Interface}
+% %     \label{fig:ui-opinion-polling}
+% % \end{figure}
 
-\subsection{Public Opinion Polling Interface}
+% \section{Deployment Infrastructure}
+% \label{sec:deployment-impl}
 
-Citizens participate in anonymous municipal polls, while authorized officials create new polls through the Opinion Polling UI. Figure~\ref{fig:ui-opinion-polling} displays the public opinion polling interface.
+% The complete system is deployed across two VPS instances to separate the core operational services from the resource-intensive AI and storage services.
+
+% \subsection{Server Allocation}
+
+% \textbf{Server 1 (Core Operations)} hosts:
+% \begin{itemize}
+%     \item Private PoA blockchain (3 validator nodes + 1 RPC node, via Docker Compose).
+%     \item ZKP GovID Simulator (Node.js/Express, Docker container).
+%     \item Backend Relayer with Redis (NestJS, Docker container).
+%     \item Web DApp (Next.js, Docker container).
+% \end{itemize}
+
+% \textbf{Server 2 (AI Content Moderation and Storage)} hosts:
+% \begin{itemize}
+%     \item AI Moderation Decision Aggregator (Python/FastAPI, Docker container).
+%     \item Safety Classifier worker (Docker container).
+%     \item Spam and Abuse Classifier worker (Docker container).
+%     \item Civic Relevance Classifier worker (Docker container).
+%     \item IPFS Node and IPFS HTTP Service (Docker containers).
+% \end{itemize}
+
+% \subsection{CI/CD Pipeline}
+
+% Continuous integration and deployment are managed using Dokploy, a self-hosted Platform-as-a-Service tool installed on both servers. GitHub webhook triggers are configured on the \texttt{develop} branch of the project repository. When a commit is pushed to the branch, Dokploy automatically pulls the latest code, rebuilds the affected Docker images, and redeploys the updated containers. This ensures consistent and reproducible deployments across all environments.
 
 % \begin{figure}[!htbp]
 %     \centering
 %     \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-%     \textit{[UI Screenshot Placeholder: Anonymous Public Opinion Polling Interface. Shows official poll creation form for municipal authorities, citizen voting options (True/False & MultiChoice), live vote tallies, and poll expiry countdown.]}
+%     \textit{[Image suggestion IMG-06: 2-Server VPS Deployment Topology Diagram. Show Server 1 hosting blockchain nodes, Redis, relayer, DApp, ZKP simulator. Show Server 2 hosting 4 AI moderation containers and 2 IPFS containers. Indicate Dokploy CI/CD on both servers and GitHub webhook trigger.]}
 %     \vspace{1.5cm}}}
-%     \caption{User Interface: Anonymous Public Opinion Polling and Consultation Interface}
-%     \label{fig:ui-opinion-polling}
+%     \caption{Two-Server VPS Deployment Topology}
+%     \label{fig:deployment-topology}
 % \end{figure}
-
-\section{Deployment Infrastructure}
-\label{sec:deployment-impl}
-
-The complete system is deployed across two VPS instances to separate the core operational services from the resource-intensive AI and storage services.
-
-\subsection{Server Allocation}
-
-\textbf{Server 1 (Core Operations)} hosts:
-\begin{itemize}
-    \item Private PoA blockchain (3 validator nodes + 1 RPC node, via Docker Compose).
-    \item ZKP GovID Simulator (Node.js/Express, Docker container).
-    \item Backend Relayer with Redis (NestJS, Docker container).
-    \item Web DApp (Next.js, Docker container).
-\end{itemize}
-
-\textbf{Server 2 (AI Content Moderation and Storage)} hosts:
-\begin{itemize}
-    \item AI Moderation Decision Aggregator (Python/FastAPI, Docker container).
-    \item Safety Classifier worker (Docker container).
-    \item Spam and Abuse Classifier worker (Docker container).
-    \item Civic Relevance Classifier worker (Docker container).
-    \item IPFS Node and IPFS HTTP Service (Docker containers).
-\end{itemize}
-
-\subsection{CI/CD Pipeline}
-
-Continuous integration and deployment are managed using Dokploy, a self-hosted Platform-as-a-Service tool installed on both servers. GitHub webhook triggers are configured on the \texttt{develop} branch of the project repository. When a commit is pushed to the branch, Dokploy automatically pulls the latest code, rebuilds the affected Docker images, and redeploys the updated containers. This ensures consistent and reproducible deployments across all environments.
-
-\begin{figure}[!htbp]
-    \centering
-    \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}
-    \textit{[Image suggestion IMG-06: 2-Server VPS Deployment Topology Diagram. Show Server 1 hosting blockchain nodes, Redis, relayer, DApp, ZKP simulator. Show Server 2 hosting 4 AI moderation containers and 2 IPFS containers. Indicate Dokploy CI/CD on both servers and GitHub webhook trigger.]}
-    \vspace{1.5cm}}}
-    \caption{Two-Server VPS Deployment Topology}
-    \label{fig:deployment-topology}
-\end{figure}
