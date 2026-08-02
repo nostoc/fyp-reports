@@ -1,0 +1,20 @@
+%% Figure 5.1: Evaluation structure used for the prototype.
+flowchart TB
+    Evaluation["Prototype evaluation"]
+    Functional["Functional testing"]
+    Security["Security testing"]
+    Integration["Integration testing"]
+    Performance["Performance evaluation"]
+    Limits["Validity assessment"]
+
+    Evaluation --> Functional
+    Evaluation --> Security
+    Evaluation --> Integration
+    Evaluation --> Performance
+    Evaluation --> Limits
+
+    Functional --> Contracts["Four smart contracts"]
+    Security --> Controls["Signatures, nullifiers, and access"]
+    Integration --> Services["Relayer, AI, IPFS, and blockchain"]
+    Performance --> Measures["Timing, throughput, and gas"]
+    Limits --> Evidence["Samples, artifacts, and test coverage"]

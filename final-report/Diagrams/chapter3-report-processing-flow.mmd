@@ -1,0 +1,19 @@
+%% Figure 3.2: Processing flow used for a standard citizen report.
+sequenceDiagram
+    participant Citizen
+    participant Identity as Identity simulator
+    participant Relayer
+    participant AI as AI aggregator
+    participant IPFS
+    participant Chain as Reporting contract
+
+    Citizen->>Identity: Request signed one-use tickets
+    Identity-->>Citizen: Return ticket batch and citizen seed
+    Citizen->>Relayer: Submit signed report and media
+    Relayer->>Relayer: Verify ticket, hashes, and signature
+    Relayer->>AI: Request moderation
+    AI-->>Relayer: Return decision and processed media
+    Relayer->>IPFS: Store accepted complaint envelope
+    IPFS-->>Relayer: Return CID
+    Relayer->>Chain: Submit report record
+    Relayer-->>Citizen: Stream processing status
