@@ -1,4 +1,5 @@
-%% Figure 3.1: Overall layered architecture of the local-governance reporting prototype.
+%% Figure: High-level interaction between the main system components.
+%% Render to: Images/Chapter 3/component-interaction.png
 flowchart LR
     Users["Citizens and authorities"]
     Clients["Web dApp and identity portal"]
@@ -6,12 +7,12 @@ flowchart LR
     Relayer["Backend relayer and queue"]
     AI["AI moderation services"]
     IPFS["IPFS storage service"]
-    Chain["Private PoA blockchain"]
+    Chain["Private PoA blockchain\n(reporting, emergency, governance, polling contracts)"]
 
     Users --> Clients
     Clients --> Identity
-    Clients --> Relayer
+    Clients -- "Citizen writes" --> Relayer
     Relayer --> AI
     Relayer --> IPFS
     Relayer --> Chain
-    Clients -->|"Public reads"| Chain
+    Clients -- "Direct reads and authority writes" --> Chain

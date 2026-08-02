@@ -1,0 +1,12 @@
+%% Figure: AI content moderation and fail-closed aggregation.
+%% Render to: Images/Chapter 3/ai-moderation-flow.png
+flowchart TD
+    A["Relayer sends signed moderation request"] --> B["Moderation decision aggregator"]
+    B --> C["Safety classifier"]
+    B --> D["Spam classifier"]
+    B --> E["Civic relevance classifier"]
+    C --> F{"Aggregation rule"}
+    D --> F
+    E --> F
+    F -- "Any critical violation, or a classifier is unavailable" --> G["Reject content"]
+    F -- "At least two accept votes and no reject vote" --> H["Accept content"]

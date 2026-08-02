@@ -1,0 +1,22 @@
+%% Figure: Two-tier relayer test strategy — fast mocked suite and live integration suite.
+%% Render to: Images/Chapter 5/relayer-test-suites.png
+flowchart TB
+    Code["backend-relayer/test/"]
+
+    subgraph SuiteA["Suite A — app.e2e-spec.ts (mocked services)"]
+        A1["Real Ethers.js signing and hashing"]
+        A2["Mocked AI oracle, IPFS, and blockchain services"]
+        A3["Report submission, vote submission, and auth guard checks"]
+    end
+
+    subgraph SuiteB["Suite B — app.live.e2e-spec.ts (live services)"]
+        B1["Live Geth PoA network"]
+        B2["Live AI oracle aggregator"]
+        B3["Live IPFS node and deployed relayer"]
+        B4["Full pipeline: AI to IPFS to blockchain"]
+    end
+
+    Code --> SuiteA
+    Code --> SuiteB
+    SuiteA -- "Runs on every change, no external dependency" --> Fast["Fast feedback on request-handling logic"]
+    SuiteB -- "Runs against the deployed environment" --> Confidence["Confidence that the deployed pipeline behaves as designed"]

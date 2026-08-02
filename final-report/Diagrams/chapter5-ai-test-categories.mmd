@@ -1,0 +1,22 @@
+%% Figure: Categories covered by the AI oracle test suite.
+%% Render to: Images/Chapter 5/ai-test-categories.png
+flowchart TB
+    Suite["ai-oracle-service/tests/"]
+
+    subgraph Security["test_api_security.py"]
+        S1["Valid signed request accepted"]
+        S2["API key enforcement"]
+        S3["Relayer signature enforcement"]
+        S4["Nonce replay protection"]
+        S5["File size and MIME type limits"]
+    end
+
+    subgraph Classification["test_classification.py"]
+        C1["Text classification accuracy\n(civic, hate, spam, off-topic, emergency)"]
+        C2["Media moderation\n(safe, corrupted, NSFW, face blurring)"]
+        C3["Poll moderation via aggregator"]
+        C4["Response auditability\n(decision and explanation fields)"]
+    end
+
+    Suite --> Security
+    Suite --> Classification

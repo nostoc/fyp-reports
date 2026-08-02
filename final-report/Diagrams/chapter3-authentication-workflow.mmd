@@ -1,0 +1,10 @@
+%% Figure: Citizen authentication, ticket issuance, and pseudonym derivation.
+%% Render to: Images/Chapter 3/authentication-workflow.png
+flowchart TD
+    A["Citizen enters government ID and password in the DApp"] --> B["Identity simulator checks the credentials against the simulated registry"]
+    B --> C{"Credentials valid?"}
+    C -- No --> D["Authentication rejected"]
+    C -- Yes --> E["Simulator issues a batch of signed one-use ticket IDs and a citizen seed"]
+    E --> F["DApp derives a citizen wallet from the citizen seed"]
+    F --> G["Relayer derives an on-chain pseudonym from the wallet address and a domain salt"]
+    G --> H["Citizen can submit reports and votes using the pseudonym and remaining tickets"]

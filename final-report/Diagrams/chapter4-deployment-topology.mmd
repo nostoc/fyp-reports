@@ -1,0 +1,27 @@
+%% Figure: Deployment topology of the containerized services.
+%% Render to: Images/Chapter 4/deployment-topology.png
+flowchart TB
+    subgraph HostA["Host 1: blockchain and orchestration"]
+        G1["Geth nodes 1-4"]
+        Rel["Backend relayer"]
+        Redis["Redis"]
+        Idem["Identity simulator"]
+        Web["Next.js dApp and identity portal"]
+    end
+
+    subgraph HostB["Host 2: AI moderation and storage"]
+        Agg["AI moderation aggregator"]
+        Saf["Safety classifier"]
+        Spam["Spam classifier"]
+        Civic["Civic relevance classifier"]
+        Ipfs["IPFS node and HTTP service"]
+    end
+
+    Rel -- "Internal service network" --> Agg
+    Rel -- "Internal service network" --> Ipfs
+    Agg --> Saf
+    Agg --> Spam
+    Agg --> Civic
+    Web --> Rel
+    Web -- "Direct reads" --> G1
+    Rel --> Redis

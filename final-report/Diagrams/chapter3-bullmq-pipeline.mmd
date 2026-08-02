@@ -1,0 +1,10 @@
+%% Figure: BullMQ queue pipeline and SSE progress streaming.
+%% Render to: Images/Chapter 3/bullmq-pipeline.png
+flowchart LR
+    A["Report queued as a BullMQ flow job"] --> B["Step 1: AI moderation"]
+    B --> C["Step 2: IPFS upload"]
+    C --> D["Step 3: Blockchain submission"]
+    D --> E["Completed"]
+    B -. "Progress event" .-> S["SSE stream filtered by citizen wallet"]
+    C -. "Progress event" .-> S
+    D -. "Progress event" .-> S

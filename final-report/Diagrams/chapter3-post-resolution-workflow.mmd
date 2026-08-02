@@ -1,0 +1,15 @@
+%% Figure: Post-resolution verification and rejection-review workflow.
+%% Render to: Images/Chapter 3/post-resolution-workflow.png
+flowchart TD
+    A["Authority submits a solution or a rejection"] --> B{"Which action?"}
+    B -- Solution --> C["Report enters PendingVerification"]
+    B -- Rejection --> D["Report enters PendingRejectionReview"]
+    C --> E["Citizens inspect the fix and cast a verification vote"]
+    D --> F["Citizens review the rejection and cast an appeal vote"]
+    E --> G{"Community accepts the solution?"}
+    G -- Yes --> H["Closed"]
+    G -- No --> I["Reopened"]
+    F --> J{"Community upholds the rejection?"}
+    J -- Yes --> H
+    J -- No --> I
+    I --> K["Authority restarts work"]
