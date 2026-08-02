@@ -15,8 +15,7 @@
 \usepackage{longtable}
 \usepackage{acro}
 \usepackage{comment} 
-% \usepackage{array}
-
+\usepackage{array}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Include page set-up options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,7 +34,7 @@
 %% ____Nicely format and linebreak URLs in the bibliography (and elsewhere)____%%
 \usepackage{url} 
 \def\UrlBreaks{\do/} 
-\usepackage{breakurl}
+%\usepackage{breakurl}
 
 \usepackage{pgfgantt}  % For creating the chart
 \usepackage{xcolor}    % For custom colors
@@ -43,6 +42,9 @@
 \usepackage{geometry}  % To ensure margins fit large figures
 \usepackage{graphicx}
 \usepackage[export]{adjustbox}
+\usepackage{microtype} % For micro-typography and reducing overfull hboxes
+\emergencystretch=3em
+\tolerance=2000
 
 % Remove paragraph indentation to avoid leading tabs
 % \setlength{\parindent}{0pt}
@@ -177,6 +179,57 @@
   long = Remote Procedure Call
 }
 
+\DeclareAcronym{SSE}{
+  short = SSE,
+  long = Server-Sent Events
+}
+
+\DeclareAcronym{CEI}{
+  short = CEI,
+  long = Checks-Effects-Interactions
+}
+
+\DeclareAcronym{BFT}{
+  short = BFT,
+  long = Byzantine Fault Tolerant
+}
+
+\DeclareAcronym{VLM}{
+  short = VLM,
+  long = Vision-Language Model
+}
+
+\DeclareAcronym{DON}{
+  short = DON,
+  long = Decentralized Oracle Network
+}
+
+\DeclareAcronym{SUS}{
+  short = SUS,
+  long = System Usability Scale
+}
+
+\DeclareAcronym{REST}{
+  short = REST,
+  long = Representational State Transfer
+}
+
+\DeclareAcronym{HTTPS}{
+  short = HTTPS,
+  long = Hypertext Transfer Protocol Secure
+}
+
+\DeclareAcronym{JSON}{
+  short = JSON,
+  long = JavaScript Object Notation
+}
+
+\DeclareAcronym{ECDSA}{
+  short = ECDSA,
+  long = Elliptic Curve Digital Signature Algorithm
+}
+
+
 % --- COLOR DEFINITIONS (Global) ---
 \definecolor{barblue}{HTML}{A4C2F4}
 \definecolor{labelgray}{HTML}{F3F3F3}
@@ -239,7 +292,7 @@
 \input{Chapters/ch_4}
 \input{Chapters/ch_5}
 \input{Chapters/ch_6}
-\input{Chapters/ch_7.tex}
+\input{Chapters/ch_7}
 
 
 
