@@ -4,12 +4,12 @@
 \section{Introduction}
 \label{sec:implementation-introduction}
 
-This chapter explains how the design presented in Chapter~\ref{ch:architecture} is implemented. The blockchain, smart contracts, identity simulator, relayer, AI services, IPFS service, and web clients are described in the order a citizen's report would pass through them. Only implemented behaviour is presented, and each implementation choice is explained alongside the reason it was made, so that the chapter shows not just what was built but why it was built that way.
+This chapter explains how the design presented in Chapter~\ref{ch:architecture} is implemented. The blockchain, smart contracts, identity simulator, relayer, AI services, IPFS service, and web clients are described in the order a citizen's report would pass through them.
 
 \section{Technology Choices}
 \label{sec:technology-choices}
 
-The main technologies are listed in Table~\ref{tab:technology-choices}, together with the reason each one was selected. In every case, the guiding principle is the same: prefer a mature, well-documented technology that directly matches what a given component needs to do, rather than introducing a new tool for its own sake.
+The main technologies are listed in Table~\ref{tab:technology-choices}, together with the reason each one was selected. 
 
 \begin{table}[!htbp]
     \centering
@@ -42,9 +42,9 @@ The main technologies are listed in Table~\ref{tab:technology-choices}, together
 \section{Private PoA Implementation}
 \label{sec:poa-implementation}
 
-The private blockchain is implemented with Geth version 1.13.15 and Clique Proof-of-Authority consensus. Pinning a specific Geth version keeps the genesis format and consensus behaviour consistent across every developer machine and deployment host, avoiding version-dependent inconsistencies. The genesis configuration sets chain ID 1337 and a block period of five seconds, and three sealer addresses are placed in the Clique \texttt{extraData} field so that only those three accounts are recognised as authorized block producers from the very first block.
+The private blockchain is implemented with Geth version 1.13.15 and Clique Proof-of-Authority consensus. Pinning a specific Geth version keeps the genesis format and consensus behaviour consistent across every developer machine and deployment host, avoiding version-dependent inconsistencies. The genesis configuration sets chain ID 1337 and a block period of five seconds. Three sealer addresses are placed in the Clique extraData field so that only those three accounts are recognised as authorized block producers from the very first block.
 
-Four Geth nodes are configured, as shown in Figure~\ref{fig:poa-node-configuration}. Nodes 1, 2, and 3 run with block sealing enabled and use separate validator accounts, matching the three sealer addresses fixed in the genesis file. Node 4 does not run with block sealing enabled; instead, it exposes the HTTP JSON-RPC endpoint on port 8545 and is used by application services. Keeping sealing and RPC serving on different nodes means that request traffic from the dApp and the relayer is handled entirely by Node 4, so it cannot add load to, or interfere with, the three nodes that are actually reaching consensus. All four nodes share network ID 1337 and fixed peer addresses, so the RPC node stays synchronized with the sealing validators without needing to participate in sealing itself.
+Four Geth nodes are configured, as shown in Figure~\ref{fig:poa-node-configuration}. Nodes 1, 2, and 3 run with block sealing enabled and use separate validator accounts, matching the three sealer addresses fixed in the genesis file. Node 4 does not run with block sealing enabled. Instead, it exposes the HTTP JSON-RPC endpoint on port 8545 and is used by application services. Keeping sealing and RPC serving on different nodes ensures that request traffic from the dApp and the relayer is handled entirely by Node 4. Therefore, it cannot add load to, or interfere with the three nodes that are actually reaching consensus. All four nodes share network ID 1337 and fixed peer addresses, so the RPC node stays synchronized with the sealing validators without needing to participate in sealing itself.
 
 \begin{figure}[!htb]
     \centering
@@ -53,12 +53,37 @@ Four Geth nodes are configured, as shown in Figure~\ref{fig:poa-node-configurati
     \label{fig:poa-node-configuration}
 \end{figure}
 
-The network is private and permissioned, which was chosen because Clique gives predictable confirmation time for a citizen-facing reporting workload, and because a small, known validator set is straightforward to operate and reason about during a prototype phase.
+The network is private and permissioned, which was chosen because Clique gives predictable confirmation time for a citizen-facing reporting workload, and a small known validator set is enough during a prototype phase.
+
+
+\section{Citizen Identity Simulator}
+\label{sec:identity-simulator-implementation}
+
+The identity service is implemented with Node.js, Express, ethers.js, and a simulated citizen database. It matches the JavaScript-based stack used elsewhere in the project so the same signing and hashing utilities can be reused. A government ID and password are checked as shown in the Figure~\ref{fig:citizen-login} against an active simulated record. After successful checking, a configurable batch of ticket IDs is created as shown in Figure~\ref{fig:citizen-seed-ticket-batch}. The default batch size is ten, which lets a citizen submit several reports or votes before needing to re-authenticate.
+
+For each ticket, a \ac{UUID} is generated and hashed with ethers.id. The resulting 32-byte ticket ID is signed by the configured government wallet. The signed ticket and its issue record are stored by the simulator, and a previously assigned citizen seed is also returned. Because tickets consumed downstream solely as opaque signed nullifiers, the relayer and contracts remain independent of how a ticket was issued. Therefore, the identity layer can be strengthened over time without altering how the rest of the system verifies and consumes a ticket.
+
+The dApp derives a citizen private key by hashing the citizen seed together with a configured wallet salt, and an Ethereum wallet is created from the result. This process gives the same wallet for the same seed and salt, which lets a citizen return to the same pseudonymous identity across sessions without the system having to store a private key anywhere.
+
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.7\textwidth,keepaspectratio]{Images/Chapter 4/citizen-login.png}
+    \caption{Citizen login interface with government ID and password}
+    \label{fig:citizen-login}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.7\textwidth,keepaspectratio]{Images/Chapter 4/citizen-seed-ticket-batch.png}
+    \caption{Citizen seed and ticket batch generation}
+    \label{fig:citizen-seed-ticket-batch}
+\end{figure}
 
 \section{Smart Contract Implementation}
 \label{sec:contract-implementation}
 
-Four contracts are deployed.
+Four smart contracts are implemnted and deployed.
 
 \begin{enumerate}
     \item Reporting
@@ -67,7 +92,7 @@ Four contracts are deployed.
     \item OpinionPolling
 \end{enumerate}
 
-The source files use Solidity pragma \texttt{\string^0.8.20}. The current Hardhat configuration compiles with Solidity 0.8.28, the London EVM target, optimization, and the intermediate-representation pipeline, which together keep deployed bytecode small and gas usage predictable. Figure~\ref{fig:contract-relationships} shows how the four contracts call and govern one another.
+The smart contracts use Solidity pragma \string^0.8.20. Figure~\ref{fig:contract-relationships} shows how the four contracts call and govern one another.
 
 \begin{figure}[!htb]
     \centering
@@ -79,9 +104,7 @@ The source files use Solidity pragma \texttt{\string^0.8.20}. The current Hardha
 \subsection{Reporting Contract}
 \label{subsec:reporting-contract}
 
-The Reporting contract stores standard civic reports. Each report includes an ID, IPFS CID, report hash, submission nullifier, citizen pseudonym, relayer address, status, timestamps, phase deadline, assigned authority, vote counters, latest authority comment, and latest authority image CID. A separate append-only mapping stores the full authority action history, which keeps a permanent audit trail of every action even though the main report record only needs to expose the latest one.
-
-The following eight statuses are implemented:
+The Reporting contract stores standard civic reports. Each report includes an ID, IPFS CID, report hash, submission nullifier, citizen pseudonym, relayer address, status, timestamps, phase deadline, assigned authority, vote counters, latest authority comment, and latest authority media evidence CID. A separate append-only mapping stores the full authority action history, which keeps a permanent audit trail of every action even though the main report record only needs to expose the latest one. The following eight statuses are implemented:
 
 \begin{quote}
     \begin{enumerate}
@@ -97,48 +120,40 @@ The following eight statuses are implemented:
 
 \end{quote}
 
-Standard submissions are created as \texttt{PendingValidation}. The default voting window is six hours. Four voting methods are available: simple majority, two-thirds supermajority, minimum threshold, and a hybrid of two methods. The simple-majority method is selected by default because it keeps everyday validation responsive, while the other methods remain available through governance for deployments that need stronger confidence before a decision.
+Standard submissions are created as PendingValidation. The default voting window is six hours. Four voting methods are available namely simple majority, two-thirds supermajority, minimum threshold, and a hybrid of two methods. The simple-majority method is selected by default because it keeps everyday validation responsive. The other methods remain available through governance for deployments that need stronger confidence before a decision.
 
-Mappings are maintained for used submission nullifiers and for used vote nullifiers in validation, verification, and rejection-review phases. Citizen pseudonym mappings also prevent one pseudonym from voting twice in the same phase, which is necessary because a determined citizen could otherwise acquire more than one ticket and attempt to vote twice; checking the pseudonym closes this gap even though the ticket nullifier alone would not. Validation revotes are limited to quorum-failure cases and are capped at three cycles, so a report that fails to attract enough participation can be given another chance without allowing indefinite repeated attempts.
+Mappings are maintained for used submission nullifiers and for used vote nullifiers in validation, verification, and rejection-review phases. Citizen pseudonym mappings also prevent one pseudonym from voting twice in the same phase, which is necessary because a determined citizen could acquire more than one ticket and attempt to vote twice. Checking the pseudonym closes this gap even though the ticket nullifier alone would not. Validation revotes are limited to quorum-failure cases and are capped at three cycles, so a report that fails to attract enough participation can be given another chance without allowing indefinite repeated attempts.
 
-Authorized relayers submit reports and votes, and authorized authorities start work, add updates, mark reports as solved, and reject reports. Status checks are made before each change so that a transaction can only move a report through the transitions defined in Chapter~\ref{ch:architecture}, and OpenZeppelin's ownership and reentrancy-guard modifiers are applied to protect the functions that change contract state.
+Authorized relayers submit reports and votes, and authorized authorities start work, add updates, mark reports as solved, and reject reports. Status checks are made before each change so that a transaction can only move a report through the transitions defined in Section~\ref{sec:report-lifecycle}. OpenZeppelin's ownership and reentrancy-guard modifiers are applied to protect the functions that change contract state.
 
 \subsection{EmergencyReporting Contract}
 \label{subsec:emergency-contract}
 
-The EmergencyReporting contract stores urgent reports separately, keeping its logic focused on the fast-track workflow rather than sharing the larger Reporting contract's community-validation machinery. A valid emergency submission is created directly as \texttt{Open}; community validation is not performed first. The four emergency statuses are \texttt{Open}, \texttt{InProgress}, \texttt{Resolved}, and \texttt{Reclassified}.
+The EmergencyReporting contract stores urgent reports separately. This keeps the logic focused on the fast-track workflow rather than sharing the Reporting contract's community-validation mechansim. A valid emergency submission is created directly as Open, community validation is not performed first. The four emergency statuses are Open, InProgress, Resolved, and Reclassified.
 
-An emergency can be resolved from \texttt{Open} or \texttt{InProgress}, since a fast-moving emergency may already be resolved by the time an authority formally starts work on it. A false emergency can be reclassified. When reclassification is recorded, the citizen pseudonym is blocked from new emergency submissions for 30 days:
+An emergency can be resolved from Open or InProgress, since an emergency may already be resolved by the time an authority formally starts work on it. A false emergency can be reclassified. When reclassification is recorded, the citizen pseudonym is blocked from new emergency submissions for 30 days, which is implemented by computing the unlock time according to Equation~\ref{eq:emergency-penalty}.
 
 \begin{equation}
     T_{\mathrm{unlock}} = T_{\mathrm{block}} + 30 \times 24 \times 60 \times 60,
     \label{eq:emergency-penalty}
 \end{equation}
 
-where \(T_{\mathrm{unlock}}\) is the unlock time and \(T_{\mathrm{block}}\) is the current block timestamp in seconds. Computing the unlock time from the block timestamp, rather than from an off-chain clock, keeps the penalty period verifiable directly from on-chain data.
+where \(T_{\mathrm{unlock}}\) is the unlock time and \(T_{\mathrm{block}}\) is the current block timestamp in seconds. Computing the unlock time from the block timestamp, rather than from an off-chain clock keeps the penalty period verifiable directly from on-chain data.
 
 \subsection{AuthorityMultiSig Contract}
 \label{subsec:multisig-contract}
 
 The AuthorityMultiSig contract manages Super Admins, authority workers, profiles, and voting configuration. A proposal is created for adding or removing a Super Admin, adding or removing an authority worker, or changing the standard-report voting method. The proposer automatically gives the first approval, which simply counts their own submission as a vote rather than requiring a separate confirmation step.
 
-The required approval count is recalculated from the current Super Admin count by Equation~\ref{eq:governance-quorum}. A proposal is executed when its yes-vote count reaches this strict majority. Authority changes are sent to the Reporting contract and, when configured, to the EmergencyReporting contract, so that a worker's permissions stay consistent across both reporting channels. The Reporting contract is owned by the multisig contract after deployment, so governed calls can change its protected configuration without any single account holding unilateral owner rights.
+The required approval count is recalculated from the current Super Admin count by Equation~\ref{eq:governance-quorum}. A proposal is executed when its yes-vote count reaches this strict majority. Authority changes are sent to the Reporting contract and, when configured, to the EmergencyReporting contract, so that a worker's permissions stay consistent across both reporting channels. The Reporting contract is owned by the multisig contract after deployment. So governed calls can change its protected configuration without any single account holding unilateral owner rights.
 
 \subsection{OpinionPolling Contract}
 \label{subsec:polling-contract}
 
-The OpinionPolling contract stores a poll ID, creator, IPFS metadata CID, deadline, poll type, and active flag. True/false and multi-choice polls are supported. Poll creation is limited to an address that is authorized by the Reporting contract, which reuses the existing authority roster instead of maintaining a second, separate permission list.
+The OpinionPolling contract stores a poll ID, creator, IPFS metadata CID, deadline, poll type, and active flag. True/false and multi-choice polls are supported. Poll creation is limited to an address that is authorized by the Reporting contract, which reuses the existing authority records instead of maintaining a second, separate permission list.
 
 Vote counts are stored by poll ID and option index. A mapping from poll ID and nullifier to a Boolean value prevents the same nullifier from being used twice in one poll, keeping the tallying logic simple and directly auditable from on-chain events.
 
-\section{Citizen Identity Simulator}
-\label{sec:identity-simulator-implementation}
-
-The identity service is implemented with Node.js, Express, ethers.js, and a simulated citizen database, matching the JavaScript-based stack used elsewhere in the project so the same signing and hashing utilities can be reused. A government ID and password are checked against an active simulated record. After successful checking, a configurable batch of ticket IDs is created; the default batch size is ten, which lets a citizen submit several reports or votes before needing to re-authenticate.
-
-For each ticket, a UUID is generated and hashed with \texttt{ethers.id}. The resulting 32-byte ticket ID is signed by the configured government wallet. The signed ticket and its issue record are stored by the simulator, and a previously assigned citizen seed is also returned. Because tickets are only ever consumed downstream as opaque signed nullifiers, the relayer and contracts do not depend on how a ticket was issued, so this identity layer can be strengthened over time without changing how the rest of the system verifies and consumes a ticket.
-
-The dApp derives a citizen private key by hashing the citizen seed together with a configured wallet salt, and an Ethereum wallet is created from the result. This process gives the same wallet for the same seed and salt, which lets a citizen return to the same pseudonymous identity across sessions without the system having to store a private key anywhere.
 
 \section{Relayer Cryptography and Queue Processing}
 \label{sec:relayer-queue-implementation}
@@ -160,35 +175,35 @@ After these checks, the citizen pseudonym is derived according to Equation~\ref{
     \label{fig:relayer-pipeline-implementation}
 \end{figure}
 
-A BullMQ flow contains three ordered child jobs. The AI moderation job is run first, the IPFS upload job is run second, and the blockchain submission job is run third. The AI step has one attempt because a moderation rejection is a decision about the content itself, and retrying with the same input would not change that decision. The IPFS and blockchain steps allow three attempts each, because failures at those steps are more often transient network or RPC issues that a short retry budget can resolve. A failed child is configured to fail its parent flow, so a report can never be left in a silently inconsistent state, such as being moderated and stored but never anchored on-chain.
+A BullMQ flow contains three ordered child jobs. The AI moderation job is run first, the IPFS upload job is run second, and the blockchain submission job is run third. The AI step has one attempt because a moderation rejection is a decision about the content itself. Retrying with the same input would not change that decision. The IPFS and blockchain steps allow three attempts each, because failures at those steps are more often transient network or RPC issues that a retry attempt can resolve. A failed child is configured to fail its parent flow, so a report can never be left in a silently inconsistent state, such as being moderated and stored but never anchored on-chain.
 
-The HTTP response contains a job ID without waiting for all three steps, so the citizen's browser is never blocked for as long as the slowest step takes. Progress objects are emitted inside the relayer and are sent through an SSE endpoint, with each SSE stream filtered by the citizen wallet address so a citizen only observes their own submissions. A separate vote queue is used for citizen vote transactions, keeping report processing and vote processing independent of each other's load.
+The HTTP response contains a job ID without waiting for all three steps. So the citizen's browser is never blocked for as long as the slowest step takes. Progress objects are emitted inside the relayer and are sent through an SSE endpoint. Each SSE stream is filtered by the citizen wallet address so a citizen only observes their own submissions. A separate vote queue is used for citizen vote transactions, keeping report processing and vote processing independent of each other's load.
 
 \section{AI Moderation Implementation}
 \label{sec:ai-implementation}
 
-The AI component is implemented as one decision aggregator and three classifier services: safety, spam, and civic relevance. Splitting moderation into independent classifier services, coordinated by a single aggregator, means each classifier can be developed, updated, and restarted on its own without affecting the others or requiring changes to the relayer.
+The AI component is implemented as one decision aggregator and three classifier services as safety, spam, and civic relevance. Splitting moderation into independent classifier services, coordinated by a single aggregator ensures each classifier can be developed, updated, and restarted on its own without affecting the others or requiring changes to the relayer.
 
 \subsection{Request Protection and Aggregation}
 \label{subsec:ai-aggregation}
 
-The relayer sends a moderation request with an API key, a relayer signature, a timestamp, and a random nonce, as shown in Figure~\ref{fig:ai-request-protection}. These four checks are layered deliberately, each closing a gap the others leave open: the API key restricts network-level access to the service, the relayer signature binds a request to the specific relayer that produced it so the key alone cannot be used to impersonate it, the timestamp limits how long a captured request remains usable, and the nonce store stops that same request from being replayed again within that window.
+The relayer sends a moderation request with an API key, a relayer signature, a timestamp, and a random nonce, as shown in Figure~\ref{fig:ai-request-protection}. These four checks are layered deliberately, each closing a gap the others leave open. The API key restricts network-level access to the service, the relayer signature binds a request to the specific relayer that produced it so the key alone cannot be used to impersonate it, the timestamp limits how long a captured request remains usable, and the nonce store stops that same request from being replayed again within that window.
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.95\textwidth,height=0.6\textheight,keepaspectratio]{Images/Chapter 4/ai-request-protection.png}
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/ai-request-protection.png}
     \caption{AI moderation request protection and aggregation sequence}
     \label{fig:ai-request-protection}
 \end{figure}
 
-A canonical request object is hashed and signed by the relayer. The aggregator recovers the signer address and compares it with the trusted relayer address. The timestamp is checked against a configurable maximum age, and used nonces are stored in SQLite and rejected on reuse; SQLite is used here because the nonce store only needs simple, fast, local persistence for a single service rather than a separately managed database.
+A canonical request object is hashed and signed by the relayer. The aggregator recovers the signer address and compares it with the trusted relayer address. The timestamp is checked against a configurable maximum age, and used nonces are stored in SQLite and rejected on reuse. SQLite is used here because the nonce store only needs simple, fast, local persistence for a single service rather than a separately managed database.
 
-Each classifier is called by the aggregator. A service error or unavailable service produces a rejection result, consistent with the fail-closed approach explained in Chapter~\ref{ch:architecture}. Safety rejection, civic-relevance rejection, spam rejection, or any critical violation causes a final rejection; otherwise, acceptance requires at least two accept votes and no reject vote. Requiring agreement from a majority of classifiers, rather than any single one, reduces the chance that one classifier's mistake on its own determines the outcome. The returned decision contains hashes and an optional aggregator signature, giving the relayer a verifiable, tamper-evident record of the moderation outcome.
+Each classifier is called by the aggregator. A service error or unavailable service produces a rejection result, consistent with the fail-closed approach explained in Chapter~\ref{ch:architecture}. Safety rejection, civic-relevance rejection, spam rejection, or any critical violation causes a final rejection. Otherwise, acceptance requires at least two accept votes and no reject vote. Requiring agreement from a majority of classifiers, rather than any single one, reduces the chance that one classifier's mistake on its own determines the outcome. The returned decision contains hashes and an optional aggregator signature, giving the relayer a verifiable, tamper-evident record of the moderation outcome.
 
 \subsection{Safety Service}
 \label{subsec:safety-service}
 
-Text safety is checked with \texttt{unitary/toxic-bert}. The first 512 characters are passed to the model pipeline, which comfortably covers a civic report description while keeping inference fast. The implemented unsafe thresholds are shown in Table~\ref{tab:safety-thresholds}.
+Text safety is checked with unitary/toxic-bert. The first 512 characters are passed to the model pipeline, which comfortably covers a civic report description while keeping inference fast. The thresholds of implemented unsafe classifier are shown in Table~\ref{tab:safety-thresholds}.
 
 \begin{table}[!htbp]
     \centering
@@ -199,54 +214,59 @@ Text safety is checked with \texttt{unitary/toxic-bert}. The first 512 character
         
         Label & Threshold & Critical \\
         \hline
-        \texttt{toxic} & 0.50 & No \\
+        toxic & 0.50 & No \\
         \hline
-        \texttt{severe\_toxic} & 0.50 & Yes \\
+        severe\_toxic& 0.50 & Yes \\
         \hline
-        \texttt{obscene} & 0.60 & No \\
+        obscene & 0.60 & No \\
         \hline
-        \texttt{threat} & 0.40 & Yes \\
+        threat & 0.40 & Yes \\
         \hline
-        \texttt{insult} & 0.60 & No \\
+        insult& 0.60 & No \\
         \hline
-        \texttt{identity\_hate} & 0.40 & Yes \\
+        identity\_hate & 0.40 & Yes \\
         
     \end{tabular}
 \end{table}
 
-Labels linked to real-world harm, namely \texttt{severe\_toxic}, \texttt{threat}, and \texttt{identity\_hate}, are marked critical and trigger an immediate rejection on their own, while the remaining labels contribute to the aggregator's ordinary majority-vote decision alongside the other classifiers. This distinction means the more serious categories cannot be out-voted by an otherwise favourable spam or civic-relevance result.
+Labels linked to real-world harm, namely severe\_toxic, threat, and identity\_hate, are marked critical and trigger an immediate rejection on their own, while the remaining labels contribute to the aggregator's ordinary majority-vote decision alongside the other classifiers. This distinction means the more serious categories cannot be out-voted by an otherwise favourable spam or civic-relevance result.
 
-Image safety is checked with \texttt{Falconsai/nsfw\_image\_detection}. The maximum score for the labels \texttt{nsfw}, \texttt{porn}, \texttt{sexy}, and \texttt{hentai} is used, and an image is rejected when this score is at least 0.70.
+Image safety is checked with Falconsai/nsfw\_image\_detection. The maximum score is used for the labels such as nsfw, and an image is rejected when this score is at least 0.70.
 
 Accepted images are processed for faces with OpenCV Haar cascades. Frontal, alternative frontal, left-profile, and mirrored right-profile checks are used so that faces are detected from several common angles rather than only straight-on. Overlapping boxes are reduced, and Gaussian blur is applied to detected face areas, which protects the identity of bystanders who happen to appear in a citizen's photograph. The processed images are returned to the relayer for IPFS storage.
 
 \subsection{Spam Service}
 \label{subsec:spam-service}
 
-Spam is checked with \texttt{mrm8488/bert-tiny-finetuned-sms-spam-detection} and a rule score. Combining a trained model with explicit rules is intentional: the model recognises spam patterns it was trained on, while the rules catch obvious cases, such as bare URLs or excessive repeated characters, that a small model may not reliably learn on its own. The default thresholds are 0.85 for a strong model rejection, 0.65 for model support, 0.60 for a rule-only rejection, and 0.25 for rule support.
+Spam is checked with mrm8488/bert-tiny-finetuned-sms-spam-detection and a rule score. Combining a trained model with explicit rules is intentional. The model recognises spam patterns it was trained on. While the rules catch obvious cases such as bare URLs or excessive repeated characters, that a small model may not reliably learn on its own. The default thresholds are 0.85 for a strong model rejection, 0.65 for model support, 0.60 for a rule-only rejection, and 0.25 for rule support.
 
-Rules add scores for very short text, known spam phrases, promotional words, URLs, repeated characters, and excessive symbols. The final rule score is capped at 1.0. A report is rejected when the model is strongly confident, when the rule score reaches the rejection threshold, or when both supporting thresholds are reached, so that a moderately suspicious signal from both the model and the rules together is still enough to reject a report even when neither signal alone would be.
+Rules add scores for very short text, known spam phrases, promotional words, URLs, repeated characters, and excessive symbols. The final rule score is capped at 1.0. A report is rejected when the model is strongly confident, when the rule score reaches the rejection threshold, or when both supporting thresholds are reached. Therefore, a moderately suspicious signal from both the model and the rules together is still enough to reject a report even when neither signal alone would not reject it.
 
 \subsection{Civic Relevance Service}
 \label{subsec:civic-service}
 
-Text relevance is checked with \texttt{sentence-transformers/all-MiniLM-L6-v2}. Normalized text embeddings are compared with precomputed reference embeddings by cosine similarity, and the reference set covers common local issues alongside a general civic category so that a report does not need to match a narrow predefined topic exactly.
+Text relevance is checked with sentence-transformers/all-MiniLM-L6-v2. Normalized text embeddings are compared with precomputed reference embeddings by cosine similarity. The reference set covers common local issues alongside a general civic category so that a report does not need to match a narrow predefined topic exactly.
 
-The default text relevance threshold is 0.38, and a lower maximum similarity causes rejection; this threshold is kept low deliberately so it only screens out content that is clearly unrelated to civic issues, rather than second-guessing a citizen's choice of words. The selected-category match threshold is 0.40, and a category mismatch produces an explanation but does not reject text that is otherwise civic, so a citizen is never blocked from reporting simply because their description does not closely match a predefined category label.
+The default text relevance threshold is 0.38, and a lower maximum similarity causes rejection. This threshold is kept low deliberately so it only screens out content that is clearly unrelated to civic issues, rather than second-guessing a citizen's choice of words. The selected-category match threshold is 0.40, and a category mismatch produces an explanation but does not reject text that is otherwise civic. Therefore, a citizen is never blocked from reporting simply because their description does not closely match a predefined category label.
 
 \section{IPFS Implementation}
 \label{sec:ipfs-implementation}
 
-The IPFS layer contains an IPFS node and an Express HTTP service. For a complaint upload, description, category, and location are required. Up to five images are accepted by the storage endpoint, and each image entry contains its original name, MIME type, byte size, and base64 data.
+The IPFS layer contains an IPFS node and an Express HTTP service. To submit a complaint, description, category, and location are required. Up to five images are accepted by the storage endpoint, and each image entry contains its original name, MIME type, byte size, and base64 data.
 
 One JSON envelope is formed with the following fields:
 
-\begin{quote}
-\texttt{type}, \texttt{description}, \texttt{category}, \texttt{location},
-\texttt{imageCount}, \texttt{images}, and \texttt{storedAt}.
-\end{quote}
+\begin{enumerate}
+    \item type
+    \item description
+    \item category
+    \item location
+    \item imageCount
+    \item images
+    \item storedAt
+\end{enumerate}
 
-The complete envelope is added and pinned as one IPFS object with CID version 1, so a single CID covers both metadata and images and can be used to verify the whole submission at once rather than checking each field separately. If blurred images are returned by the safety service, they replace the original buffers before this envelope is uploaded, so a face-blurred image, rather than the original, is what gets a permanent content address.
+The complete envelope is added and pinned as one IPFS object with CID version 1. A single CID covers both metadata and images and can be used to verify the whole submission at once rather than checking each field separately. If blurred images are returned by the safety service, they replace the original buffers before this envelope is uploaded, so the privacy-preserved, face-blurred gets the permanent \ac{CID}, rather than the original, image.
 
 The IPFS HTTP service is deployed on an internal service network reachable only from the relayer and other trusted backend services, with CORS and standard HTTP security headers applied at the edge of that network.
 
@@ -255,19 +275,258 @@ The IPFS HTTP service is deployed on an internal service network reachable only 
 
 The main citizen and authority dApp is implemented with Next.js, React, Tailwind CSS, and ethers.js. Citizens can authenticate through the simulator, submit standard or emergency reports, follow queue progress, read reports, vote, and view their own pseudonymous reports. Authorities can view actionable reports, post updates, submit results, and use governance and polling functions.
 
-Direct blockchain reads are made through a JSON-RPC provider, while citizen writes are sent to the relayer so that citizens do not need gas or direct wallet transaction handling. Authority and Super Admin actions are signed through MetaMask instead, because authority and governance actions are comparatively infrequent and their operators are already expected to hold a funded wallet.
+Direct blockchain reads are made through a JSON-RPC provider. Citizen POST requests are sent to the relayer so that citizens do not need gas or direct wallet transaction handling. Authority and Super Admin actions are signed through MetaMask, because authority and governance actions are comparatively infrequent and their operators are already expected to hold a funded wallet.
 
-The citizen wallet is derived from the citizen seed, and session data can optionally be protected by a user PIN. The browser uses PBKDF2 with SHA-256 and 600,000 iterations to derive a 256-bit key, following widely recommended minimum iteration counts for password-based key derivation, and AES-GCM is used for encryption because it detects tampering as well as providing confidentiality. A random 16-byte salt and 12-byte initialization vector are stored with the ciphertext so that the same PIN never produces the same encrypted output twice.
+The citizen wallet is derived from the citizen seed, and session data can optionally be protected by a user PIN. The browser uses \ac{PBKDF} with SHA-256 and 600,000 iterations to derive a 256-bit key, following widely recommended minimum iteration counts for password-based key derivation, and \ac{AES}-\ac{GCM} is used for encryption because it detects tampering as well as providing confidentiality. A random 16-byte salt and 12-byte initialization vector are stored with the ciphertext so that the same PIN never produces the same encrypted output twice.
 
 A separate Vite and React portal is implemented for the government identity simulator. It is kept separate from the public dApp because it represents a different administrative boundary, and a lightweight build tool is sufficient since the portal only needs to support a small, focused identity-checking interface.
+
+\section{\ac{UI} Development}
+\label{sec:user-interface-development}
+
+The user interface is designed to be intuitive and accessible, with a focus on providing a good user experience for both citizens and authorities. The interface is built on top of the Next.js framework, leveraging its server-side rendering capabilities to improve performance and SEO.
+
+\subsection{Government Side \ac{UI} Implementation}
+
+Figure~\ref{fig:government-side-implementation} shows the government side login interface using MetaMask. The interface is designed to be simple and user-friendly, allowing government officials to easily access the system and perform their duties. The login process is secured through MetaMask, ensuring that only authorized personnel can access sensitive information.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.6\textwidth,keepaspectratio]{Images/Chapter 4/authority/goverment-side-login-using-metamask.png}
+    \caption{Government side login using MetaMask}
+    \label{fig:government-side-implementation}
+\end{figure}
+
+Super administrators can connect their Metamask wallet to the system. The super admin dashboard, shown in Figure~\ref{fig:super-admin-dashboard}, provides ability to propose and approve new super admins, authority workers, chage the voting window, and change the voting method for standard reports.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\textwidth,keepaspectratio]{Images/Chapter 4/authority/super-admin-dashboard.png}
+    \caption{Super admin dashboard}
+    \label{fig:super-admin-dashboard}
+\end{figure}
+
+The voting window configuration interface, shown in Figure~\ref{fig:voting-window-configuration}, allows super admins to set the duration of the voting period for standard reports. This configuration is crucial for ensuring that citizens have sufficient time to participate in the decision-making process while also allowing authorities to respond promptly to reports.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.5\textwidth,keepaspectratio]{Images/Chapter 4/authority/voting-window-configuration.png}
+    \caption{Voting window configuration}
+    \label{fig:voting-window-configuration}
+\end{figure}
+
+The voting methods configuration interface, shown in Figure~\ref{fig:voting-methods}, allows super admins to select the voting method for standard reports. The available methods include simple majority, two-thirds supermajority, minimum threshold, and a hybrid of two methods. This flexibility allows authorities to choose the most appropriate voting method based on the specific needs of their community.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\textwidth,height=0.8\textwidth,keepaspectratio]{Images/Chapter 4/authority/voting-methods.png}
+    \caption{Voting methods configuration}
+    \label{fig:voting-methods}
+\end{figure}
+
+
+Super admins can propose new authority workers, as shown in Figure~\ref{fig:super-admin-proposal}. The proposal includes the worker's address, name, and role. Once the proposal is submitted, other super admins can review and approve it, ensuring that only qualified individuals are granted authority worker status. There are four actions available for authrity proposal, namely add authority worker, remove authority worker, add super admin, and remove super admin. The action type selection interface is shown in Figure~\ref{fig:action-type-selection-authority-proposal}.
+
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\textwidth,height=0.7\textwidth,keepaspectratio]{Images/Chapter 4/authority/super-admin-proposal.png}
+    \caption{Proposal for adding a new authority worker by a super admin}
+    \label{fig:super-admin-proposal}
+\end{figure}
+
+
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.5\textwidth,keepaspectratio]{Images/Chapter 4/authority/action-type-selection-authority-proposal.png}
+    \caption{Action type selection for authority proposal by a super admin}
+    \label{fig:action-type-selection-authority-proposal}
+\end{figure}
+
+
+The Figure~\ref{fig:submitting-transaction-proposal} shows the metamask interface for submitting a transaction for an authority proposal. This process ensures that all authority changes are transparent and verifiable, maintaining the integrity of the system.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.5\textwidth,keepaspectratio]{Images/Chapter 4/authority/submitting-transation-proposal.png}
+    \caption{Submitting a transaction for an authority proposal}
+    \label{fig:submitting-transaction-proposal}
+\end{figure}
+
+The Figure~\ref{fig:proposal-vote} shows the interface for voting on a proposal to add a new authority worker. Super admins can review the proposal details and cast their votes, contributing to the decision-making process. The voting interface is designed to be clear and straightforward, allowing super admins to easily participate in governance actions.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\textwidth,keepaspectratio]{Images/Chapter 4/authority/proposal-vote.png}
+    \caption{Proposal to add the new authrity after submitting the transaction}
+    \label{fig:proposal-vote}
+\end{figure}
+
+
+The Figure~\ref{fig:succesfully-executed-proposal} shows the interface for a successfully executed authority proposal. Once the required approvals are obtained, the proposal is automatically executed, and the changes are reflected in the system. This process ensures that all authority modifications are carried out in a controlled and accountable manner. The Figure~\ref{fig:suceesfully-added-authority} shows the interface for a successfully added authority worker. The new authority worker is now able to perform their duties within the system, contributing to the overall governance and management of civic reports.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth,keepaspectratio]{Images/Chapter 4/authority/succesfully-executed-proposal.png}
+    \caption{Successfully executed authority proposal}
+    \label{fig:succesfully-executed-proposal}
+\end{figure}
+
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth,keepaspectratio]{Images/Chapter 4/authority/suceesfully-added-authority.png}
+    \caption{Successfully added authority}
+    \label{fig:suceesfully-added-authority}
+\end{figure}
+
+After the authority worker is added, the relevant authrity worker can connect their Metamask wallet to the system. The authority dashboard, shown in Figure~\ref{fig:authority-dashboard}, provides ability to view actionable reports, post updates, create and view opinion pollings.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth,keepaspectratio]{Images/Chapter 4/authority/authority-dashboard.png}
+    \caption{Authority dashboard}
+    \label{fig:authority-dashboard}
+\end{figure}
+
+The opinion polling creation interface, shown in Figure~\ref{fig:opinion-poll-creation}, allows authority workers to create new opinion polls. The interface is designed to be user-friendly, enabling authorities to easily set up polls and gather feedback from citizens. The poll creation process includes specifying the poll title,poll type, options, deadline, and optional images ensuring that the polling process is transparent and well-organized.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth,keepaspectratio]{Images/Chapter 4/authority/opinion-poll-creation.png}
+    \caption{Opinion poll creation}
+    \label{fig:opinion-poll-creation}
+\end{figure}
+
+The opinion polling view on the authority side, shown in Figure~\ref{fig:created-opinion-polling-view-authrity-side}, allows authority workers to view the details of created opinion polls. The interface provides a clear overview of the poll's status. The polls are designed not to reveal poll results to both citizens and authorities until the poll deadline is reached.
+
+% TODO: add a finalized poll images and description here 
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth,keepaspectratio]{Images/Chapter 4/authority/created-opinion-polling-view-authrity-side.png}
+    \caption{Created opinion poll view on authority side}
+    \label{fig:created-opinion-polling-view-authrity-side}
+\end{figure}
+
+The emergency report view on the authority side, shown in Figure~\ref{fig:emergency-report-view-governance-side}, allows authority workers to view the details of emergency reports. The interface provides a clear overview of the report's status, enabling authorities to quickly assess and respond to urgent situations as described in Section~\ref{subsec:emergency-contract}.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth,keepaspectratio]{Images/Chapter 4/authority/emergency-report-view-governance-side.png}
+    \caption{Emergency report view on governance side}
+    \label{fig:emergency-report-view-governance-side}
+\end{figure}
+
+\subsection{Citizen Side \ac{UI} Implementation}
+
+The citizen side interface is designed to be intuitive and user-friendly, allowing citizens to easily submit reports, track their status, and participate in opinion polls. The interface is built with accessibility in mind, ensuring that all citizens can effectively engage with the system. 
+
+The citizens can register themselves through the simulated government ID simulator, as shown in Figure~\ref{fig:citizen-registration-via-simulated-gov-id-simulator}. The registration process is designed to be straightforward, requiring citizens to provide their government ID and password. Upon successful registration, citizens receive a batch of tickets that allow them to submit reports and participate in the civic engagement process via the dApp as shown in Figure~\ref{fig:citizen-login} and Figure~\ref{fig:citizen-seed-ticket-batch}. 
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth,keepaspectratio]{Images/Chapter 4/citizen/registration-via-simulated-gov-id-simulator.png}
+    \caption{Citizen registration via simulated government ID simulator}
+    \label{fig:citizen-registration-via-simulated-gov-id-simulator}
+\end{figure}
+
+After login, citizens can create a PIN to protect their session data, as shown in Figure~\ref{fig:citizen-pin-creation-screen}. The PIN is used to derive a session key that encrypts sensitive information stored in the browser, ensuring that even if the device is compromised, the citizen's data remains secure.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth,keepaspectratio]{Images/Chapter 4/citizen/pin-creation-screen.png}
+    \caption{Citizen PIN creation screen for session data protection}
+    \label{fig:citizen-pin-creation-screen}
+\end{figure}
+
+Figures~\ref{fig:citizen-feed-standard-reports}, \ref{fig:citizen-feed-emergency}, and \ref{fig:citizen-feed-opinion-polling} show the citizen feed with standard reports, emergency reports, and opinion polling respectively. 
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/citizen/citizen-feed.png}
+    \caption{Citizen feed with standard reports}
+    \label{fig:citizen-feed-standard-reports}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/citizen/citizen-feed-emergency.png}
+    \caption{Citizen feed with emergency reports}
+    \label{fig:citizen-feed-emergency}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/citizen/citizen-feed-opinion-polling.png}
+    \caption{Citizen feed with opinion polling}
+    \label{fig:citizen-feed-opinion-polling}
+\end{figure}
+
+A verified citizen can submit a standard report through the interface shown in Figure~\ref{fig:standard-report-submission-ui}. The submission form allows citizens to provide a description, select a category, specify a location, and upload up to five images. The interface is designed to be straightforward, ensuring that citizens can easily report issues in their community.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/citizen/standard-report-submission-ui.png}
+    \caption{Standard report submission interface}
+    \label{fig:standard-report-submission-ui}
+\end{figure}
+
+After submitting a report, citizens can track the progress of their submission through the interface shown in Figure~\ref{fig:sse-notifications}. The system provides real-time updates on the status of the report, including moderation results, IPFS storage confirmation, and blockchain anchoring using \ac{SSE} and BullMQ as explained in \ref{sec:relayer-queue-implementation}. This transparency ensures that citizens are informed about the handling of their reports and can trust that their concerns are being addressed.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth,keepaspectratio]{Images/Chapter 4/citizen/sse-notifications.png}
+    \caption{SSE notifications for report submission progress}
+    \label{fig:sse-notifications}
+\end{figure}
+
+As shown in Figure~\ref{fig:detailed-sissue}, citizens can view the details of their submitted reports, including the description, category, location, images, and current status. The interface provides a clear overview of the report's progress and any actions taken by authorities. To protect the privacy of individuals captured in submitted images, faces are blurred before being displayed in the detailed issue view. The citizen can also validate the report and vote on its status, contributing to the community-driven decision-making process.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/citizen/detailed-report-blured-face-validation-vote.png}
+    \caption{Detailed report view with blurred faces for privacy protection, and validation and voting options for the citizen}
+    \label{fig:detailed-sissue}
+\end{figure}
+
+
+Citizens can submit emergency reports through the interface shown in Figure~\ref{fig:emergency-report-submission}. The submission form is similar to the standard report submission but is designed to prioritize urgent issues. Citizens are warned that false emergency reports will result in a 30-day submission block, as shown in Figure~\ref{fig:emergency-report-submission-warning}. This warning is intended to discourage misuse of the emergency reporting feature and ensure that resources are allocated to genuine emergencies.
+
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/citizen/emergency-report-submission.png}
+    \caption{Emergency report submission interface}
+    \label{fig:emergency-report-submission}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth,keepaspectratio]{Images/Chapter 4/citizen/emergency-report-submission-warning.png}
+    \caption{Warning message for emergency report submission, indicating that false reports will result in a 30-day submission block}
+    \label{fig:emergency-report-submission-warning}
+\end{figure}
+
+The Figure~\ref{fig:voted-opinion-polling} shows the citizen view of voted opinion polling. Citizens can view the details of polls they have participated in, including the poll title, options, and their selected choice. The interface provides transparency and accountability in the polling process, allowing citizens to see how their votes contribute to community decisions. The results of the polls are not revealed until the poll deadline is reached, ensuring that the voting process remains fair and unbiased.
+
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth,keepaspectratio]{Images/Chapter 4/citizen/voted-opinion-polling.png}
+    \caption{Citizen view of voted opinion polling}
+    \label{fig:voted-opinion-polling}
+\end{figure}
+
+% TODO : include the citizen view of finalized opinion polling results after the poll deadline is reached.
+%TODO : need to include the report lifecycle state transition 
 
 \section{Deployment and Configuration}
 \label{sec:deployment-configuration}
 
 Services are containerized and are configured through environment variables, so the same container images can be promoted between development and deployment environments by changing configuration rather than code. Blockchain configuration includes RPC URLs, contract addresses, chain ID, and relayer keys. Relayer configuration includes the government address, pseudonym salt, Redis connection, AI endpoint, API key, and IPFS endpoint. AI configuration includes trusted relayer details, model switches, thresholds, request age, nonce database path, and worker URLs.
 
-The prototype is deployed across two hosts, as shown in Figure~\ref{fig:deployment-topology}. The Geth nodes, relayer, Redis, identity simulator, and web application are grouped on one host, while the AI aggregator, its three classifier services, and the IPFS service are grouped on a second host. This split is deliberate: AI inference and image processing are comparatively heavy and can have variable latency, and keeping them on a separate host means a spike in moderation load cannot compete for CPU or memory with the relayer or, more importantly, with the Geth nodes that need to seal blocks on schedule.
-`'
+The prototype is deployed across two hosts, as shown in Figure~\ref{fig:deployment-topology}. The Geth nodes, relayer, Redis, identity simulator, and web application are grouped on one host, while the AI aggregator, its three classifier services, and the IPFS service are grouped on a second host. This split is deliberate. AI inference and image processing are comparatively heavy and can have variable latency. Keeping them on a separate host ensures a spike in moderation load will not compete for CPU or memory with the relayer or, more importantly with the Geth nodes that need to seal blocks on schedule.
+
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=0.9\textwidth,keepaspectratio]{Images/Chapter 4/deployment-topology.png}
@@ -275,13 +534,11 @@ The prototype is deployed across two hosts, as shown in Figure~\ref{fig:deployme
     \label{fig:deployment-topology}
 \end{figure}
 
-The AI workers communicate with the aggregator through an internal service network, and the IPFS HTTP endpoint is likewise reached only through that internal network rather than being exposed directly.
+The AI workers communicate with the aggregator through an internal service network, and the IPFS HTTP endpoint is likewise reached only through that internal network.
 
-Optional Planka workforce tracking is feature-flagged through deployment configuration. When it is disabled or not configured, the blockchain workflow continues without it. When it is enabled, report status events can be mirrored to Planka cards for teams that want a familiar task-board view alongside the on-chain record.
-
-Secrets such as private keys, API keys, Redis passwords, government signing keys, and PIN-derived session keys are kept in environment configuration rather than source control, with separate values used for development and deployment so that a development credential can never be mistaken for a production one.
+Secrets such as private keys, API keys, Redis passwords, government signing keys, and PIN-derived session keys are kept in environment configuration. Separate values are used for development and deployment so that a development credential can never be mistaken for a production one.
 
 \section{Summary}
 \label{sec:implementation-summary}
 
-This chapter has described how the design from Chapter~\ref{ch:architecture} was implemented: a private Geth Clique network with a dedicated RPC node, four smart contracts with clearly separated responsibilities, an identity simulator that issues signed one-use tickets, a relayer that verifies requests before queuing them through an ordered BullMQ pipeline, a fail-closed AI moderation ensemble, a single-CID IPFS envelope for complaint content, and Next.js and Vite web clients. Each implementation choice, from node separation and contract splitting to retry policy and request signing, was made to directly support a specific goal set out in the architecture chapter. Chapter~\ref{ch:testing} evaluates how well the resulting implementation performs against those goals.
+This chapter has described how the design from Chapter~\ref{ch:architecture} was implemented.The implementation consists of a private Geth \ac{PoA} network with a dedicated RPC node, four smart contracts with clearly separated responsibilities, an identity simulator that issues signed single-use tickets, a relayer that verifies requests before queuing them through an ordered BullMQ pipeline, a fail-closed AI moderation ensemble, a single-CID IPFS envelope for complaint content, and Next.js and Vite web clients. Each implementation choice, from node separation and contract splitting to retry policy and request signing, was made to directly support a specific goal set out in the architecture chapter. Chapter~\ref{ch:testing} evaluates how well the resulting implementation performs against those goals.
