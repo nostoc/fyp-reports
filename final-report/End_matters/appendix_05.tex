@@ -4,17 +4,18 @@
 This appendix lists every automated test case referenced in Chapter~\ref{ch:testing}, together with its identifier where the source file defines one, so that the full test inventory remains traceable without interrupting the discussion in the main chapter. The recorded pass/fail outcome and aggregate timing for each suite is presented in Chapter~\ref{ch:testing}; this appendix focuses on what each individual case verifies. Screenshots of the running system captured during testing are also collected here.
 
 \section{Smart-Contract Test Cases}
+\label{apndx:smart-contract-test-cases}
+\subsection{Reporting.ts}
 
-\subsection{\texttt{Reporting.ts}}
 
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Reporting contract test cases} \\
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endhead
 T1.1.1 & Authorized relayer submits a report successfully \\
@@ -106,11 +107,11 @@ T1.1.41 & The authority action log grows correctly across the full lifecycle \\
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Emergency reporting contract test cases} \\
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endhead
 T1.2.1 & Authorized relayer submits; status is immediately \texttt{Open} \\
@@ -142,15 +143,16 @@ T1.2.13 & \texttt{startWork} on a non-\texttt{Open} report reverts \texttt{Inval
 \end{longtable}
 
 \subsection{\texttt{Security.ts}}
+\;label{apndx:security-test-cases}
 
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Security and Sybil-resistance test cases} \\
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endhead
 T6.1 & All 100 duplicate submission-nullifier replay attempts are rejected \\
@@ -174,11 +176,11 @@ T6.6 & A second verification vote from the same citizen pseudonym is rejected \\
 \begin{longtable}{p{0.86\textwidth}}
 \caption{Opinion polling contract test cases} \\
 \hline
-\textbf{Purpose} \\
+  {Purpose} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Purpose} \\
+  {Purpose} \\
 \hline
 \endhead
 An authorized authority can create a poll \\
@@ -208,11 +210,11 @@ Finalizing a poll that is already inactive is reverted \\
 \begin{longtable}{p{0.86\textwidth}}
 \caption{Authority multi-signature contract test cases} \\
 \hline
-\textbf{Purpose} \\
+  {Purpose} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Purpose} \\
+  {Purpose} \\
 \hline
 \endhead
 Super Admins can add a new Super Admin through majority vote \\
@@ -227,14 +229,16 @@ Super Admins can remove an authority worker \\
 
 \section{Relayer Test Cases}
 
+\label{apndx:relayer-test-cases}
+
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Relayer unit test cases} \\
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endhead
 \multicolumn{2}{l}{\textit{app.controller.spec.ts}} \\
@@ -286,15 +290,16 @@ T2.5.1 & A missing \texttt{GOV\_PUBLIC\_ADDRESS} throws on module initialization
 \end{longtable}
 
 \section{AI Oracle Test Cases}
+\label{apndx:ai-test-suite}
 
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{AI oracle test cases} \\
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endhead
 \multicolumn{2}{l}{\textit{test\_api\_security.py}} \\
@@ -348,15 +353,16 @@ T3.4.3 & The response structure is consistent across repeated calls \\
 \end{longtable}
 
 \section{IPFS Test Cases}
+\label{apndx:ipfs-test-suite}
 
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{IPFS integration test cases} \\
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
-\textbf{ID} & \textbf{Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endhead
 T4.1 & Text-only complaint upload ($\sim$1\,KB) succeeds and returns a CID \\
@@ -376,7 +382,32 @@ T4.7 & An unreachable IPFS service correctly throws an error \\
 T4.8 & Five concurrent uploads all succeed with no CID collisions \\
 \hline
 \end{longtable}
-
+\section{Blockchain Network Performance Test Cases}
+\label{apndx:blockchain-performance-test-cases}
+ 
+\begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
+\caption{Blockchain network performance benchmark test cases (\texttt{benchmark.ts})} \\
+\hline
+  {ID} &   {Purpose} \\
+\hline
+\endfirsthead
+\hline
+  {ID} &   {Purpose} \\
+\hline
+\endhead
+T5.1 & Transaction throughput (TPS) is measured by submitting 20 concurrent \texttt{submitReport()} transactions and computing the submission rate \\
+\hline
+T5.2 & End-to-end submission latency (submit to confirmed) is measured across 5 sequential \texttt{submitReport()} transactions, reporting average, minimum, and maximum \\
+\hline
+T5.3 & Clique PoA block time is observed by polling the live network for 3 consecutive new blocks and averaging the interval between them \\
+\hline
+T5.4 & Average gas usage per \texttt{submitReport()} call is measured across 5 submissions \\
+\hline
+T5.5 & Average gas usage per \texttt{castValidationVote()} call is measured across up to 3 votes on a submitted report \\
+\hline
+T5.6 & Gas cost of \texttt{batchFinalizeVotingWindows()} is measured for a batch of 10 expired reports, including per-report gas cost \\
+\hline
+\end{longtable}
 \section{Testing Screenshots}
-
+\label{apndx:e2e}
 % TODO: insert screenshots captured during manual and end-to-end testing here.
