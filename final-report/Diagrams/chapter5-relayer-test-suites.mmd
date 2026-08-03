@@ -1,22 +1,26 @@
-%% Figure: Two-tier relayer test strategy — fast mocked suite and live integration suite.
+%% Figure: Relayer unit test suite, covering cryptographic and validation logic in isolation.
 %% Render to: Images/Chapter 5/relayer-test-suites.png
 flowchart TB
-    Code["backend-relayer/test/"]
+    Code["backend-relayer/src/**/*.spec.ts"]
 
-    subgraph SuiteA["Suite A — app.e2e-spec.ts (mocked services)"]
-        A1["Real Ethers.js signing and hashing"]
-        A2["Mocked AI oracle, IPFS, and blockchain services"]
-        A3["Report submission, vote submission, and auth guard checks"]
+    subgraph Controller["app.controller.spec.ts"]
+        C1["Application bootstrap smoke test"]
     end
 
-    subgraph SuiteB["Suite B — app.live.e2e-spec.ts (live services)"]
-        B1["Live Geth PoA network"]
-        B2["Live AI oracle aggregator"]
-        B3["Live IPFS node and deployed relayer"]
-        B4["Full pipeline: AI to IPFS to blockchain"]
+    subgraph Oracle["ai-oracle.service.spec.ts"]
+        O1["T2.5.1 — Deterministic canonical JSON hashing"]
+        O2["T2.5.2 — Relayer signature recoverable by ethers.js"]
+        O3["T2.5.3 — Missing signing key fails safely"]
     end
 
-    Code --> SuiteA
-    Code --> SuiteB
-    SuiteA -- "Runs on every change, no external dependency" --> Fast["Fast feedback on request-handling logic"]
-    SuiteB -- "Runs against the deployed environment" --> Confidence["Confidence that the deployed pipeline behaves as designed"]
+    subgraph Reporting["reporting.service.spec.ts"]
+        R1["T2.1 — Government ticket verification"]
+        R2["T2.2 — Citizen payload signature verification"]
+        R3["T2.3 — Citizen pseudonym derivation"]
+        R4["T2.4 — Vote payload verification"]
+        R5["T2.5 — Environment configuration validation"]
+    end
+
+    Code --> Controller
+    Code --> Oracle
+    Code --> Reporting

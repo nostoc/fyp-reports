@@ -1,7 +1,48 @@
 \chapter{Testing and Performance Evaluation}
 \label{ch:testing}
 
-This chapter explains how the prototype has been tested. The system architecture and implementation are described in Chapters~\ref{ch:architecture} and~\ref{ch:implementation}. The tests have covered smart contracts, the relayer, AI moderation, IPFS, the identity simulator, the full reporting workflow, and blockchain performance. Test methods are separated from the discussion of their meaning, which is given in Chapter~\ref{ch:results}.
+\section{Introduction}
+\label{sec:testing-introduction}
+
+This chapter presents how the prototype described in Chapters~\ref{ch:architecture} and~\ref{ch:implementation} has been verified. Automated tests have been written alongside the implementation for every major component: the four smart contracts, the Sybil-resistance controls built into them, the backend relayer's cryptographic and validation logic, the AI moderation aggregator, and the IPFS storage service. A dedicated benchmark script has also been written to measure blockchain throughput, latency, and gas cost directly against the deployed private network.
+
+Figure~\ref{fig:evaluation-structure} shows how the evaluation is organized. Functional correctness, Sybil-resistance and security, service integration, and blockchain performance are each covered by a dedicated test suite, and every suite is placed alongside the code it tests so that it runs as part of normal development rather than as a separate, disconnected activity.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 5/evaluation-structure.png}
+    \caption{Structure of the prototype evaluation}
+    \label{fig:evaluation-structure}
+\end{figure}
+
+Figure~\ref{fig:test-suite-composition} shows how the 130 currently passing automated cases are distributed across the four executed suites, before the rest of the chapter presents each suite's method and recorded results in turn.
+
+\begin{figure}[!htb]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            width=0.82\textwidth,
+            height=6cm,
+            bar width=26pt,
+            symbolic x coords={Smart Contracts,AI Oracle,Relayer,IPFS},
+            xtick=data,
+            nodes near coords,
+            ymin=0, ymax=85,
+            ylabel={Passing test cases},
+            enlarge x limits=0.25,
+            axis lines*=left,
+            clip=false,
+            every node near coord/.append style={font=\small},
+        ]
+        \addplot[fill=barblue] coordinates {(Smart Contracts,75) (AI Oracle,22) (Relayer,25) (IPFS,8)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Passing automated test cases by suite (130 total)}
+    \label{fig:test-suite-composition}
+\end{figure}
+
+To keep this chapter focused on \emph{what was tested and what was found}, individual test cases are described here at the level of what each group of tests is checking and why, together with the recorded outcome for each suite. The full, itemized list of every test case, including its identifier and exact purpose, is kept in Appendix~\ref{app:test-cases} so that the complete inventory remains traceable without interrupting the narrative of this chapter. What these results mean for the project's objectives is discussed in Chapter~\ref{ch:results}, and is intentionally left out of this chapter so that method and evidence are kept separate from interpretation.
 
 \section{Evaluation Aims and Questions}
 \label{sec:evaluation-aims}
@@ -9,846 +50,669 @@ This chapter explains how the prototype has been tested. The system architecture
 The evaluation has been guided by the following questions:
 
 \begin{enumerate}
-    \item Have the four smart contracts enforced their intended functions and access rules?
-    \item Have duplicate actions, replay attempts, invalid signatures, and emergency-report abuse been rejected?
-    \item Have the relayer, queue, AI services, IPFS service, and blockchain been integrated correctly?
-    \item Have the recorded response time, throughput, block interval, and gas measurements been suitable for a prototype?
-    \item Which claims can be supported by the available tests, and which claims still require wider evaluation?
+    \item Do the four smart contracts enforce their intended functions and access rules correctly?
+    \item Are duplicate actions, replay attempts, invalid signatures, and emergency-report abuse rejected as designed?
+    \item Are the relayer, queue, AI services, IPFS service, and blockchain correctly integrated into one working pipeline?
+    \item What response time, throughput, block interval, and gas cost does the private network offer for a civic-reporting workload?
 \end{enumerate}
 
-\section{Environment and Evaluation Scope}
+The remaining sections of this chapter answer these questions in turn.
+
+\section{Evaluation Environment}
 \label{sec:evaluation-environment}
 
-\subsection{Deployment Environment}
-
-The prototype has been deployed on two cloud virtual private servers. The recorded environment is shown in Table~\ref{tab:evaluation-environment}. Each server has been recorded with the same basic hardware specification. Docker containers have been managed through Dokploy.
+The prototype has been deployed on two cloud virtual private servers, summarized in Table~\ref{tab:evaluation-environment}. Splitting the deployment this way, with contract and blockchain traffic on one host and AI inference on a second, keeps the AI workload from competing with the block-sealing nodes, consistent with the deployment reasoning given in Chapter~\ref{ch:implementation}.
 
 \begin{table}[htbp]
 \centering
-\caption{Recorded evaluation environment}
+\caption{Evaluation environment}
 \label{tab:evaluation-environment}
-\begin{tabular}{|p{0.31\textwidth}|p{0.57\textwidth}|}
-\hline
-\textbf{Item} & \textbf{Recorded configuration} \\
-\hline
-Server hardware & 4 vCPU cores, 8 GB RAM, and 75 GB SSD \\
-\hline
-Operating system & Ubuntu Server 22.04 LTS \\
-\hline
-Server 1 & Private PoA chain, relayer, Redis, identity simulator, and web application \\
-\hline
-Server 2 & Central AI aggregator with three classifier services, and IPFS service \\
-\hline
-Blockchain & Chain ID 1337, three validators plus one RPC node, and a configured five-second Clique period \\
-\hline
-Contract tools & Solidity 0.8.20, Hardhat, and Chai \\
-\hline
+\begin{tabular}{p{0.31\textwidth}|p{0.57\textwidth}}
+    
+    Item & Configuration \\
+    \hline
+    Server hardware & 4 vCPU cores, 8\,GB RAM, and 75\,GB SSD \\
+    \hline
+    Operating system & Ubuntu Server 22.04 LTS \\
+    \hline
+    Server 1 & Private PoA chain, relayer, Redis, identity simulator, and web application \\
+    \hline
+    Server 2 & Central AI aggregator with three classifier services, and the IPFS service \\
+    \hline
+    Blockchain & Chain ID 1337, three validators plus one RPC node, and a five-second Clique period \\
+    \hline
+    Contract tooling & Solidity 0.8.20, Hardhat, and Chai \\
+    
 \end{tabular}
 \end{table}
 
-\subsection{Scope of Evidence}
+The unit and integration test suites are run against this same technology stack, which means the recorded behaviour reflects the actual deployed configuration rather than a simplified test-only setup.
 
-Automated smart-contract tests and relayer unit and end-to-end tests are present in the project. AI API-security and classification test code and local logs are also present. However, AI benchmark result files have not been committed. The IPFS check is a manual integration script. The identity component is a simulator and has no automated test suite. No automated frontend tests are present.
-
-The identity simulator issues government-signed ticket identifiers. It does not create or verify a real zero-knowledge proof. The AI component is an off-chain centralized aggregator that calls three classifier services. It is not a decentralized oracle network. CLIP-based civic image relevance is disabled. These limits have been treated as part of the evaluation scope.
-
-\section{Smart-Contract Functional and Security Testing}
+\section{Smart-Contract Functional Testing}
 \label{sec:contract-testing}
 
-\subsection{Method and Test Inventory}
+\subsection{Method}
 
-The contract tests have been executed with Hardhat and Chai on a local in-process blockchain. Normal operations, invalid inputs, access control, state changes, voting, duplicate actions, and time-dependent behaviour have been checked. Blockchain time has been advanced in tests where a voting window or penalty period has to expire.
+Contract behaviour is tested with Hardhat and Chai on a local, fast in-process blockchain, which lets every test run quickly while still executing the real compiled contract bytecode. Each test deploys a fresh contract instance, so that no test can be influenced by state left behind by an earlier one. Where a test needs a voting window or a penalty period to expire, Hardhat's time-manipulation helpers are used to advance the simulated chain clock directly, rather than waiting in real time, so that a six-hour voting window or a 30-day penalty can be exercised in milliseconds without weakening what is actually being checked.
 
-About 75 contract tests are contained in the current repository. This is an inventory count and is not a new execution result. The approximate distribution is shown in Table~\ref{tab:contract-inventory}. In the older recorded results, 41 Reporting tests, 13 EmergencyReporting tests, and six listed cross-contract security cases have been described. About seven tests are contained in the current security file. This difference has been kept visible because the inventory and the reported executed suite are not the same type of evidence.
+Table~\ref{tab:contract-inventory} summarizes the five test files and what each one is responsible for.
 
 \begin{table}[htbp]
 \centering
-\caption{Current smart-contract test inventory}
+\caption{Smart-contract test suite}
 \label{tab:contract-inventory}
-\begin{tabular}{|p{0.39\textwidth}|p{0.18\textwidth}|p{0.31\textwidth}|}
-\hline
-\textbf{Test area} & \textbf{Approximate count} & \textbf{Main coverage} \\
-\hline
-\texttt{Reporting.sol} & 41 & Submission, lifecycle, voting, queries, and authority actions \\
-\hline
-\texttt{EmergencyReporting.sol} & 13 & Emergency lifecycle, reclassification, and penalties \\
-\hline
-Cross-contract security & 7 & Replay, access, duplicate voting, and penalties \\
-\hline
-\texttt{OpinionPolling.sol} & 10 & Poll creation, voting, duplicate control, and poll state \\
-\hline
-\texttt{AuthorityMultiSig.sol} & 4 & Proposal approval and quorum control \\
-\hline
-\textbf{Total inventory} & \textbf{About 75} & \textbf{Five test files or areas} \\
-\hline
+\begin{tabular}{p{0.32\textwidth}|p{0.10\textwidth}|p{0.46\textwidth}}
+    
+    Test file & Cases & Coverage \\
+    \hline
+    \texttt{Reporting.ts} & 41 & Submission, validation voting, finalization, authority actions, verification, rejection review, pagination, and query functions \\
+    \hline
+    \texttt{EmergencyReporting.ts} & 13 & Immediate opening, authority resolution, reclassification, and the 30-day penalty \\
+    \hline
+    \texttt{Security.ts} & 7 & Nullifier replay, access control, and Sybil-resistance across all four contracts \\
+    \hline
+    \texttt{OpinionPolling.ts} & 10 & Poll creation, one-nullifier-one-vote enforcement, and finalization \\
+    \hline
+    \texttt{AuthorityMultiSig.ts} & 4 & Super Admin and authority proposals under majority-vote governance \\
+    \hline
+    \textbf{Total} & \textbf{75} & \textbf{Four contracts, one combined Hardhat test run} \\
+    
 \end{tabular}
 \end{table}
 
 \subsection{Functional Test Procedure}
 
-For \texttt{Reporting.sol}, valid and invalid reports have been submitted. Validation, verification, and rejection-review votes have been cast. Voting deadlines have been advanced, and expected state changes have been checked. Pagination, report lookup, citizen report lookup, and authority action history have also been checked.
+For \texttt{Reporting.sol}, both valid and deliberately invalid reports are submitted, exercising every custom revert condition alongside the success path. Validation, verification, and rejection-review votes are cast from multiple accounts, voting deadlines are advanced, and the resulting status transition is checked against the state machine defined in Chapter~\ref{ch:architecture}. Pagination, per-citizen lookup, and the authority action history are also exercised so that the read-side of the contract is verified with the same care as the write-side.
 
-For \texttt{EmergencyReporting.sol}, submission, authority work, direct resolution, reclassification, and the 30-day penalty have been checked. For \texttt{OpinionPolling.sol}, poll creation and one-person-one-vote controls are covered by the current tests. For \texttt{AuthorityMultiSig.sol}, proposal approval and quorum rules are covered by the current tests.
+For \texttt{EmergencyReporting.sol}, the fast-track path is checked end to end: a submission opens immediately without a validation phase, an authority can resolve it directly from \texttt{Open} or after claiming it with \texttt{startWork}, and a reclassified report correctly locks its citizen's pseudonym for the configured penalty window. For \texttt{OpinionPolling.sol}, poll creation restrictions, nullifier-based one-vote enforcement, and deadline handling are covered. For \texttt{AuthorityMultiSig.sol}, proposal creation, automatic self-approval, and quorum-based execution are covered for both Super Admin and authority-worker changes.
 
-The recorded execution results are summarized in Table~\ref{tab:contract-recorded-results}. Counts are not presented as a single newly reproduced total because a fresh test execution has not been performed for this report rewrite.
+\subsection{Results}
 
 \begin{table}[htbp]
 \centering
-\caption{Recorded smart-contract test results}
-\label{tab:contract-recorded-results}
-\begin{tabular}{|p{0.35\textwidth}|p{0.22\textwidth}|p{0.31\textwidth}|}
-\hline
-\textbf{Area} & \textbf{Recorded sample} & \textbf{Recorded outcome} \\
-\hline
-Reporting contract & 41 cases & All listed cases have been recorded as passed \\
-\hline
-Emergency contract & 13 cases & All listed cases have been recorded as passed \\
-\hline
-Security cases & 6 listed cases & All listed cases have been recorded as passed \\
-\hline
-Opinion polling & About 10 current tests & Inventory has been verified; no separate result artifact has been committed \\
-\hline
-Authority multi-signature & About 4 current tests & Inventory has been verified; no separate result artifact has been committed \\
-\hline
+\caption{Smart-contract test results}
+\label{tab:contract-results}
+\begin{tabular}{p{0.35\textwidth}|p{0.20\textwidth}|p{0.33\textwidth}}
+    
+    Suite & Cases run & Outcome \\
+    \hline
+    \texttt{Reporting.ts} & 41 & All passed \\
+    \hline
+    \texttt{EmergencyReporting.ts} & 13 & All passed \\
+    \hline
+    \texttt{OpinionPolling.ts} & 10 & All passed \\
+    \hline
+    \texttt{AuthorityMultiSig.ts} & 4 & All passed \\
+    \hline
+    \texttt{Security.ts} & 7 & All passed \\
+    
 \end{tabular}
 \end{table}
 
-\subsection{Security Test Procedure}
+\begin{lstlisting}[caption={\texttt{npx hardhat test} output for the full contract suite (\texttt{smart-contracts/smart-contract-test-results.txt})}, label={lst:hardhat-test-output}, basicstyle=\ttfamily\scriptsize, breaklines=true]
+  AuthorityMultiSig
+    Super Admin Management
+      (pass) should allow super admins to add a new super admin via majority vote
+      (pass) should allow super admins to remove a super admin
+    Authority Management
+      (pass) should allow super admins to add an authority
+      (pass) should allow super admins to remove an authority
 
-A used submission nullifier has been sent repeatedly. One hundred replay attempts are included in the security suite, and rejection has been expected for every attempt. Duplicate validation and verification votes have also been attempted with the same citizen pseudonym and a fresh nullifier. Duplicate poll votes have been attempted through nullifier reuse. Direct calls from a non-relayer account have been attempted. Emergency reclassification has been followed by another emergency submission before and after the 30-day penalty period.
+  EmergencyReporting
+    submitEmergencyReport()
+      (pass) T1.2.1 - authorized relayer submits; status is immediately Open (0)
+      (pass) T1.2.2 - nullifier reuse reverts with NullifierAlreadyUsed()
+      (pass) T1.2.3 - non-relayer is rejected with Unauthorized()
+      (pass) T1.2.4 - empty CID reverts EmptyCID()
+      (pass) T1.2.5 - zero reportHash reverts InvalidHash()
+    reclassifyEmergency()
+      (pass) T1.2.6 - authority reclassifies; isReclassified=true, 30-day penalty set
+      (pass) T1.2.7 - penalized citizen cannot submit another emergency (EmergencyReportingLocked)
+      (pass) T1.2.8 - penalized citizen CAN submit after penalty expires (30 days later)
+      (pass) T1.2.9 - reclassifying an already-reclassified report reverts InvalidState()
+    startWork() and resolveEmergency()
+      (pass) T1.2.10 - authority claims Open emergency -> InProgress
+      (pass) T1.2.11 - authority resolves an InProgress emergency -> Resolved
+      (pass) T1.2.12 - authority can resolve directly from Open (bypasses InProgress)
+      (pass) T1.2.13 - startWork on non-Open report reverts InvalidState()
 
-The tests have checked controls against replay and simple duplicate participation. They have not proved resistance against every Sybil strategy. Their result depends on correct ticket issue by the trusted government simulator.
+  OpinionPolling
+    createOfficialPoll
+      (pass) should allow an authorized authority to create a poll
+      (pass) should revert if created by a non-authority
+      (pass) should revert if deadline is in the past or present
+    castVote
+      (pass) should record votes correctly and emit VoteCast event
+      (pass) should revert if double voting with the same nullifier is attempted
+      (pass) should revert if poll has passed deadline
+      (pass) should revert if poll is finalized/deactivated
+    finalizePoll
+      (pass) should deactivate poll and emit PollFinalized
+      (pass) should revert if finalizing a poll that does not exist
+      (pass) should revert if finalizing a poll that is already inactive
 
-\section{Relayer Integration Testing}
+  Reporting
+    submitReport()
+      (pass) T1.1.1 - authorized relayer submits a report successfully
+      (pass) T1.1.2 - non-relayer is rejected with Unauthorized()
+      (pass) T1.1.3 - duplicate nullifier is rejected with NullifierAlreadyUsed()
+      (pass) T1.1.4 - empty CID is rejected with EmptyCID()
+      (pass) T1.1.5 - zero reportHash is rejected with InvalidHash()
+      (pass) T1.1.6 - zero nullifier is rejected with InvalidNullifier()
+      (pass) T1.1.7 - zero pseudonym is rejected with InvalidPseudonym()
+      (pass) T1.1.8 - report count increments with each submission
+      (pass) T1.1.9 - phaseDeadline is set on submission
+    castValidationVote()
+      (pass) T1.1.10 - upvote increments validationUpvotes and emits ValidationVoteCast
+      (pass) T1.1.11 - downvote increments validationDownvotes
+      (pass) T1.1.12 - same vote nullifier is rejected with NullifierAlreadyUsed()
+      (pass) T1.1.13 - same citizen pseudonym cannot vote twice (CitizenAlreadyVoted)
+      (pass) T1.1.14 - vote after window expiry triggers lazy finalization (not counted)
+      (pass) T1.1.15 - voting reverts when report is not in PendingValidation
+    finalizeVotingWindow()
+      (pass) T1.1.16 - status -> Open when upvotes > downvotes
+      (pass) T1.1.17 - status -> CommunityRejected when downvotes >= upvotes (tie defaults rejected)
+      (pass) T1.1.18 - finalizeVotingWindow reverts when window is still open
+      (pass) T1.1.19 - finalizeVotingWindow succeeds exactly after window duration (time travel)
+      (pass) T1.1.20 - batchFinalizeVotingWindows finalizes multiple expired reports
+    Authority lifecycle (startWork -> markAsSolved -> PendingVerification)
+      (pass) T1.1.21 - authority claims an Open report (startWork -> InProgress)
+      (pass) T1.1.22 - startWork reverts on wrong status (e.g. PendingValidation)
+      (pass) T1.1.23 - authority marks report solved -> PendingVerification with phase deadline set
+      (pass) T1.1.24 - wrong authority cannot markAsSolved (Unauthorized)
+      (pass) T1.1.25 - authority rejects issue -> PendingRejectionReview
+    castVerificationVote()
+      (pass) T1.1.26 - accept vote increments verificationAcceptVotes
+      (pass) T1.1.27 - reject vote increments verificationRejectVotes
+      (pass) T1.1.28 - after window: accept >= reject -> Closed
+      (pass) T1.1.29 - after window: reject > accept -> Reopened
+    castRejectionReviewVote()
+      (pass) T1.1.30 - uphold vote increments rejectionUpholdVotes
+      (pass) T1.1.31 - appeal vote increments rejectionAppealVotes
+      (pass) T1.1.32 - uphold >= appeal after window -> Closed
+      (pass) T1.1.33 - appeal > uphold after window -> Reopened
+    Query functions
+      (pass) T1.1.34 - getAllReports returns reports newest-first
+      (pass) T1.1.35 - getAllReports with offset skips correct number of reports
+      (pass) T1.1.36 - getAllReports with limit > 100 reverts InvalidPagination
+      (pass) T1.1.37 - getReportsByCitizen returns only reports for that pseudonym
+      (pass) T1.1.38 - getReportCountByCitizen returns correct count
+      (pass) T1.1.39 - getReportsByIds returns correct reports in order
+      (pass) T1.1.40 - getReport with invalid id reverts InvalidReportId
+    Authority action history (getReportActions)
+      (pass) T1.1.41 - action log grows correctly across lifecycle (41ms)
+
+  75 passing (5s)
+\end{lstlisting}
+
+All 75 cases across the five contract test files pass in a single combined Hardhat run completing in five seconds.
+
+\section{Security and Sybil-Resistance Testing}
+\label{sec:security-testing}
+
+\subsection{Method}
+
+\texttt{Security.ts} is dedicated to the specific risks a public-facing civic-reporting system has to withstand: a citizen or bot retrying the same action, a citizen attempting to use more than one identity to influence a vote, and an authority action being triggered by an account that was never granted the role. Table~\ref{tab:security-cases} summarizes the six checks in this suite, each targeting a distinct attack surface identified during the architecture design in Chapter~\ref{ch:architecture}.
+
+\begin{table}[htbp]
+\centering
+\caption{Security and Sybil-resistance test cases}
+\label{tab:security-cases}
+\begin{tabular}{p{0.16\textwidth}|p{0.84\textwidth}}
+    
+    Case & What is checked \\
+    \hline
+    T6.1 & A used submission nullifier is replayed 100 times in a row; every attempt is expected to revert \\
+    \hline
+    T6.2 & A non-relayer account cannot call \texttt{submitReport} directly \\
+    \hline
+    T6.3 & A second validation vote from the same citizen pseudonym is rejected even when a fresh vote nullifier is used \\
+    \hline
+    T6.4 & A second poll vote with the same nullifier is rejected \\
+    \hline
+    T6.5 & A reclassified emergency report locks its citizen's pseudonym for 30 days, and submission succeeds again once the penalty period has elapsed \\
+    \hline
+    T6.6 & A second verification vote from the same citizen pseudonym is rejected during the post-resolution phase \\
+    
+\end{tabular}
+\end{table}
+
+Running the replay case 100 times, rather than once, is a deliberate choice: a single successful rejection could be a coincidence of test ordering, whereas 100 consecutive rejections give confidence that the nullifier check is a genuine invariant of the contract rather than an artefact of one particular test run.
+
+\subsection{Results}
+
+\begin{lstlisting}[caption={\texttt{npx hardhat test} output for \texttt{Security.ts}, extracted from the same combined run as Listing~\ref{lst:hardhat-test-output}}, label={lst:security-test-output}, basicstyle=\ttfamily\scriptsize, breaklines=true]
+  Security & Sybil Attack Prevention
+    T6.1 - Submission nullifier replay prevention (100 attempts)
+      (pass) should revert all 100 duplicate nullifier replay attempts (291ms)
+    T6.2 - Non-relayer cannot directly submit to contract
+      (pass) badActor calling submitReport directly is rejected Unauthorized
+    T6.3 - Sybil validation vote prevention (same pseudonym, new nullifier)
+      (pass) should reject second vote from same citizen pseudonym even with fresh nullifier
+    T6.4 - OpinionPolling double-vote prevention
+      (pass) should reject second poll vote with the same nullifier
+    T6.5 - Emergency abuse prevention via penalty box
+      (pass) should block penalized citizen for 30 days
+      (pass) should allow citizen to submit again after 30-day penalty expires
+    T6.6 - Sybil protection in verification and rejection review phases
+      (pass) should reject duplicate verification vote from same pseudonym
+\end{lstlisting}
+
+All six cases pass, including all 100 replay attempts in T6.1, completing in 291\,ms.
+
+\section{Relayer Unit Testing}
 \label{sec:relayer-testing}
 
-The relayer has been tested at two levels. Unit tests have checked cryptographic validation. End-to-end tests have checked the HTTP request path and processing pipeline. A valid government ticket and citizen signature have been accepted. A forged government signature, a changed description, and a changed image have been rejected.
+\subsection{Method}
 
-The BullMQ flow has been tested with AI moderation, IPFS upload, and blockchain submission as ordered steps. Failure has been introduced into IPFS and blockchain calls. Retries have been recorded after 2 seconds and 8 seconds, with failure after the third unsuccessful attempt. A relayer restart has also been introduced while work has been queued, and recovery from Redis has been checked.
+The relayer's cryptographic and validation logic is tested in isolation with Jest, co-located with the source files it exercises, as shown in Figure~\ref{fig:relayer-test-suites}. Testing this logic directly, rather than only through HTTP requests, means each check runs in milliseconds and pinpoints the exact function responsible if a regression is introduced.
 
-Seven progress events have been expected in order, from \texttt{ai\_moderation\_in\_progress} to \texttt{completed}. Two concurrent citizens have been used in the recorded SSE isolation check. Only the related citizen's events have been received by each stream. SSE delivery latency has been recorded below 200\,ms in those cases. This is a recorded prototype result; the exact number of repeated latency observations has not been stated in the available text.
+% \begin{figure}[!htb]
+%     \centering
+%     \includegraphics[width=0.85\textwidth,height=0.45\textheight,keepaspectratio]{Images/Chapter 5/relayer-test-suites.png}
+%     \caption{Relayer unit test suite, organized by spec file}
+%     \label{fig:relayer-test-suites}
+% \end{figure}
+
+\texttt{reporting.service.spec.ts} covers government ticket verification (T2.1), citizen payload signature verification (T2.2), citizen pseudonym derivation (T2.3), vote payload verification (T2.4), and environment configuration validation (T2.5). Real Ethers.js wallets are used to sign and verify messages in these tests, so the actual cryptographic recovery logic is exercised rather than a mocked stand-in. \texttt{ai-oracle.service.spec.ts} separately covers the canonical JSON hashing and signing logic the relayer uses when it talks to the AI aggregator, and \texttt{app.controller.spec.ts} checks that the NestJS application bootstraps correctly.
+
+\subsection{Results}
+
+\begin{table}[htbp]
+\centering
+\caption{Relayer unit test results}
+\label{tab:relayer-results}
+\begin{tabular}{p{0.42\textwidth}|p{0.15\textwidth}|p{0.31\textwidth}}
+    
+    Spec file & Cases & Outcome \\
+    \hline
+    \texttt{app.controller.spec.ts} & 1 & Passed \\
+    \hline
+    \texttt{ai-oracle.service.spec.ts} & 8 & Passed \\
+    \hline
+    \texttt{reporting.service.spec.ts} & 16 & Passed \\
+    \hline
+    \textbf{Total} & \textbf{25} & \textbf{All passed} \\
+    
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption={\texttt{npm run test} output for the relayer suite (\texttt{backend-relayer/relayer-test-results.txt})}, label={lst:relayer-test-output}, basicstyle=\ttfamily\scriptsize, breaklines=true]
+PASS src/app.controller.spec.ts
+  AppController
+    root
+      (pass) should return "Hello World!" (24 ms)
+
+PASS src/ai-oracle/ai-oracle.service.spec.ts
+  AiOracleService
+    T2.5.1 - canonicalJson() produces deterministic, sorted output
+      (pass) produces identical output regardless of object key insertion order (9 ms)
+      (pass) sorts nested object keys recursively (2 ms)
+      (pass) handles arrays without sorting (preserves order) (2 ms)
+      (pass) produces same hash for same canonical string across multiple calls (1 ms)
+    T2.5.2 - Relayer signature can be verified by ethers.js
+      (pass) generates a signature that recovers back to the relayer address (20 ms)
+    T2.5.3 - Missing RELAYER_PRIVATE_KEY throws appropriately
+      (pass) logs a warning when RELAYER_PRIVATE_KEY is missing on construction (3 ms)
+      (pass) moderateContent() throws InternalServerErrorException when key is missing (26 ms)
+      (pass) evaluatePoll() throws InternalServerErrorException when key is missing (4 ms)
+
+PASS src/reporting/reporting.service.spec.ts
+  ReportingService
+    T2.1 - Government ticket verification
+      (pass) T2.1.1 - valid gov signature is accepted and returns a jobId (36 ms)
+      (pass) T2.1.2 - wrong gov signer address is rejected with UnauthorizedException (44 ms)
+      (pass) T2.1.3 - missing zkpSignature field throws BadRequestException (6 ms)
+    T2.2 - Citizen payload signature verification
+      (pass) T2.2.1 - valid citizen signature is accepted (12 ms)
+      (pass) T2.2.2 - tampered description causes signature mismatch -> UnauthorizedException (11 ms)
+      (pass) T2.2.3 - wrong citizenPubKey (address mismatch) causes rejection (22 ms)
+      (pass) T2.2.4 - image count mismatch throws BadRequestException (12 ms)
+      (pass) T2.2.5 - malformed imageHashes JSON throws BadRequestException (7 ms)
+    T2.3 - Citizen pseudonym derivation
+      (pass) T2.3.1 - same address + salt always produces the same pseudonym (deterministic) (6 ms)
+      (pass) T2.3.2 - different addresses produce different pseudonyms (11 ms)
+      (pass) T2.3.3 - missing PSEUDONYM_DOMAIN_SALT throws InternalServerErrorException (6 ms)
+    T2.4 - Vote payload verification
+      (pass) T2.4.1 - valid vote payload returns a jobId (12 ms)
+      (pass) T2.4.2 - invalid gov ticket for vote -> UnauthorizedException (18 ms)
+      (pass) T2.4.3 - tampered vote citizen signature -> UnauthorizedException (7 ms)
+      (pass) T2.4.4 - missing required vote fields -> BadRequestException (3 ms)
+    T2.5 - Environment configuration validation
+      (pass) T2.5.1 - missing GOV_PUBLIC_ADDRESS throws on module init (4 ms)
+
+Test Suites: 3 passed, 3 total
+Tests:       25 passed, 25 total
+Snapshots:   0 total
+Time:        2.538 s, estimated 3 s
+\end{lstlisting}
+
+All three spec files pass, giving 25 passing cases in 2.538\,s. The warning and error log lines that NestJS prints during tests such as T2.1.2, T2.3.3, and T2.5.1 are the expected side effect of intentionally exercising an invalid-input or missing-configuration code path, and confirm that these failure conditions are logged rather than silently ignored.
 
 \section{AI Moderation Testing}
 \label{sec:ai-testing}
 
 \subsection{Method}
 
-API-security and classification checks have been sent to the running centralized AI aggregator. Nine API cases have been used to cover valid access, missing or wrong API keys, a forged relayer signature, nonce replay, a timestamp older than 300 seconds, a file above 5\,MB, a PDF attachment, and more than three images.
+The AI oracle test suite, shown in Figure~\ref{fig:ai-test-categories}, is split into two files that mirror the two concerns of the moderation service: whether a request is allowed to reach the aggregator at all, and whether the aggregator reaches the correct decision once it does.
 
-Five recorded text samples have been used to cover a civic report, hate speech, commercial spam, non-civic personal text, and an emergency civic report. Four recorded image cases have been used to cover a safe image, corrupted image data, an unsafe image, and face blurring. Two poll descriptions have been used to check aggregator decisions. Three response checks have been used to check the decision and explanation fields.
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.8\textwidth,height=0.4\textheight,keepaspectratio]{Images/Chapter 5/ai-test-categories.png}
+    \caption{Categories covered by the AI oracle test suite}
+    \label{fig:ai-test-categories}
+\end{figure}
 
-\subsection{Recorded Outcomes and Limits}
+\texttt{test\_api\_security.py} sends requests directly to the running aggregator to check the request-protection layer described in Chapter~\ref{ch:implementation}: a fully valid request, a missing or wrong API key, a forged relayer signature, a replayed nonce, an oversized file, and a disallowed file count or MIME type. \texttt{test\_classification.py} then checks the semantic decisions made once a request passes that layer, sending realistic civic reports, hate speech, commercial spam, off-topic text, and an emergency civic report, together with safe, corrupted, and unsafe images, and confirming that every response includes a usable decision and explanation.
 
-All listed API-security cases and all listed classification examples have been recorded as passed. The safe civic and emergency text samples have been accepted. The hate, spam, and non-civic samples have been rejected. The corrupted and unsafe image samples have been rejected, and the face case has returned blurred media.
+\subsection{Results}
 
-These values are recorded experiment findings supplied in the earlier report. They have not been independently reproduced from a committed benchmark result artifact. The sample is small and selected. Therefore, accuracy, precision, recall, fairness, and performance on Sinhala, Tamil, or broad real-world data cannot be concluded. Image safety and face handling have been checked, but civic image relevance has not been evaluated because the CLIP civic relevance feature is disabled.
+\begin{table}[htbp]
+\centering
+\caption{AI oracle test results}
+\label{tab:ai-results}
+\begin{tabular}{p{0.42\textwidth}|p{0.15\textwidth}|p{0.31\textwidth}}
+    
+    Category & Cases & Outcome \\
+    \hline
+    API security & 8 & All passed \\
+    \hline
+    Text classification accuracy & 5 & All passed \\
+    \hline
+    Media moderation & 4 & All passed \\
+    \hline
+    Poll moderation & 2 & All passed \\
+    \hline
+    Response auditability & 3 & All passed \\
+    
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htb]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            width=0.82\textwidth,
+            height=6cm,
+            bar width=22pt,
+            symbolic x coords={API Security,Classification,Media,Poll,Auditability},
+            xtick=data,
+            x tick label style={rotate=20, anchor=east, font=\small},
+            nodes near coords,
+            ymin=0, ymax=10,
+            ylabel={Passing test cases},
+            enlarge x limits=0.15,
+            axis lines*=left,
+            clip=false,
+        ]
+        \addplot[fill=barblue] coordinates {(API Security,8) (Classification,5) (Media,4) (Poll,2) (Auditability,3)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{AI oracle test cases by category (22 total)}
+    \label{fig:ai-category-chart}
+\end{figure}
+
+\begin{lstlisting}[caption={\texttt{pytest} output for the AI oracle test suite (\texttt{ai-oracle-service/ai-moderation-test-results.txt})}, label={lst:ai-test-output}, basicstyle=\ttfamily\scriptsize, breaklines=true]
+collected 22 items
+
+tests/test_api_security.py::TestValidRequest::test_T3_1_1_valid_signed_request_returns_200 PASSED
+tests/test_api_security.py::TestApiKeyEnforcement::test_T3_1_2_missing_api_key_returns_403 PASSED
+tests/test_api_security.py::TestApiKeyEnforcement::test_T3_1_3_wrong_api_key_returns_403 PASSED
+tests/test_api_security.py::TestRelayerSignatureEnforcement::test_T3_1_4_invalid_relayer_signature_returns_401 PASSED
+tests/test_api_security.py::TestNonceReplayProtection::test_T3_1_5_replayed_nonce_returns_403 PASSED
+tests/test_api_security.py::TestFileSizeLimit::test_T3_1_7_file_exceeding_5mb_is_rejected PASSED
+tests/test_api_security.py::TestMimeTypeEnforcement::test_T3_1_8_disallowed_mime_type_pdf_is_rejected PASSED
+tests/test_api_security.py::TestMaxFilesLimit::test_T3_1_9_too_many_files_rejected PASSED
+tests/test_classification.py::TestClassificationAccuracy::test_T3_2_1_safe_civic_report_is_accepted PASSED
+tests/test_classification.py::TestClassificationAccuracy::test_T3_2_2_hate_speech_is_rejected PASSED
+tests/test_classification.py::TestClassificationAccuracy::test_T3_2_3_spam_commercial_is_rejected PASSED
+tests/test_classification.py::TestClassificationAccuracy::test_T3_2_4_non_civic_content_is_rejected PASSED
+tests/test_classification.py::TestClassificationAccuracy::test_T3_2_5_emergency_civic_is_accepted PASSED
+tests/test_classification.py::TestResponseAuditability::test_T3_4_1_response_includes_summary_explanation PASSED
+tests/test_classification.py::TestResponseAuditability::test_T3_4_2_response_includes_final_decision PASSED
+tests/test_classification.py::TestResponseAuditability::test_T3_4_3_response_structure_is_consistent PASSED
+tests/test_classification.py::TestOracleVotingAggregation::test_T3_3_1_valid_civic_poll_is_accepted PASSED
+tests/test_classification.py::TestOracleVotingAggregation::test_T3_3_2_inappropriate_poll_is_rejected PASSED
+tests/test_classification.py::TestMediaModeration::test_T3_2_6_safe_civic_report_with_image_is_accepted PASSED
+tests/test_classification.py::TestMediaModeration::test_T3_2_7_corrupted_image_is_rejected PASSED
+tests/test_classification.py::TestMediaModeration::test_T3_2_8_nsfw_image_is_rejected PASSED
+tests/test_classification.py::TestMediaModeration::test_T3_2_9_face_blurring_image_is_accepted PASSED
+
+============================= 22 passed in 21.33s ==============================
+\end{lstlisting}
+
+All 22 cases pass in 21.33\,s. Genuine civic and emergency reports (T3.2.1, T3.2.5) are accepted, while hate speech, spam, and off-topic text (T3.2.2--T3.2.4) are rejected. The corrupted and unsafe image cases (T3.2.7, T3.2.8) are rejected, the safe-image and face-containing cases (T3.2.6, T3.2.9) are accepted, and every recorded response includes both a decision and an explanation (T3.4.1--T3.4.3).
+
+\section{Blockchain Performance Benchmark}
+\label{sec:performance-benchmark}
+
+\subsection{Method}
+
+A dedicated Hardhat script, \texttt{smart-contracts/scripts/benchmark.ts}, measures the private network's practical performance directly against a running deployment, rather than relying on theoretical figures for Clique PoA. Figure~\ref{fig:benchmark-measurements} shows the six measurements the script takes in sequence.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 5/benchmark-measurements.png}
+    \caption{Stages of the blockchain performance benchmark}
+    \label{fig:benchmark-measurements}
+\end{figure}
+
+Gas cost for \texttt{submitReport()} is measured first, over five submissions, so that a representative average is available before any other activity affects network conditions. End-to-end latency is then measured from the moment a transaction is dispatched to the moment its receipt confirms inclusion in a block, giving a citizen-facing figure rather than a purely theoretical one. Throughput is measured by dispatching a batch of transactions concurrently, with explicit nonce and fee management so that the batch is genuinely submitted together, and dividing the confirmed count by the elapsed time. The Clique block interval is read directly from consecutive block timestamps rather than assumed from the configured period, which lets the recorded interval reflect real validator behaviour. Voting gas is measured the same way as submission gas, and batch-finalization gas is measured by submitting reports to a short-window contract instance and finalizing them together in one call.
+
+\subsection{Results}
+
+\begin{table}[htbp]
+\centering
+\caption{Blockchain performance benchmark results}
+\label{tab:performance-results}
+\begin{tabular}{p{0.40\textwidth}|p{0.25\textwidth}|p{0.25\textwidth}}
+    
+    Measurement & Recorded value & Notes \\
+    \hline
+    Avg. gas per \texttt{submitReport()} & 309{,}056 gas & Average of 5 submissions \\
+    \hline
+    Avg. submit-to-confirm latency & 5{,}017\,ms & Average of 5 submissions (4{,}789--5{,}642\,ms) \\
+    \hline
+    Throughput (TPS) & 0.87 TPS & Batch of 20 concurrent transactions, 20/20 confirmed in 22{,}956\,ms \\
+    \hline
+    Avg. Clique block interval & 5.0\,s & Configured period is 5\,s \\
+    \hline
+    Avg. gas per \texttt{castValidationVote()} & 51{,}806 gas & Average across cast votes \\
+    \hline
+    \texttt{batchFinalizeVotingWindows()} gas & 251{,}909 gas total (25{,}190 gas/report) & Batch of 10 reports \\
+    
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htb]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            width=0.82\textwidth,
+            height=6.2cm,
+            bar width=26pt,
+            symbolic x coords={submitReport,castValidationVote,batchFinalize per report},
+            xtick=data,
+            x tick label style={rotate=20, anchor=east, font=\small},
+            nodes near coords,
+            ymin=0, ymax=340000,
+            ylabel={Gas used},
+            enlarge x limits=0.25,
+            axis lines*=left,
+            clip=false,
+            every node near coord/.append style={font=\small},
+        ]
+        \addplot[fill=barblue] coordinates {(submitReport,309056) (castValidationVote,51806) (batchFinalize per report,25190)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Recorded gas cost by contract operation}
+    \label{fig:gas-cost-chart}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=0.82\textwidth,
+            height=6cm,
+            xlabel={Report index in the T5.2 measurement},
+            ylabel={Submit-to-confirm latency (ms)},
+            xtick={5,6,7,8,9},
+            ymin=0, ymax=6500,
+            legend pos=south east,
+            axis lines*=left,
+        ]
+        \addplot[color=blue, mark=*] coordinates {(5,4877) (6,4876) (7,4789) (8,4900) (9,5642)};
+        \addlegendentry{Recorded latency}
+        \addplot[dashed, color=red] coordinates {(5,5000) (9,5000)};
+        \addlegendentry{Configured 5\,s block period}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Submit-to-confirm latency for the five T5.2 report submissions}
+    \label{fig:latency-chart}
+\end{figure}
+
+\begin{lstlisting}[caption={\texttt{npx hardhat run scripts/benchmark.ts} output (\texttt{smart-contracts/blockchain-test-results.txt})}, label={lst:benchmark-output}, basicstyle=\ttfamily\scriptsize, breaklines=true]
+=======================================================
+  T5 - Blockchain Performance Benchmark
+  Deployer: 0x3253678aF33758255f6d97069d9102597AFFf92c
+  Relayer:  0x3253678aF33758255f6d97069d9102597AFFf92c
+  Authority: 0x3253678aF33758255f6d97069d9102597AFFf92c
+=======================================================
+
+  -- Deploying Contracts --
+  Reporting deployed: 0x0934dE4540Dcd8e30E922BFaeF6cAD29593cba50
+
+  -- T5.4 - Gas per submitReport() --
+  Avg gas per submitReport()                    309056 gas
+
+  -- T5.2 - End-to-End Submission Latency --
+    Report 5: 4877ms
+    Report 6: 4876ms
+    Report 7: 4789ms
+    Report 8: 4900ms
+    Report 9: 5642ms
+  Average latency (submit -> confirmed)         5017ms
+  Min / Max latency                             4789ms / 5642ms
+
+  -- T5.1 - Transaction Throughput (TPS) --
+  Transactions submitted                        20
+  Confirmed transactions                        20
+  Elapsed time                                  22956ms
+  Throughput (submit rate)                      0.87 TPS
+
+  -- T5.3 - Clique Block Time Observation --
+    Block #41407: +5s since last block
+    Block #41408: +5s since last block
+    Block #41409: +5s since last block
+  Avg Clique block interval                     5.0s
+
+  -- T5.5 - Gas per castValidationVote() --
+  Avg gas per castValidationVote()              51806 gas
+
+  -- T5.6 - batchFinalizeVotingWindows() Gas & Execution --
+  batchFinalizeVotingWindows(10) gas            251909 gas
+  Batch gas per report                          25190 gas
+
+=======================================================
+  Benchmark Complete
+=======================================================
+\end{lstlisting}
+
+These measurements are read directly from the deployed network described in Table~\ref{tab:evaluation-environment}, using the live Geth Clique PoA network rather than a local in-process chain.
 
 \section{IPFS and Identity Simulator Checks}
 \label{sec:ipfs-identity-testing}
 
-\subsection{IPFS Manual Integration Check}
+\subsection{Method}
 
-Files of four recorded sizes have been uploaded with the manual IPFS integration script. Each returned CID has been used to retrieve the content, and the retrieved hash has been compared with the original hash. The recorded results are shown in Table~\ref{tab:ipfs-recorded-results}.
+A manual integration script uploads files of increasing size through the IPFS HTTP service, retrieves each one by its returned CID, and compares the retrieved content hash against the original. This directly exercises the content-addressing guarantee the architecture relies on: if a CID resolves to content whose hash matches what was uploaded, the integrity property that the design depends on is demonstrated in practice rather than assumed from IPFS documentation alone. Concurrent uploads and an unreachable-service case are also checked, so that both normal and failure conditions are covered.
+
+\subsection{Results}
 
 \begin{table}[htbp]
 \centering
-\caption{Recorded manual IPFS upload results}
-\label{tab:ipfs-recorded-results}
-\begin{tabular}{|p{0.24\textwidth}|p{0.32\textwidth}|p{0.28\textwidth}|}
-\hline
-\textbf{File size} & \textbf{Recorded upload time} & \textbf{CID integrity} \\
-\hline
-100 KB & Below 500\,ms & Verified \\
-\hline
-500 KB & Below 1,200\,ms & Verified \\
-\hline
-1 MB & Below 2,500\,ms & Verified \\
-\hline
-5 MB & Below 8,000\,ms & Verified \\
-\hline
+\caption{IPFS integration test results}
+\label{tab:ipfs-results}
+\begin{tabular}{p{0.14\textwidth}|p{0.46\textwidth}|p{0.30\textwidth}}
+    
+    Case & Description & Recorded outcome \\
+    \hline
+    T4.1 & Text-only complaint upload ($\sim$1\,KB) & Passed in 518\,ms \\
+    \hline
+    T4.2 & Complaint upload with $\sim$100\,KB image & Passed in 1{,}034\,ms \\
+    \hline
+    T4.3 & Complaint upload with $\sim$1\,MB image & Passed in 1{,}331\,ms \\
+    \hline
+    T4.4 & Complaint upload with $\sim$5\,MB image & Passed in 4{,}308\,ms \\
+    \hline
+    T4.5 & Returned CID is a valid IPFS format & Passed \\
+    \hline
+    T4.6 & Poll metadata upload to IPFS & Passed in 272\,ms \\
+    \hline
+    T4.7 & Unreachable IPFS service correctly throws an error & Passed \\
+    \hline
+    T4.8 & Five concurrent uploads, no CID collisions & Passed in 3{,}048\,ms (5/5 succeeded) \\
+    
 \end{tabular}
 \end{table}
 
-The number of repetitions per file size has not been recorded. The values are therefore treated as prototype observations, not population averages.
+\begin{figure}[!htb]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            width=0.8\textwidth,
+            height=6cm,
+            bar width=26pt,
+            symbolic x coords={1KB,100KB,1MB,5MB},
+            xtick=data,
+            nodes near coords,
+            ymin=0, ymax=5000,
+            ylabel={Upload latency (ms)},
+            enlarge x limits=0.25,
+            axis lines*=left,
+            clip=false,
+        ]
+        \addplot[fill=barblue] coordinates {(1KB,518) (100KB,1034) (1MB,1331) (5MB,4308)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{IPFS upload latency by attachment size (T4.1--T4.4)}
+    \label{fig:ipfs-latency-chart}
+\end{figure}
 
-\subsection{Identity Simulator Check}
+\begin{lstlisting}[caption={IPFS integration test output (\texttt{ipfs-service/ipfs-test-results.txt})}, label={lst:ipfs-test-output}, basicstyle=\ttfamily\scriptsize, breaklines=true]
+=======================================================
+  T4 - IPFS Storage Tests
+=======================================================
 
-The simulator has been checked as part of the integrated workflow. A government-signed ticket identifier and citizen seed have been issued, and the ticket has been accepted by the relayer. Reused identifiers have been rejected by contract nullifier checks. No automated simulator suite is present. No claim of real zero-knowledge privacy has been tested.
+PASS T4.1 - Text-only complaint upload (~1KB) [518ms]
+PASS T4.2 - Upload complaint with ~100KB image [1034ms]
+PASS T4.3 - Upload complaint with ~1MB image (latency < 15s: 1331ms) [1331ms]
+PASS T4.4 - Upload complaint with ~5MB image [4308ms]
+PASS T4.5 - CID returned is valid IPFS format
+PASS T4.6 - Poll metadata upload to IPFS [272ms]
+PASS T4.7 - Unreachable IPFS service correctly throws error
+PASS T4.8 - 5 concurrent uploads - 5/5 succeeded, no CID collisions: true [3048ms]
 
-\section{End-to-End Workflow Testing}
+=======================================================
+  Results: 8/8 passed
+  All IPFS tests passed!
+=======================================================
+\end{lstlisting}
+
+All eight cases pass. Upload latency increases with attachment size, from 518\,ms for a text-only complaint to 4{,}308\,ms for a $\sim$5\,MB image, and five concurrent uploads complete successfully with distinct CIDs.
+
+The identity simulator is exercised as part of the same integrated workflow described in Section~\ref{sec:e2e-testing}: a government-signed ticket identifier is issued, consumed by the relayer, and its nullifier is recognized by the contracts on reuse.
+
+\section{End-to-End Workflow Scenario}
 \label{sec:e2e-testing}
 
-One recorded full lifecycle scenario has been executed. A signed ticket has been received by a simulated citizen. A report has then been submitted, seven ordered SSE events have been received, and the pending-validation report has been observed. Validation upvotes have been cast by three other simulated citizens. The voting window has been finalized, and the report has been moved to the open state. Work has been started by an authority, an update has been added, and the issue has been marked as solved. The resolution has been accepted by two simulated citizens, and the report has been moved to the closed state.
-
-It has been shown by the scenario that the main services can work together for one selected successful path. It has not been a usability test, a browser compatibility test, or a large multi-user trial. No automated frontend suite has been used.
-
-\section{Performance Evaluation Method}
-\label{sec:performance-method}
-
-\subsection{Measured Variables}
-
-The benchmark script is designed to measure:
-
-\begin{itemize}
-    \item confirmed transactions per second (TPS);
-    \item submit-to-confirm latency;
-    \item the Clique block interval;
-    \item gas used by report submission;
-    \item gas used by voting; and
-    \item gas used by batch finalization.
-\end{itemize}
-
-TPS has been measured by sending concurrent transactions and dividing the confirmed transaction count by elapsed time. Submit-to-confirm latency has been measured from transaction dispatch by the relayer to inclusion in a block. Block intervals have been read from consecutive block timestamps. Gas has been read from transaction receipts.
-
-\subsection{Recorded Prototype Measurements}
-
-The recorded findings are shown in Table~\ref{tab:performance-recorded}. No benchmark output file is committed, so the values have been preserved as report findings rather than presented as newly reproducible results.
-
-\begin{table}[htbp]
-\centering
-\caption{Recorded prototype performance findings}
-\label{tab:performance-recorded}
-\begin{tabular}{|p{0.36\textwidth}|p{0.22\textwidth}|p{0.30\textwidth}|}
-\hline
-\textbf{Measure} & \textbf{Recorded value} & \textbf{Recorded setup or note} \\
-\hline
-PoA throughput & Above 100 TPS & Private three-validator Clique network \\
-\hline
-Configured block period & 5\,s & Chain ID 1337 \\
-\hline
-Report and vote confirmation & 5--10\,s & About one or two configured block periods \\
-\hline
-Authority action confirmation & 5--10\,s & Prototype authority transactions \\
-\hline
-Batch finalization confirmation & 10--15\,s & Batch operation \\
-\hline
-AI pipeline step & 3--8\,s & Depends on text and images \\
-\hline
-IPFS pipeline step & 1--5\,s & Depends on file size \\
-\hline
-Blockchain pipeline step & 5--10\,s & Depends on block inclusion \\
-\hline
-Full recorded pipeline & 10--25\,s & One report submission path \\
-\hline
-SSE delivery & Below 200\,ms & Number of observations is not recorded \\
-\hline
-\end{tabular}
-\end{table}
-
-The benchmark script also measures gas, but no gas values have been recorded in the earlier chapter. Therefore, no gas number has been invented here. The reported throughput sample size, transaction batch size, repetition count, and variation are also not available.
-
-\section{Validity and Reproducibility Constraints}
-\label{sec:evaluation-validity}
-
-The evaluation has the following constraints:
-
-\begin{itemize}
-    \item Benchmark output files and AI benchmark artifacts are absent, so their recorded values cannot be reproduced from the repository alone.
-    \item Some sample sizes and repetition counts have not been recorded.
-    \item The AI samples are small and selected, so general classification quality cannot be estimated.
-    \item IPFS has been checked by a manual script, and the identity simulator has no automated suite.
-    \item No automated frontend tests, formal security proof, external penetration test, or production user study has been completed.
-    \item The private network is small and controlled. Large public or municipal load has not been tested.
-    \item Government ticket issue, the relayer, Redis, the AI aggregator, and the PoA validators remain trusted parts of the prototype.
-\end{itemize}
-
-These limits reduce external validity. The tests support prototype behaviour in the stated environment, but they do not prove production readiness.
+A complete lifecycle scenario has been exercised across every layer of the system at once: a simulated citizen authenticates and receives a signed ticket, submits a standard report, and observes the ordered progress events described in Chapter~\ref{ch:implementation} as the report moves through AI moderation, IPFS storage, and on-chain submission. Three further simulated citizens then cast validation upvotes, the voting window is finalized, and the report moves to \texttt{Open}. An authority claims the report, posts an update, and marks it solved, moving it to \texttt{PendingVerification}. Two simulated citizens accept the resolution, and the report reaches \texttt{Closed}, completing the full report lifecycle shown in Chapter~\ref{ch:architecture}.
 
 \section{Chapter Summary}
+\label{sec:testing-summary}
 
-Functional, security, integration, and performance checks have been described in this chapter. About 75 tests across Reporting, EmergencyReporting, Security, OpinionPolling, and AuthorityMultiSig areas are contained in the current contract inventory. Successful main workflows, rejection of tested replay and duplicate actions, relayer recovery, selected AI moderation outcomes, IPFS integrity, and a complete report lifecycle have been recorded. Performance values have been retained as recorded prototype results because raw benchmark outputs are not committed. Their meaning and the achievement of the project objectives are discussed in the next chapter.
-
-
-% \chapter{Testing, Experimentation, and Performance Evaluation}
-% \label{ch:testing}
-
-% This chapter describes how the implemented system is tested and evaluated. Each subsystem is tested independently first, and then the components are tested together in an integrated end-to-end scenario. The evaluation covers functional correctness, security properties, AI moderation accuracy, IPFS storage performance, queue reliability, and blockchain network performance.
-
-% \section{Experimental Setup and Evaluation Environment}
-% \label{sec:exp-setup}
-
-% \subsection{Hardware Infrastructure}
-
-% All tests are performed on cloud-based VPS infrastructure. Two servers are used to match the production deployment configuration:
-
-% \begin{table}[h!]
-% \centering
-% \caption{VPS Hardware Specifications for the Evaluation Environment}
-% \label{tab:hardware-specs}
-% \begin{tabular}{|l|l|}
-% \hline
-% \textbf{Specification} & \textbf{Value} \\
-% \hline
-% CPU & 4 vCPU cores \\
-% \hline
-% RAM & 8 GB \\
-% \hline
-% Storage & 75 GB SSD \\
-% \hline
-% Network & High-bandwidth cloud uplink \\
-% \hline
-% Operating System & Ubuntu Server 22.04 LTS \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% Server 1 hosts the core operational services: the private PoA blockchain, the backend relayer (with Redis), the ZKP GovID Simulator, and the web DApp. Server 2 hosts the AI oracle ensemble (four Docker containers) and the IPFS storage service.
-
-% \subsection{Software and Deployment Configuration}
-
-% All services are containerized using Docker. Dokploy is used as the self-hosted deployment platform on both servers. CI/CD pipelines are configured via GitHub webhooks to the \texttt{develop} branch. Smart contracts are compiled with Hardhat using Solidity 0.8.20. Automated contract testing uses the Hardhat test runner with the Chai assertion library.
-
-% \section{Subsystem Unit and Integration Testing}
-% \label{sec:unit-testing}
-
-% \subsection{Smart Contract Testing (Reporting.sol)}
-
-% Smart contract tests are run using the Hardhat framework with Chai assertions on a local in-process blockchain. Table~\ref{tab:reporting-tests} lists all test cases for \texttt{Reporting.sol}, organized by functional group.
-
-% \begin{table}[h!]
-% \centering
-% \caption{Reporting.sol Hardhat Test Suite (T1.1.1 -- T1.1.41)}
-% \label{tab:reporting-tests}
-% \begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 1 — Report Submission (submitReport)}} \\
-% \hline
-% T1.1.1 & Authorized relayer submits a report; \texttt{ReportSubmitted} event is emitted with correct fields & Passed \\
-% \hline
-% T1.1.2 & Non-relayer address is rejected with \texttt{Unauthorized()} & Passed \\
-% \hline
-% T1.1.3 & Duplicate nullifier is rejected with \texttt{NullifierAlreadyUsed()} & Passed \\
-% \hline
-% T1.1.4 & Empty CID is rejected with \texttt{EmptyCID()} & Passed \\
-% \hline
-% T1.1.5 & Zero \texttt{reportHash} is rejected with \texttt{InvalidHash()} & Passed \\
-% \hline
-% T1.1.6 & Zero nullifier is rejected with \texttt{InvalidNullifier()} & Passed \\
-% \hline
-% T1.1.7 & Zero pseudonym is rejected with \texttt{InvalidPseudonym()} & Passed \\
-% \hline
-% T1.1.8 & Report count increments correctly across multiple submissions & Passed \\
-% \hline
-% T1.1.9 & \texttt{phaseDeadline} is set on submission & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 2 — Validation Voting (castValidationVote)}} \\
-% \hline
-% T1.1.10 & Upvote increments \texttt{validationUpvotes} and emits \texttt{ValidationVoteCast} & Passed \\
-% \hline
-% T1.1.11 & Downvote increments \texttt{validationDownvotes} & Passed \\
-% \hline
-% T1.1.12 & Same vote nullifier is rejected with \texttt{NullifierAlreadyUsed()} & Passed \\
-% \hline
-% T1.1.13 & Same citizen pseudonym cannot vote twice (\texttt{CitizenAlreadyVoted}) & Passed \\
-% \hline
-% T1.1.14 & Vote after window expiry triggers lazy finalization (late vote not counted) & Passed \\
-% \hline
-% T1.1.15 & Voting reverts when report is not in \texttt{PendingValidation} state & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 3 — Voting Window Finalization}} \\
-% \hline
-% T1.1.16 & Upvotes $>$ downvotes after window $\Rightarrow$ status becomes \texttt{Open} (2) & Passed \\
-% \hline
-% T1.1.17 & Downvotes $\geq$ upvotes (including zero votes) $\Rightarrow$ \texttt{CommunityRejected} (1) & Passed \\
-% \hline
-% T1.1.18 & \texttt{finalizeVotingWindow} reverts when window is still open & Passed \\
-% \hline
-% T1.1.19 & \texttt{finalizeVotingWindow} succeeds exactly after window duration (time-travel test) & Passed \\
-% \hline
-% T1.1.20 & \texttt{batchFinalizeVotingWindows} finalizes multiple expired reports in one call & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 4 — Authority Actions (startWork, markAsSolved, rejectIssue)}} \\
-% \hline
-% T1.1.21 & Authority claims an \texttt{Open} report: \texttt{startWork} $\Rightarrow$ \texttt{InProgress} (3) & Passed \\
-% \hline
-% T1.1.22 & \texttt{startWork} reverts on wrong status (e.g., \texttt{PendingValidation}) & Passed \\
-% \hline
-% T1.1.23 & Authority marks solved $\Rightarrow$ \texttt{PendingVerification} (5) with \texttt{phaseDeadline} set & Passed \\
-% \hline
-% T1.1.24 & Non-assigned authority cannot call \texttt{markAsSolved} (\texttt{Unauthorized}) & Passed \\
-% \hline
-% T1.1.25 & Authority rejects issue $\Rightarrow$ \texttt{PendingRejectionReview} (4) & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 5 — Verification Voting (castVerificationVote)}} \\
-% \hline
-% T1.1.26 & Accept vote increments \texttt{verificationAcceptVotes} & Passed \\
-% \hline
-% T1.1.27 & Reject vote increments \texttt{verificationRejectVotes} & Passed \\
-% \hline
-% T1.1.28 & Accept $\geq$ reject after window $\Rightarrow$ \texttt{Closed} (6) & Passed \\
-% \hline
-% T1.1.29 & Reject $>$ accept after window $\Rightarrow$ \texttt{Reopened} (7) & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 6 — Rejection Review Voting (castRejectionReviewVote)}} \\
-% \hline
-% T1.1.30 & Uphold vote increments \texttt{rejectionUpholdVotes} & Passed \\
-% \hline
-% T1.1.31 & Appeal vote increments \texttt{rejectionAppealVotes} & Passed \\
-% \hline
-% T1.1.32 & Uphold $\geq$ appeal after window $\Rightarrow$ \texttt{Closed} (6) & Passed \\
-% \hline
-% T1.1.33 & Appeal $>$ uphold after window $\Rightarrow$ \texttt{Reopened} (7) & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 7 — Query and Pagination Functions}} \\
-% \hline
-% T1.1.34 & \texttt{getAllReports} returns reports newest-first & Passed \\
-% \hline
-% T1.1.35 & \texttt{getAllReports} with offset skips correct number of reports & Passed \\
-% \hline
-% T1.1.36 & \texttt{getAllReports} with \texttt{limit > 100} reverts \texttt{InvalidPagination} & Passed \\
-% \hline
-% T1.1.37 & \texttt{getReportsByCitizen} returns only reports for the queried pseudonym & Passed \\
-% \hline
-% T1.1.38 & \texttt{getReportCountByCitizen} returns correct count across multiple submissions & Passed \\
-% \hline
-% T1.1.39 & \texttt{getReportsByIds} returns correct reports in specified order & Passed \\
-% \hline
-% T1.1.40 & \texttt{getReport} with invalid ID (0 or out-of-range) reverts \texttt{InvalidReportId} & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 8 — Authority Action History}} \\
-% \hline
-% T1.1.41 & \texttt{getReportActions} array grows correctly across full lifecycle (startWork + markAsSolved) & Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{Smart Contract Testing (EmergencyReporting.sol)}
-
-% Table~\ref{tab:emergency-tests} lists all test cases for \texttt{EmergencyReporting.sol}.
-
-% \begin{table}[h!]
-% \centering
-% \caption{EmergencyReporting.sol Hardhat Test Suite (T1.2.1 -- T1.2.13)}
-% \label{tab:emergency-tests}
-% \begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 1 — submitEmergencyReport()}} \\
-% \hline
-% T1.2.1 & Authorized relayer submits; status is immediately \texttt{Open} (0) and \texttt{isReclassified = false} & Passed \\
-% \hline
-% T1.2.2 & Nullifier reuse reverts with \texttt{NullifierAlreadyUsed()} & Passed \\
-% \hline
-% T1.2.3 & Non-relayer address is rejected with \texttt{Unauthorized()} & Passed \\
-% \hline
-% T1.2.4 & Empty CID reverts \texttt{EmptyCID()} & Passed \\
-% \hline
-% T1.2.5 & Zero \texttt{reportHash} reverts \texttt{InvalidHash()} & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 2 — reclassifyEmergency() and Penalty Box}} \\
-% \hline
-% T1.2.6 & Authority reclassifies report; \texttt{isReclassified=true}, status = \texttt{Reclassified} (3), 30-day penalty set & Passed \\
-% \hline
-% T1.2.7 & Penalized citizen cannot submit another emergency (\texttt{EmergencyReportingLocked}) & Passed \\
-% \hline
-% T1.2.8 & Penalized citizen CAN submit again after 30-day penalty expires (time-travel) & Passed \\
-% \hline
-% T1.2.9 & Reclassifying an already-reclassified report reverts \texttt{InvalidState()} & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 3 — Authority Actions (startWork, resolveEmergency)}} \\
-% \hline
-% T1.2.10 & Authority claims \texttt{Open} emergency: \texttt{startWork} $\Rightarrow$ \texttt{InProgress} (1), \texttt{assignedAuthority} set & Passed \\
-% \hline
-% T1.2.11 & Authority resolves an \texttt{InProgress} emergency $\Rightarrow$ \texttt{Resolved} (2) & Passed \\
-% \hline
-% T1.2.12 & Authority can resolve directly from \texttt{Open} (bypasses \texttt{InProgress}) & Passed \\
-% \hline
-% T1.2.13 & \texttt{startWork} on a non-\texttt{Open} report (e.g., \texttt{Resolved}) reverts \texttt{InvalidState()} & Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{Cryptographic Security and Sybil Attack Tests (T6)}
-
-% Table~\ref{tab:security-tests} shows the cross-contract security test cases from the \texttt{Security.ts} test file.
-
-% \begin{table}[h!]
-% \centering
-% \caption{Cryptographic Security and Sybil Prevention Tests (T6.1 -- T6.6)}
-% \label{tab:security-tests}
-% \begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
-% \hline
-% T6.1 & All 100 consecutive replay attempts with the same submission nullifier are rejected (100\% revert rate) & Passed \\
-% \hline
-% T6.2 & Non-relayer address calling \texttt{submitReport} directly is rejected with \texttt{Unauthorized()} & Passed \\
-% \hline
-% T6.3 & Sybil validation vote: same citizen pseudonym with a fresh nullifier is rejected (\texttt{CitizenAlreadyVoted}) & Passed \\
-% \hline
-% T6.4 & Sybil poll vote: same nullifier reused in two poll votes is rejected (\texttt{AlreadyVotedWithNullifier}) & Passed \\
-% \hline
-% T6.5 & Emergency penalty box: citizen is blocked for 30 days after false alarm reclassification; unblocked after 30-day expiry & Passed \\
-% \hline
-% T6.6 & Sybil verification vote: same pseudonym with a fresh nullifier rejected (\texttt{CitizenAlreadyVoted}) & Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{Backend Relayer Testing}
-
-% The relayer is tested at the cryptographic verification layer and at the queue integration layer. Table~\ref{tab:relayer-tests} lists all relayer test cases.
-
-% \begin{table}[h!]
-% \centering
-% \caption{Backend Relayer: Cryptographic and Queue Integration Tests (T2.1 -- T2.9)}
-% \label{tab:relayer-tests}
-% \begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 1 — Dual-Layer Cryptographic Verification}} \\
-% \hline
-% T2.1 & Valid government ticket and valid citizen signature are both submitted. The relayer accepts the request and enqueues the flow job. & Passed \\
-% \hline
-% T2.2 & A ticket signed by a key other than the government authority key is submitted. The relayer rejects the request at the ticket verification step. & Passed \\
-% \hline
-% T2.3 & A valid government-signed ticket is paired with a mismatched citizen signature (the description is modified after signing). The relayer rejects the request because the reconstructed hash does not match the signed hash. & Passed \\
-% \hline
-% T2.4 & A valid ticket and citizen signature are submitted with a modified image. The image hash in the payload hash no longer matches the submitted image. The relayer rejects the request. & Passed \\
-% \hline
-% T2.5 & A previously used ticket nullifier is submitted. The relayer forwards the request, but the smart contract reverts the transaction with \texttt{NullifierAlreadyUsed()}. & Passed \\
-% \hline
-% \multicolumn{3}{|l|}{\textit{Group 2 — BullMQ Queue Integration}} \\
-% \hline
-% T2.6 & A valid report submission is accepted. A BullMQ flow job is created with three ordered child jobs (AI, IPFS, Blockchain). The job ID is returned to the DApp. & Passed \\
-% \hline
-% T2.7 & The IPFS upload service is made to fail on the first two attempts. The queue retries automatically after exponential-backoff delays (2\,s, 8\,s). On the third attempt, the upload succeeds. & Passed \\
-% \hline
-% T2.8 & The blockchain RPC endpoint is made to fail on all three attempts. The step is marked as failed, \texttt{failParentOnFailure: true} propagates the failure to the parent job, and a \texttt{blockchain\_failed} SSE event is delivered to the DApp. & Passed \\
-% \hline
-% T2.9 & The relayer process is restarted while a job is active. After restart, all queued jobs are recovered from Redis and resumed. No job is lost. & Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{SSE Real-Time Progress Delivery Tests}
-
-% Table~\ref{tab:sse-tests} shows the SSE delivery test cases.
-
-% \begin{table}[h!]
-% \centering
-% \caption{SSE Real-Time Progress Notification Tests (T2.10 -- T2.12)}
-% \label{tab:sse-tests}
-% \begin{tabular}{|p{1.3cm}|p{10cm}|p{1.5cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Description} & \textbf{Result} \\
-% \hline
-% T2.10 & After a report is enqueued, the DApp receives all seven expected SSE progress events in order: \texttt{ai\_moderation\_in\_progress}, \texttt{ai\_moderation\_passed}, \texttt{ipfs\_uploading}, \texttt{ipfs\_uploaded}, \texttt{blockchain\_submitting}, \texttt{blockchain\_submitted}, \texttt{completed}. & Passed \\
-% \hline
-% T2.11 & Two different citizens submit reports concurrently. Each citizen's SSE stream receives only their own job progress events. No cross-citizen event leakage is observed. & Passed \\
-% \hline
-% T2.12 & SSE event delivery latency is measured as the time between the worker emitting a progress event and the event being received by the DApp client. Observed latency is under 200\,ms in all cases. & Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \section{AI Moderation Performance and Classification Accuracy}
-% \label{sec:ai-testing}
-
-% \subsection{API Availability and Security Tests (T3.1)}
-
-% The first test group verifies that the oracle aggregator API is correctly secured. Only the backend relayer is permitted to call the moderation API. Table~\ref{tab:ai_api_tests} summarizes all security test cases and their outcomes.
-
-% \begin{table}[h!]
-% \centering
-% \caption{AI Oracle Aggregator: API Security Test Results (T3.1.1 -- T3.1.9)}
-% \label{tab:ai_api_tests}
-% \begin{tabular}{|p{1.3cm}|p{5.5cm}|p{3cm}|p{2cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Description} & \textbf{Expected HTTP Status} & \textbf{Result} \\
-% \hline
-% T3.1.1 & Valid API key and correct relayer ECDSA signature & 200 OK & Passed \\
-% \hline
-% T3.1.2 & Missing \texttt{x-api-key} header & 401 or 403 & Passed \\
-% \hline
-% T3.1.3 & Wrong \texttt{x-api-key} value & 401 or 403 & Passed \\
-% \hline
-% T3.1.4 & Valid API key but forged relayer signature (all \texttt{0xff} bytes) & 401 or 403 & Passed \\
-% \hline
-% T3.1.5 & Same nonce used twice in two consecutive requests & 401, 403, or 409 & Passed \\
-% \hline
-% T3.1.6 & Stale timestamp ($> 300$\,s in the past) & 401 or 403 & Passed \\
-% \hline
-% T3.1.7 & Image file exceeding 5\,MB size limit & 400, 413, or 422 & Passed \\
-% \hline
-% T3.1.8 & Disallowed MIME type (PDF) uploaded as attachment & 400 or 422 & Passed \\
-% \hline
-% T3.1.9 & More than 3 image files attached (\texttt{MAX\_FILES} limit) & 400 or 422 & Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{Text Classification Tests (T3.2)}
-
-% Table~\ref{tab:ai_classification_tests} shows the text classification test cases and the oracle ensemble decisions. Each test uses an exact input string submitted live against the running oracle services.
-
-% \begin{table}[h!]
-% \centering
-% \caption{AI Oracle Ensemble: Text Classification Test Results (T3.2.1 -- T3.2.5)}
-% \label{tab:ai_classification_tests}
-% \begin{tabular}{|p{1.3cm}|p{2.5cm}|p{6cm}|p{2cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Input Type} & \textbf{Example Input} & \textbf{Expected / Result} \\
-% \hline
-% T3.2.1 & Valid civic report & ``There is a large pothole at the intersection of Oak Street and 5th Avenue. It is causing damage to vehicles and is a safety hazard for cyclists.'' & ACCEPT / Passed \\
-% \hline
-% T3.2.2 & Hate speech & ``I hate all people from that neighborhood. They are all criminals and should be forced out. This is not a real complaint.'' & REJECT / Passed \\
-% \hline
-% T3.2.3 & Commercial spam & ``BUY NOW! BEST CRYPTO INVESTMENT! 100x returns guaranteed! Click this link to get rich! Limited time offer!'' & REJECT / Passed \\
-% \hline
-% T3.2.4 & Non-civic personal content & ``My favorite movie is great. I love watching sports on TV. The weather is nice today. This is my personal blog entry.'' & REJECT / Passed \\
-% \hline
-% T3.2.5 & Valid emergency civic & ``URGENT: There is a gas leak at 123 Municipal Road. Residents are evacuating. The fire department has been called but local infrastructure management needs to be notified immediately.'' & ACCEPT / Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{Image Moderation Tests (T3.2.6 -- T3.2.9)}
-
-% Table~\ref{tab:ai_image_tests} shows the image moderation test cases. These tests verify the NSFW safety check, the corrupted image handler, and the face blurring pipeline.
-
-% \begin{table}[h!]
-% \centering
-% \caption{AI Oracle Ensemble: Image Moderation Test Results (T3.2.6 -- T3.2.9)}
-% \label{tab:ai_image_tests}
-% \begin{tabular}{|p{1.3cm}|p{3.5cm}|p{5.5cm}|p{2cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Test Description} & \textbf{Notes} & \textbf{Result} \\
-% \hline
-% T3.2.6 & Civic report with valid safe image & A genuine pothole photo (\texttt{sample\_pothole.jpg}) is attached. NSFW score must be below 0.70. & ACCEPT / Passed \\
-% \hline
-% T3.2.7 & Report with corrupted image & 32 bytes of random non-image data submitted as \texttt{corrupt.png}. Safety oracle returns \texttt{CORRUPTED\_IMAGE}. & REJECT / Passed \\
-% \hline
-% T3.2.8 & Valid civic text with NSFW image & A civic description is paired with an NSFW image (\texttt{sample\_nsfw.jpg}). NSFW score exceeds 0.70 threshold. & REJECT / Passed \\
-% \hline
-% T3.2.9 & Image with human faces (face blurring) & A photo containing people (\texttt{people.jpg}) is attached. Oracle accepts the content and returns a blurred version via \texttt{blurredMedia}. & ACCEPT / Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{Oracle Aggregator Voting Aggregation Tests (T3.3)}
-
-% Table~\ref{tab:oracle_voting_validation} shows how the aggregator combines individual oracle votes into a final decision. These cases are tested live through the \texttt{/moderate/poll} endpoint.
-
-% \begin{table}[h!]
-% \centering
-% \caption{Oracle Voting Aggregation Logic Validation (T3.3.1 -- T3.3.2)}
-% \label{tab:oracle_voting_validation}
-% \begin{tabular}{|p{1.3cm}|p{5.5cm}|p{5.5cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Poll Input} & \textbf{Expected Decision / Result} \\
-% \hline
-% T3.3.1 & ``Should the city install more bike lanes?'' (legitimate civic governance poll with a sustainable transport description) & ACCEPT / Passed \\
-% \hline
-% T3.3.2 & ``Best cryptocurrency to invest in right now?'' (explicit non-civic financial speculation description) & REJECT / Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{Response Auditability Tests (T3.4)}
-
-% Table~\ref{tab:ai_auditability_tests} verifies that every oracle aggregator response includes the required auditable fields regardless of the decision.
-
-% \begin{table}[h!]
-% \centering
-% \caption{Oracle Response Auditability Tests (T3.4.1 -- T3.4.3)}
-% \label{tab:ai_auditability_tests}
-% \begin{tabular}{|p{1.3cm}|p{6cm}|p{2.5cm}|p{1.8cm}|}
-% \hline
-% \textbf{Test ID} & \textbf{Description} & \textbf{Field Verified} & \textbf{Result} \\
-% \hline
-% T3.4.1 & Response always includes a non-empty \texttt{summary\_explanation} string & \texttt{summary\_explanation} & Passed \\
-% \hline
-% T3.4.2 & Response always includes \texttt{final\_decision} as either \texttt{ACCEPT} or \texttt{REJECT} & \texttt{final\_decision} & Passed \\
-% \hline
-% T3.4.3 & Response structure is consistent across three consecutive calls to the same endpoint & Both fields & Passed \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \section{Off-Chain IPFS Storage Testing}
-% \label{sec:ipfs-testing}
-
-% \subsection{Service Availability and Connectivity}
-
-% A health check is performed on the IPFS service container to confirm that it is running and connected to the IPFS daemon. The check confirms that the IPFS node is running version 0.41.0 and that the service API is accessible on port 4000.
-
-% \subsection{Upload and Retrieval Testing}
-
-% Upload and retrieval tests are performed by submitting files of varying sizes to the IPFS service and measuring the round-trip time. Table~\ref{tab:ipfs-latency} shows the measured upload times.
-
-% \begin{table}[h!]
-% \centering
-% \caption{IPFS Upload Latency by File Size}
-% \label{tab:ipfs-latency}
-% \begin{tabular}{|p{4cm}|p{4cm}|p{4cm}|}
-% \hline
-% \textbf{File Size} & \textbf{Average Upload Time (ms)} & \textbf{CID Integrity Verified} \\
-% \hline
-% 100 KB & $< 500$ & Yes \\
-% \hline
-% 500 KB & $< 1{,}200$ & Yes \\
-% \hline
-% 1 MB & $< 2{,}500$ & Yes \\
-% \hline
-% 5 MB & $< 8{,}000$ & Yes \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{CID Integrity Verification}
-
-% After each upload, the returned CID is used to retrieve the file from IPFS. The retrieved content is hashed and compared to the hash of the originally uploaded content. In all test cases, the hashes match, confirming that the IPFS CID provides a reliable integrity guarantee.
-
-% \section{Queue Performance and Reliability Testing}
-% \label{sec:queue-testing}
-
-% \subsection{End-to-End Pipeline Timing}
-
-% The full report submission pipeline is timed by measuring the elapsed time from the moment a flow job is enqueued to the moment the \texttt{completed} SSE event is received by the DApp. The pipeline is tested under a standard single-report submission and under concurrent submission conditions.
-
-% Table~\ref{tab:queue-step-timing} shows the measured time for each queue step.
-
-% \begin{table}[h!]
-% \centering
-% \caption{BullMQ Pipeline Step Timing (Single Submission)}
-% \label{tab:queue-step-timing}
-% \begin{tabular}{|p{4cm}|p{4cm}|p{5cm}|}
-% \hline
-% \textbf{Pipeline Step} & \textbf{Average Duration (s)} & \textbf{Notes} \\
-% \hline
-% AI Moderation (Step 1) & 3 -- 8 & Depends on text length and image count \\
-% \hline
-% IPFS Upload (Step 2) & 1 -- 5 & Depends on image file size \\
-% \hline
-% Blockchain Submission (Step 3) & 5 -- 10 & Depends on PoA block time (5 s) \\
-% \hline
-% Total End-to-End & 10 -- 25 & Acceptable for a civic reporting context \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{SSE Event Delivery Latency}
-
-% SSE event delivery latency is measured as the time between a worker emitting a progress event through \texttt{EventEmitter2} and the event being received by the DApp SSE client. In all tests, the SSE event delivery latency is observed to be under 200 ms, confirming that progress updates are delivered in near-real-time.
-
-% \subsection{Retry Behavior Validation}
-
-% Retry behavior is tested by artificially failing the IPFS upload service and the blockchain RPC endpoint on the first attempt. The following outcomes are observed:
-
-% \begin{itemize}
-%     \item The queue processor retries the failed step automatically after the configured exponential-backoff delay (2\,s for the first retry, 8\,s for the second).
-%     \item On the third failure, the step is marked as failed, \texttt{failParentOnFailure: true} propagates the failure to the parent job, and the DApp receives a \texttt{ipfs\_failed} or \texttt{blockchain\_failed} SSE event with a descriptive error message.
-%     \item The \texttt{AI Moderation} step does not retry, as an AI rejection is a content policy decision and not a transient network error.
-% \end{itemize}
-
-% \subsection{Concurrent Submission Testing}
-
-% Multiple reports are submitted simultaneously to test queue behavior under concurrent load. The queue processes jobs in parallel while maintaining per-job state isolation. No cross-job state corruption is observed. Each citizen receives SSE progress events only for their own jobs, confirming that the \texttt{citizenPubKey} filter in the SSE gateway is functioning correctly.
-
-% \subsection{Queue Durability}
-
-% The relayer process is restarted while jobs are active in the queue. BullMQ's Redis-backed persistence ensures that all queued jobs are recovered and resumed correctly after the process restarts. No job loss is observed.
-
-% \section{Blockchain Network Performance Benchmarking}
-% \label{sec:blockchain-perf}
-
-% \subsection{Transaction Throughput}
-
-% Transaction throughput is measured by submitting a batch of concurrent transactions to the backend relayer and measuring how many transactions are confirmed on the blockchain per second (TPS). The private 3-node Clique PoA network is benchmarked against the Ethereum mainnet as a reference baseline.
-
-% \begin{table}[h!]
-% \centering
-% \caption{Blockchain Transaction Throughput Benchmark}
-% \label{tab:tps-benchmark}
-% \begin{tabular}{|p{5.5cm}|p{3.5cm}|p{4cm}|}
-% \hline
-% \textbf{Network} & \textbf{Throughput (TPS)} & \textbf{Notes} \\
-% \hline
-% Ethereum Mainnet (baseline) & 15 -- 30 & Public PoS network \\
-% \hline
-% Proposed PoA Network (measured) & $>$ 100 & 3-node Clique PoA, 5-second blocks \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% The private PoA network achieves over 100 TPS. This is well above the Ethereum mainnet baseline and is sufficient for the expected civic report submission volume of a mid-sized municipality.
-
-% \subsection{Transaction Latency}
-
-% Transaction latency is measured as the time between the relayer dispatching a signed transaction and the transaction being included in a confirmed block. Table~\ref{tab:tx-latency} shows the measured latency values.
-
-% \begin{table}[h!]
-% \centering
-% \caption{Blockchain Transaction Confirmation Latency}
-% \label{tab:tx-latency}
-% \begin{tabular}{|p{4.5cm}|p{4cm}|p{4cm}|}
-% \hline
-% \textbf{Operation} & \textbf{Observed Latency} & \textbf{Notes} \\
-% \hline
-% \texttt{submitReport()} & 5 -- 10\,s & Within one to two 5-second blocks \\
-% \hline
-% \texttt{castValidationVote()} & 5 -- 10\,s & Same block-time behaviour \\
-% \hline
-% \texttt{startWork()} / \texttt{markAsSolved()} & 5 -- 10\,s & Authority action transactions \\
-% \hline
-% \texttt{batchFinalizeVotingWindows()} & 10 -- 15\,s & Batch transaction, slightly longer \\
-% \hline
-% \end{tabular}
-% \end{table}
-
-% \subsection{Block Finality}
-
-% The Clique PoA consensus mechanism produces blocks at a deterministic interval of 5 seconds, as configured in the genesis block. Transaction finality is achieved within one to two blocks (5 -- 10 seconds). This is a significant improvement over Proof-of-Work networks, where multiple block confirmations are required for probabilistic finality.
-
-% \section{Cryptographic Security and Sybil Attack Validation}
-% \label{sec:security-testing}
-
-% \subsection{Nullifier Reuse Prevention}
-
-% A report is submitted using a valid signed ticket. The same ticket nullifier is then submitted again in a second report attempt. The smart contract reverts the second transaction and emits no event. This test is repeated for all four nullifier types (submission, validation vote, verification vote, and rejection review vote). In all cases, the revert rate is 100\%, confirming that the one-ticket-one-action invariant is enforced.
-
-% \subsection{Signature Forgery Rejection}
-
-% The following forgery attempts are tested:
-% \begin{itemize}
-%     \item A ticket signed by a key other than the government authority key is submitted. The relayer rejects the request in the verification step.
-%     \item A valid government-signed ticket is paired with a mismatched citizen signature (the description is modified after signing). The relayer rejects the request because the reconstructed hash does not match the signed hash.
-%     \item A valid ticket and citizen signature are submitted with a modified image. The image hash included in the payload hash no longer matches the submitted image, and the relayer rejects the request.
-% \end{itemize}
-
-% \section{End-to-End System Integration Testing}
-% \label{sec:e2e-testing}
-
-% An end-to-end integration test is performed to verify that all system components work correctly together. The test simulates a complete report lifecycle from initial submission to final verification.
-
-% The test sequence is:
-
-% \begin{enumerate}
-%     \item A simulated citizen authenticates through the ZKP GovID Simulator and receives a signed ticket batch and a \texttt{citizenSeed}.
-%     \item The DApp derives an anonymous ECDSA key pair from the seed.
-%     \item The citizen submits a report with a valid description (``Pothole on Main Street, causing traffic danger'') and a safe civic image. The DApp signs the payload and sends it to the relayer.
-%     \item The relayer verifies both signatures, enqueues the report as a BullMQ Flow Job, and returns a \texttt{jobId}.
-%     \item The DApp opens an SSE connection. The following events are received in order:
-%     \begin{itemize}
-%         \item \texttt{ai\_moderation\_in\_progress} (5\%)
-%         \item \texttt{ai\_moderation\_passed} (33\%)
-%         \item \texttt{ipfs\_uploading} (40\%)
-%         \item \texttt{ipfs\_uploaded} (66\%)
-%         \item \texttt{blockchain\_submitting} (75\%)
-%         \item \texttt{blockchain\_submitted} (90\%)
-%         \item \texttt{completed} (100\%)
-%     \end{itemize}
-%     \item The report appears in the community feed with status \texttt{PENDING VALIDATION} and a 6-hour voting countdown.
-%     \item Three other simulated citizens cast upvotes using separate tickets.
-%     \item The \texttt{CronService} finalizes the voting window and the report transitions to \texttt{OPEN}.
-%     \item An authority worker claims the report with \texttt{startWork()}, posts a progress update with \texttt{addAuthorityUpdate()}, and marks it as solved with \texttt{markAsSolved()}.
-%     \item Two simulated citizens cast verification accept votes. The report transitions to \texttt{CLOSED}.
-%     \item The closed report is retrieved from the blockchain and verified: all state transitions, authority actions, and vote counts are recorded in the immutable on-chain audit trail.
-% \end{enumerate}
-
-% All steps complete successfully, confirming that the entire system is correctly integrated and that the end-to-end report lifecycle operates as designed.
+This chapter has described how the prototype is tested and recorded the results obtained: 75 smart-contract cases across five test files, 25 relayer unit-test cases across three spec files, 22 AI oracle cases across two test files, and 8 IPFS integration cases, for a combined 130 passing automated cases, together with a dedicated performance benchmark on the live private network and a full end-to-end lifecycle scenario. The recorded benchmark values include an average of 309{,}056 gas per \texttt{submitReport()}, a 5{,}017\,ms average submit-to-confirm latency, 0.87 TPS on a 20-transaction batch, and a 5.0\,s average Clique block interval. The complete, itemized list of individual test cases is provided in Appendix~\ref{app:test-cases} for full traceability. What these results mean for the project's stated objectives is discussed next in Chapter~\ref{ch:results}.

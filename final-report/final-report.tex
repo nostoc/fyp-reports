@@ -16,7 +16,6 @@
 \usepackage{acro}
 \usepackage{comment} 
 \usepackage{array}
-\usepackage{rotating}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Include page set-up options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,6 +42,8 @@
 \usepackage{geometry}  % To ensure margins fit large figures
 \usepackage{graphicx}
 \usepackage[export]{adjustbox}
+\usepackage{pgfplots}  % Native bar/line charts for test-result data
+\pgfplotsset{compat=1.18}
 \usepackage{microtype} % For micro-typography and reducing overfull hboxes
 \emergencystretch=3em
 \tolerance=2000
@@ -319,17 +320,17 @@
 
 %%%%%%%%%%%%%%%%%%%%% The End matters %%%%%%%%%%%%%%%%%%%%%
 
-% \begin{appendix}
-% \include{End_matters/appendix_01}
-% \include{End_matters/appendix_02}
-% \include{End_matters/appendix_03}
-% \include{End_matters/appendix_04}
-% \include{End_matters/appendix_05}
-% \include{End_matters/appendix_06}
+\begin{appendix}
+\include{End_matters/appendix_01}
+\include{End_matters/appendix_02}
+\include{End_matters/appendix_03}
+\include{End_matters/appendix_04}
+\include{End_matters/appendix_05}
+\include{End_matters/appendix_06}
 
-% \end{appendix}
+\end{appendix}
 
-% \addcontentsline{toc}{chapter}{APPENDIX}
+\addcontentsline{toc}{chapter}{APPENDIX}
 
 %%%%%%%%%%%%%%%%%%%%% Bibiliography %%%%%%%%%%%%%%%%%%%%%
 \cleardoublepage

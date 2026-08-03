@@ -46,26 +46,35 @@ The private blockchain is implemented with Geth version 1.13.15 and Clique Proof
 
 Four Geth nodes are configured, as shown in Figure~\ref{fig:poa-node-configuration}. Nodes 1, 2, and 3 run with block sealing enabled and use separate validator accounts, matching the three sealer addresses fixed in the genesis file. Node 4 does not run with block sealing enabled; instead, it exposes the HTTP JSON-RPC endpoint on port 8545 and is used by application services. Keeping sealing and RPC serving on different nodes means that request traffic from the dApp and the relayer is handled entirely by Node 4, so it cannot add load to, or interfere with, the three nodes that are actually reaching consensus. All four nodes share network ID 1337 and fixed peer addresses, so the RPC node stays synchronized with the sealing validators without needing to participate in sealing itself.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.85\textwidth,height=0.5\textheight,keepaspectratio]{Images/Chapter 4/poa-node-configuration.png}
-%     \caption{Node and port configuration of the private Geth Clique PoA network}
-%     \label{fig:poa-node-configuration}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/poa-node-configuration.png}
+    \caption{Node and port configuration of the private Geth Clique PoA network}
+    \label{fig:poa-node-configuration}
+\end{figure}
 
 The network is private and permissioned, which was chosen because Clique gives predictable confirmation time for a citizen-facing reporting workload, and because a small, known validator set is straightforward to operate and reason about during a prototype phase.
 
 \section{Smart Contract Implementation}
 \label{sec:contract-implementation}
 
-Four contracts are deployed: \texttt{Reporting}, \texttt{EmergencyReporting}, \texttt{AuthorityMultiSig}, and \texttt{OpinionPolling}. The source files use Solidity pragma \texttt{\string^0.8.20}. The current Hardhat configuration compiles with Solidity 0.8.28, the London EVM target, optimization, and the intermediate-representation pipeline, which together keep deployed bytecode small and gas usage predictable. Figure~\ref{fig:contract-relationships} shows how the four contracts call and govern one another.
+Four contracts are deployed.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.85\textwidth,height=0.6\textheight,keepaspectratio]{Images/Chapter 4/contract-relationships.png}
-%     \caption{Relationships between the four deployed smart contracts}
-%     \label{fig:contract-relationships}
-% \end{figure}
+\begin{enumerate}
+    \item Reporting
+    \item EmergencyReporting
+    \item AuthorityMultiSig
+    \item OpinionPolling
+\end{enumerate}
+
+The source files use Solidity pragma \texttt{\string^0.8.20}. The current Hardhat configuration compiles with Solidity 0.8.28, the London EVM target, optimization, and the intermediate-representation pipeline, which together keep deployed bytecode small and gas usage predictable. Figure~\ref{fig:contract-relationships} shows how the four contracts call and govern one another.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/contract-relationships.png}
+    \caption{Relationships between the four deployed smart contracts}
+    \label{fig:contract-relationships}
+\end{figure}
 
 \subsection{Reporting Contract}
 \label{subsec:reporting-contract}
@@ -75,9 +84,17 @@ The Reporting contract stores standard civic reports. Each report includes an ID
 The following eight statuses are implemented:
 
 \begin{quote}
-\texttt{PendingValidation}, \texttt{CommunityRejected}, \texttt{Open},
-\texttt{InProgress}, \texttt{PendingRejectionReview},
-\texttt{PendingVerification}, \texttt{Closed}, and \texttt{Reopened}.
+    \begin{enumerate}
+        \item {PendingValidation}
+        \item {CommunityRejected}
+        \item {Open}
+        \item {InProgress}
+        \item {PendingRejectionReview}
+        \item {PendingVerification}
+        \item {Closed}
+        \item {Reopened}
+    \end{enumerate}
+
 \end{quote}
 
 Standard submissions are created as \texttt{PendingValidation}. The default voting window is six hours. Four voting methods are available: simple majority, two-thirds supermajority, minimum threshold, and a hybrid of two methods. The simple-majority method is selected by default because it keeps everyday validation responsive, while the other methods remain available through governance for deployments that need stronger confidence before a decision.
@@ -136,12 +153,12 @@ The backend relayer is implemented with NestJS and ethers.js. Citizen-facing blo
 
 After these checks, the citizen pseudonym is derived according to Equation~\ref{eq:pseudonym}. Image buffers are converted to base64 before queue storage so that they can pass through Redis, which stores queue payloads as text-safe data.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.95\textwidth,height=0.85\textheight,keepaspectratio]{Images/Chapter 4/relayer-pipeline-implementation.png}
-%     \caption{Relayer verification checks and BullMQ job pipeline implementation}
-%     \label{fig:relayer-pipeline-implementation}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=0.85\textheight,keepaspectratio]{Images/Chapter 4/relayer-pipeline-implementation.png}
+    \caption{Relayer verification checks and BullMQ job pipeline implementation}
+    \label{fig:relayer-pipeline-implementation}
+\end{figure}
 
 A BullMQ flow contains three ordered child jobs. The AI moderation job is run first, the IPFS upload job is run second, and the blockchain submission job is run third. The AI step has one attempt because a moderation rejection is a decision about the content itself, and retrying with the same input would not change that decision. The IPFS and blockchain steps allow three attempts each, because failures at those steps are more often transient network or RPC issues that a short retry budget can resolve. A failed child is configured to fail its parent flow, so a report can never be left in a silently inconsistent state, such as being moderated and stored but never anchored on-chain.
 
@@ -157,12 +174,12 @@ The AI component is implemented as one decision aggregator and three classifier 
 
 The relayer sends a moderation request with an API key, a relayer signature, a timestamp, and a random nonce, as shown in Figure~\ref{fig:ai-request-protection}. These four checks are layered deliberately, each closing a gap the others leave open: the API key restricts network-level access to the service, the relayer signature binds a request to the specific relayer that produced it so the key alone cannot be used to impersonate it, the timestamp limits how long a captured request remains usable, and the nonce store stops that same request from being replayed again within that window.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.85\textwidth,height=0.6\textheight,keepaspectratio]{Images/Chapter 4/ai-request-protection.png}
-%     \caption{AI moderation request protection and aggregation sequence}
-%     \label{fig:ai-request-protection}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=0.6\textheight,keepaspectratio]{Images/Chapter 4/ai-request-protection.png}
+    \caption{AI moderation request protection and aggregation sequence}
+    \label{fig:ai-request-protection}
+\end{figure}
 
 A canonical request object is hashed and signed by the relayer. The aggregator recovers the signer address and compares it with the trusted relayer address. The timestamp is checked against a configurable maximum age, and used nonces are stored in SQLite and rejected on reuse; SQLite is used here because the nonce store only needs simple, fast, local persistence for a single service rather than a separately managed database.
 
@@ -250,13 +267,13 @@ A separate Vite and React portal is implemented for the government identity simu
 Services are containerized and are configured through environment variables, so the same container images can be promoted between development and deployment environments by changing configuration rather than code. Blockchain configuration includes RPC URLs, contract addresses, chain ID, and relayer keys. Relayer configuration includes the government address, pseudonym salt, Redis connection, AI endpoint, API key, and IPFS endpoint. AI configuration includes trusted relayer details, model switches, thresholds, request age, nonce database path, and worker URLs.
 
 The prototype is deployed across two hosts, as shown in Figure~\ref{fig:deployment-topology}. The Geth nodes, relayer, Redis, identity simulator, and web application are grouped on one host, while the AI aggregator, its three classifier services, and the IPFS service are grouped on a second host. This split is deliberate: AI inference and image processing are comparatively heavy and can have variable latency, and keeping them on a separate host means a spike in moderation load cannot compete for CPU or memory with the relayer or, more importantly, with the Geth nodes that need to seal blocks on schedule.
-
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.9\textwidth,height=0.6\textheight,keepaspectratio]{Images/Chapter 4/deployment-topology.png}
-%     \caption{Deployment topology of the containerized services}
-%     \label{fig:deployment-topology}
-% \end{figure}
+`'
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\textwidth,keepaspectratio]{Images/Chapter 4/deployment-topology.png}
+    \caption{Deployment topology of the containerized services}
+    \label{fig:deployment-topology}
+\end{figure}
 
 The AI workers communicate with the aggregator through an internal service network, and the IPFS HTTP endpoint is likewise reached only through that internal network rather than being exposed directly.
 
