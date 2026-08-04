@@ -59,7 +59,7 @@ The network is private and permissioned, which was chosen because Clique gives p
 \section{Citizen Identity Simulator}
 \label{sec:identity-simulator-implementation}
 
-The identity service is implemented with Node.js, Express, ethers.js, and a simulated citizen database. It matches the JavaScript-based stack used elsewhere in the project so the same signing and hashing utilities can be reused. A government ID and password are checked as shown in the Figure~\ref{fig:citizen-login} against an active simulated record. After successful checking, a configurable batch of ticket IDs is created as shown in Figure~\ref{fig:citizen-seed-ticket-batch}. The default batch size is ten, which lets a citizen submit several reports or votes before needing to re-authenticate.
+The identity service is implemented with Node.js, Express, ethers.js, and a simulated citizen database. It matches the JavaScript-based stack used elsewhere in the project so the same signing and hashing utilities can be reused. A government ID and password are checked as shown in Figure~\ref{fig:citizen-login} against an active simulated record. After successful checking, a configurable batch of ticket IDs is created as shown in Figure~\ref{fig:citizen-seed-ticket-batch}. The default batch size is ten, which lets a citizen submit several reports or votes before needing to re-authenticate.
 
 For each ticket, a \ac{UUID} is generated and hashed with ethers.id. The resulting 32-byte ticket ID is signed by the configured government wallet. The signed ticket and its issue record are stored by the simulator, and a previously assigned citizen seed is also returned. Because tickets consumed downstream solely as opaque signed nullifiers, the relayer and contracts remain independent of how a ticket was issued. Therefore, the identity layer can be strengthened over time without altering how the rest of the system verifies and consumes a ticket.
 
@@ -83,7 +83,7 @@ The dApp derives a citizen private key by hashing the citizen seed together with
 \section{Smart Contract Implementation}
 \label{sec:contract-implementation}
 
-Four smart contracts are implemnted and deployed.
+Four smart contracts are implemented and deployed.
 
 \begin{enumerate}
     \item Reporting
@@ -240,7 +240,7 @@ Accepted images are processed for faces with OpenCV Haar cascades. Frontal, alte
 
 Spam is checked with mrm8488/bert-tiny-finetuned-sms-spam-detection and a rule score. Combining a trained model with explicit rules is intentional. The model recognises spam patterns it was trained on. While the rules catch obvious cases such as bare URLs or excessive repeated characters, that a small model may not reliably learn on its own. The default thresholds are 0.85 for a strong model rejection, 0.65 for model support, 0.60 for a rule-only rejection, and 0.25 for rule support.
 
-Rules add scores for very short text, known spam phrases, promotional words, URLs, repeated characters, and excessive symbols. The final rule score is capped at 1.0. A report is rejected when the model is strongly confident, when the rule score reaches the rejection threshold, or when both supporting thresholds are reached. Therefore, a moderately suspicious signal from both the model and the rules together is still enough to reject a report even when neither signal alone would not reject it.
+Rules add scores for very short text, known spam phrases, promotional words, URLs, repeated characters, and excessive symbols. The final rule score is capped at 1.0. A report is rejected when the model is strongly confident, when the rule score reaches the rejection threshold, or when both supporting thresholds are reached. Therefore, a moderately suspicious signal from both the model and the rules together is still enough to reject a report even when either signal alone would not reject it.
 
 \subsection{Civic Relevance Service}
 \label{subsec:civic-service}
@@ -266,7 +266,7 @@ One JSON envelope is formed with the following fields:
     \item storedAt
 \end{enumerate}
 
-The complete envelope is added and pinned as one IPFS object with CID version 1. A single CID covers both metadata and images and can be used to verify the whole submission at once rather than checking each field separately. If blurred images are returned by the safety service, they replace the original buffers before this envelope is uploaded, so the privacy-preserved, face-blurred gets the permanent \ac{CID}, rather than the original, image.
+The complete envelope is added and pinned as one IPFS object with CID version 1. A single CID covers both metadata and images and can be used to verify the whole submission at once rather than checking each field separately. If blurred images are returned by the safety service, they replace the original buffers before this envelope is uploaded. Therefore, the privacy-preserved, face-blurred image gets the permanent \ac{CID}, rather than the original image.
 
 The IPFS HTTP service is deployed on an internal service network reachable only from the relayer and other trusted backend services, with CORS and standard HTTP security headers applied at the edge of that network.
 
@@ -325,7 +325,7 @@ The voting methods configuration interface, shown in Figure~\ref{fig:voting-meth
 \end{figure}
 
 
-Super admins can propose new authority workers, as shown in Figure~\ref{fig:super-admin-proposal}. The proposal includes the worker's address, name, and role. Once the proposal is submitted, other super admins can review and approve it, ensuring that only qualified individuals are granted authority worker status. There are four actions available for authrity proposal, namely add authority worker, remove authority worker, add super admin, and remove super admin. The action type selection interface is shown in Figure~\ref{fig:action-type-selection-authority-proposal}.
+Super admins can propose new authority workers, as shown in Figure~\ref{fig:super-admin-proposal}. The proposal includes the worker's address, name, and role. Once the proposal is submitted, other super admins can review and approve it, ensuring that only qualified individuals are granted authority worker status. There are four actions available for authority proposal, namely add authority worker, remove authority worker, add super admin, and remove super admin. The action type selection interface is shown in Figure~\ref{fig:action-type-selection-authority-proposal}.
 
 
 \begin{figure}[!htb]
@@ -345,7 +345,7 @@ Super admins can propose new authority workers, as shown in Figure~\ref{fig:supe
 \end{figure}
 
 
-The Figure~\ref{fig:submitting-transaction-proposal} shows the metamask interface for submitting a transaction for an authority proposal. This process ensures that all authority changes are transparent and verifiable, maintaining the integrity of the system.
+Figure~\ref{fig:submitting-transaction-proposal} shows the metamask interface for submitting a transaction for an authority proposal. This process ensures that all authority changes are transparent and verifiable, maintaining the integrity of the system.
 
 \begin{figure}[!htb]
     \centering
@@ -354,17 +354,17 @@ The Figure~\ref{fig:submitting-transaction-proposal} shows the metamask interfac
     \label{fig:submitting-transaction-proposal}
 \end{figure}
 
-The Figure~\ref{fig:proposal-vote} shows the interface for voting on a proposal to add a new authority worker. Super admins can review the proposal details and cast their votes, contributing to the decision-making process. The voting interface is designed to be clear and straightforward, allowing super admins to easily participate in governance actions.
+Figure~\ref{fig:proposal-vote} shows the interface for voting on a proposal to add a new authority worker. Super admins can review the proposal details and cast their votes, contributing to the decision-making process. The voting interface is designed to be clear and straightforward, allowing super admins to easily participate in governance actions.
 
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=0.9\textwidth,keepaspectratio]{Images/Chapter 4/authority/proposal-vote.png}
-    \caption{Proposal to add the new authrity after submitting the transaction}
+    \caption{Proposal to add the new authority after submitting the transaction}
     \label{fig:proposal-vote}
 \end{figure}
 
 
-The Figure~\ref{fig:succesfully-executed-proposal} shows the interface for a successfully executed authority proposal. Once the required approvals are obtained, the proposal is automatically executed, and the changes are reflected in the system. This process ensures that all authority modifications are carried out in a controlled and accountable manner. The Figure~\ref{fig:suceesfully-added-authority} shows the interface for a successfully added authority worker. The new authority worker is now able to perform their duties within the system, contributing to the overall governance and management of civic reports.
+Figure~\ref{fig:succesfully-executed-proposal} shows the interface for a successfully executed authority proposal. Once the required approvals are obtained, the proposal is automatically executed, and the changes are reflected in the system. This process ensures that all authority modifications are carried out in a controlled and accountable manner. Figure~\ref{fig:suceesfully-added-authority} shows the interface for a successfully added authority worker. The new authority worker is now able to perform their duties within the system, contributing to the overall governance and management of civic reports.
 
 \begin{figure}[!htbp]
     \centering
@@ -381,7 +381,7 @@ The Figure~\ref{fig:succesfully-executed-proposal} shows the interface for a suc
     \label{fig:suceesfully-added-authority}
 \end{figure}
 
-After the authority worker is added, the relevant authrity worker can connect their Metamask wallet to the system. The authority dashboard, shown in Figure~\ref{fig:authority-dashboard}, provides ability to view actionable reports, post updates, create and view opinion pollings.
+After the authority worker is added, the relevant authority worker can connect their Metamask wallet to the system. The authority dashboard, shown in Figure~\ref{fig:authority-dashboard}, provides ability to view actionable reports, post updates, create and view opinion pollings.
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=1.0\textwidth,keepaspectratio]{Images/Chapter 4/authority/authority-dashboard.png}
@@ -507,7 +507,7 @@ Citizens can submit emergency reports through the interface shown in Figure~\ref
     \label{fig:emergency-report-submission-warning}
 \end{figure}
 
-The Figure~\ref{fig:voted-opinion-polling} shows the citizen view of voted opinion polling. Citizens can view the details of polls they have participated in, including the poll title, options, and their selected choice. The interface provides transparency and accountability in the polling process, allowing citizens to see how their votes contribute to community decisions. The results of the polls are not revealed until the poll deadline is reached, ensuring that the voting process remains fair and unbiased.
+Figure~\ref{fig:voted-opinion-polling} shows the citizen view of voted opinion polling. Citizens can view the details of polls they have participated in, including the poll title, options, and their selected choice. The interface provides transparency and accountability in the polling process, allowing citizens to see how their votes contribute to community decisions. The results of the polls are not revealed until the poll deadline is reached, ensuring that the voting process remains fair and unbiased.
 
 
 \begin{figure}[!htbp]

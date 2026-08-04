@@ -282,13 +282,16 @@
 % Title Page
 \include{Front_matters/cover}
 
-\pagenumbering{roman} % Start page numbering in roman
-\setcounter{page}{1}
-\pagestyle{romanstyle}
+
+\renewcommand{\thepage}{\roman{page}} % Start page numbering in roman
 
 % Abstract, Acknowledgements, Preface, list of tables, list of figures and Acronyms
 \input{Front_matters/abstract}
 \addcontentsline{toc}{chapter}{Abstract} % add line to the table of contents
+
+\input{Front_matters/preface}
+\addcontentsline{toc}{chapter}{Preface} % add line to the table of contents
+
 \input{Front_matters/acknowledgements}
 \addcontentsline{toc}{chapter}{Acknowledgements} % add line to the table of contents
 
@@ -308,15 +311,16 @@
 %%%%%%%%%%%%%%%%%%%%%%% The main matters %%%%%%%%%%%%%%%%%%%%%%%%
 
 \cleardoublepage
-\pagenumbering{arabic} % Start page numbering in arabic
-\setcounter{page}{1}
-\pagestyle{arabicstyle}
+
 \fancypagestyle{plain}{%
   \fancyhf{}
   \fancyhead[R]{\thepage}
   \renewcommand{\headrulewidth}{0pt}
   \renewcommand{\footrulewidth}{0pt}
 }
+
+\renewcommand{\thepage}{\arabic{page}} % Start page numbering in arabic 
+\setcounter{page}{1} % start page numbering from 1
 
 \input{Chapters/ch_1}
 \input{Chapters/ch_2}
@@ -332,12 +336,12 @@
 %%%%%%%%%%%%%%%%%%%%% The End matters %%%%%%%%%%%%%%%%%%%%%
 
 \begin{appendix}
-\include{End_matters/appendix_01}
-\include{End_matters/appendix_02}
-\include{End_matters/appendix_03}
-\include{End_matters/appendix_04}
+% \include{End_matters/appendix_01}
+% \include{End_matters/appendix_02}
+% \include{End_matters/appendix_03}
+% \include{End_matters/appendix_04}
 \include{End_matters/appendix_05}
-\include{End_matters/appendix_06}
+% \include{End_matters/appendix_06}
 
 \end{appendix}
 

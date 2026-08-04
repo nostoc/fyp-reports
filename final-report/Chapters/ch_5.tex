@@ -93,9 +93,9 @@ The unit and integration test suites are run against the same technology stack, 
 
 \subsection{Method}
 
-Contract behaviour is tested with Hardhat and Chai on a local, fast in-process blockchain, which lets every test run quickly while still executing the real compiled contract bytecode. Each test deploys a fresh contract instance, so that no test can be influenced by state left behind by an earlier one. Where a test needs a voting window or a penalty period to expire, Hardhat's time-manipulation helpers are used to advance the simulated chain clock directly, rather than waiting in real time. Therfore, a six-hour voting window or a 30-day penalty can be exercised in milliseconds.
+Contract behaviour has been tested with Hardhat and Chai on a local, fast in-process blockchain, which lets every test run quickly while still executing the real compiled contract bytecode. Each test deploys a fresh contract instance, so that no test can be influenced by state left behind by an earlier one. Hardhat's time-manipulation helpers has been used to advance the simulated chain clock directly, where a test needs a voting window or a penalty period to expire, rather than waiting in real time. Therefore, a six-hour voting window or a 30-day penalty can be exercised in milliseconds.
 
-Table~\ref{tab:contract-inventory} summarizes the five test files and what each one is responsible for.
+Table~\ref{tab:contract-inventory} summarizes the five test files and responsibility of each file.
 
 \begin{table}[htbp]
 \centering
@@ -122,9 +122,9 @@ Table~\ref{tab:contract-inventory} summarizes the five test files and what each 
 
 \subsection{Functional Test Procedure}
 
-For Reporting.sol, both valid and deliberately invalid reports are submitted, exercising every custom revert condition alongside the success path. Validation, verification, and rejection-review votes are cast from multiple accounts, voting deadlines are advanced, and the resulting status transition is checked against the state machine defined in Chapter~\ref{ch:architecture}. Pagination, per-citizen lookup, and the authority action history are also exercised so that the read-side of the contract is verified as same as the write-side.
+For Reporting.sol, both valid and deliberately invalid reports are submitted, exercising every custom revert condition alongside the success path. Validation, verification, and rejection-review votes are cast from multiple accounts, voting deadlines are advanced, and the resulting status transition has been checked against the state machine defined in Chapter~\ref{ch:architecture}. Pagination, per-citizen lookup, and the authority action history has been exercised so that the read-side of the contract is verified as same as the write-side.
 
-For EmergencyReporting.sol, the fast-track path is checked end to end. A submission opens immediately without a validation phase, an authority can resolve it directly from Open or after claiming it with startWork, and a reclassified report correctly locks its citizen's pseudonym for the configured penalty window. For OpinionPolling.sol, poll creation restrictions, nullifier-based one-vote enforcement, and deadline handling are covered. For AuthorityMultiSig.sol, proposal creation, automatic self-approval, and quorum-based execution are covered for both Super Admin and authority-worker changes.
+For EmergencyReporting.sol, the fast-track path has been checked end to end. A submission opens immediately without a validation phase, an authority can resolve it directly from Open or after claiming it with startWork, and a reclassified report correctly locks its citizen's pseudonym for the configured penalty window. For OpinionPolling.sol, poll creation restrictions, nullifier-based one-vote enforcement, and deadline handling has been covered. For AuthorityMultiSig.sol, proposal creation, automatic self-approval, and quorum-based execution ahas been covered for both Super Admin and authority-worker changes.
 \subsection{Results}
 
 \begin{table}[htbp]
@@ -149,14 +149,14 @@ For EmergencyReporting.sol, the fast-track path is checked end to end. A submiss
 \end{table}
 
 
-All 75 cases across the five contract test files pass in a single combined Hardhat run completing in five seconds. More details on the test cases are provided in Appendix~\ref{apndx:smart-contract-test-cases}.
+All 75 cases across the five contract test files passed in a single combined Hardhat run completing in five seconds. More details on the test cases are provided in Appendix~\ref{apndx:smart-contract-test-cases}.
 
 \section{Security and Sybil-Resistance Testing}
 \label{sec:security-testing}
 
 \subsection{Method}
 
-Security.ts is dedicated to the specific risks a public-facing civic-reporting system has to withstand. A citizen or bot retrying the same action, a citizen attempting to use more than one identity to influence a vote, and an authority action being triggered by an account that was never granted the role are some examples for such risks. Table~\ref{tab:security-cases} summarizes the six checks in this suite, each targeting a distinct attack surface identified during the architecture design in Chapter~\ref{ch:architecture}.
+Security.ts is dedicated to the specific risks a public-facing civic-reporting system has to withstand. A citizen or bot retrying the same action, a citizen attempting to use more than one identity to influence a vote, and an authority action being triggered by an unauthorized account are some examples for such risks. Table~\ref{tab:security-cases} summarizes the six checks in this suite, each targeting a distinct attack surface identified during the architecture design in Chapter~\ref{ch:architecture}.
 
 \begin{table}[htbp]
 \centering
@@ -216,7 +216,7 @@ The results of the security and Sybil-resistance tests are summarized in Table~\
 
 \subsection{Method}
 
-The relayer's cryptographic and validation logic is tested in isolation with Jest. Testing this logic directly, rather than only through HTTP requests, means each check runs in milliseconds and pinpoints the exact function responsible if a regression is introduced. The relayer test suite is split into three files. Table~\ref{tab:relayer-inventory} summarizes the 25 cases across these three files.
+The relayer's cryptographic and validation logic has been tested in isolation with Jest. The relayer test suite is split into three files. Table~\ref{tab:relayer-inventory} summarizes the 25 cases across these three files.
 
 
 \begin{table}[htbp]
@@ -231,14 +231,14 @@ The relayer's cryptographic and validation logic is tested in isolation with Jes
     \hline
    ai-oracle.service.spec.ts & 8 & canonical JSON hashing and signing logic the relayer uses when it talks to the AI aggregator \\
     \hline
-    app.controller.spec.ts & 1 & NestJS application bootstraping \\
+    app.controller.spec.ts & 1 & NestJS application bootstrapping \\
     \hline
     Total & 25 & All three relayer components \\
     
 \end{tabular}
 \end{table}
 
-  Real Ethers.js wallets are used to sign and verify messages in these tests, so the actual cryptographic recovery logic is exercised rather than a mocked.  
+  Real Ethers.js wallets has been used to sign and verify messages in these tests, so the actual cryptographic recovery logic has been exercised rather than a mocked implementation.  
 \subsection{Results}
 
 \begin{table}[htbp]
@@ -300,7 +300,7 @@ The test suite is split into two files, one for API security and one for classif
 
 \subsection{Results}
 
-The results of the AI oracle test suite are summarized in Table~\ref{tab:ai-results}. All 20 cases pass, completing in 21.33\,s. More details on the test cases are provided in Appendix~\ref{apndx:ai-test-suite}. Genuine civic and emergency reports (T3.2.1, T3.2.5) are accepted, while hate speech, spam, and off-topic text (T3.2.2--T3.2.4) are rejected. The corrupted and unsafe image cases (T3.2.7, T3.2.8) are rejected, the safe-image and face-containing cases (T3.2.6, T3.2.9) are accepted, and every recorded response includes both a decision and an explanation (T3.4.1--T3.4.3). 
+The results of the AI oracle test suite are summarized in Table~\ref{tab:ai-results}. All 20 cases pass, completing in 21.33\,s. More details on the test cases are provided in Appendix~\ref{apndx:ai-test-suite}. Genuine civic and emergency reports has been accepted, while hate speech, spam, and off-topic texthas been rejected. The corrupted and unsafe image cases has been rejected, the safe-image and face-containing cases has been accepted, and every recorded response includes both a decision and an explanation. 
 
 \begin{table}[htbp]
 \centering
@@ -348,11 +348,11 @@ The results of the AI oracle test suite are summarized in Table~\ref{tab:ai-resu
 
 
 \section{Blockchain Performance Benchmark}
-\label{sec:performance-benchmark}
+\label{sec:performance-benchmark} 
 
 \subsection{Method}
 
-A dedicated Hardhat script measures the private network's practical performance directly against the live running deployed blockchain, rather than relying on theoretical figures for Clique PoA. Figure~\ref{fig:benchmark-measurements} shows the six measurements the script takes in sequence.
+A dedicated Hardhat script measures the private network's practical performance directly against the live running deployed blockchain, rather than relying on theoretical figures for Clique PoA. Figure~\ref{fig:benchmark-measurements} shows the measurements that has been measured.
 
 \begin{figure}[!htb]
     \centering
@@ -361,7 +361,7 @@ A dedicated Hardhat script measures the private network's practical performance 
     \label{fig:benchmark-measurements}
 \end{figure}
 
-Gas cost for  {submitReport()} is measured first, over five submissions, so that a representative average is available before any other activity affects network conditions. End-to-end latency is then measured from the moment a transaction is dispatched to the moment its receipt confirms inclusion in a block, giving a citizen-facing figure rather than a purely theoretical one. Throughput is measured by dispatching a batch of transactions concurrently, with explicit nonce and fee management so that the batch is genuinely submitted together, and dividing the confirmed count by the elapsed time. The Clique block interval is read directly from consecutive block timestamps rather than assumed from the configured period, which lets the recorded interval reflect real validator behaviour. Voting gas is measured the same way as submission gas, and batch-finalization gas is measured by submitting reports to a short-window contract instance and finalizing them together in one call.
+Gas cost for  {submitReport()} has been measured first, over five submissions, so that a representative average is available before any other activity affects network conditions. Then, End-to-end latency has been measured from the moment a transaction is dispatched to the moment its receipt confirms inclusion in a block, giving a citizen-facing value. Throughput has been measured by dispatching a batch of transactions concurrently, with explicit nonce and fee management so that the batch is genuinely submitted together, and dividing the confirmed count by the elapsed time. The Clique block interval has been read directly from consecutive block timestamps rather than assumed from the configured period, which lets the recorded interval reflect real validator behaviour. Voting gas has been measured the same way as submission gas, and batch-finalization gas has been measured by submitting reports to a short-window contract instance and finalizing them together in one call.
 
 \subsection{Results}
 
@@ -441,7 +441,7 @@ The results of the blockchain performance benchmark are summarized in Table~\ref
 
 
 
-These measurements are read directly from the deployed network described in Table~\ref{tab:evaluation-environment}, using the live Geth Clique PoA network rather than a locally run blockchain.
+These measurements has been read directly from the deployed network described in Table~\ref{tab:evaluation-environment}, using the live Geth Clique PoA network rather than a locally run blockchain.
 
 \section{IPFS and Identity Simulator Checks}
 \label{sec:ipfs-identity-testing}
@@ -507,9 +507,9 @@ The test cases, their descriptions, and the results of the IPFS integration test
 
 
 
-All eight cases passed. As illustrated in Figure~\ref{fig:ipfs-latency-chart}, upload latency increases with attachment size, from 518\,ms for a text-only complaint to 4{,}308\,ms for a $\sim$5\,MB image, and five concurrent uploads complete successfully with distinct CIDs.
+All eight cases has been passed. As illustrated in Figure~\ref{fig:ipfs-latency-chart}, upload latency increases with attachment size, from 518\,ms for a text-only complaint to 4{,}308\,ms for a $\sim$5\,MB image, and five concurrent uploads complete successfully with distinct CIDs.
 
-The identity simulator is exercised as part of the same integrated workflow described in Section~\ref{sec:e2e-testing}. A government-signed ticket identifier is issued, consumed by the relayer, and its nullifier is recognized by the contracts on reuse.
+The identity simulator has been exercised as part of the same integrated workflow described in Section~\ref{sec:e2e-testing}. A government-signed ticket identifier is issued, consumed by the relayer, and its nullifier is recognized by the contracts on reuse.
 
 \section{End-to-End Workflow Scenario}
 \label{sec:e2e-testing}

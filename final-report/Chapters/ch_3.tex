@@ -38,7 +38,7 @@ The main design goals and how they are achieved are listed in Table~\ref{tab:req
         \hline
         Duplicate-use control & Ticket identifiers are used as nullifiers. Contract mappings stop the same nullifier from being used again in the same protected action. \\
         \hline
-        Practical media handling & Report metadata and base64-encoded images are placed in one \ac{IPFS} \ac{JSON}(JSON) envelope. Only its \ac{CID} and related hashes are placed on-chain. \\
+        Practical media handling & Report metadata and base64-encoded images are placed in one \ac{IPFS} \ac{JSON} envelope. Only its \ac{CID} and related hashes are placed on-chain. \\
         \hline
         Safer public content & Safety, spam, and civic relevance checks are performed before accepted content is stored and submitted to the blockchain. \\
         \hline
@@ -93,7 +93,7 @@ The layered architecture diagram is shown in Figure~\ref{fig:layered-architectur
     \end{tabular}
 \end{table}
 
-These layer boundaries are drawn along trust and technology. The identity simulator is decoupled from the relayer because it represents a different administrative authority. AI and IPFS services are comparatively slow and are best isolated behind asynchronous jobs rather than called synchronously. Consequently, the relayer and queue layer are maintained in a seperated location from AI and IPFS. The blockchain layer is kept as thin as possible because every extra byte stored or computation executed on-chain is replicated and paid for by every node in the network. Therefore, only the facts that genuinely need a tamper-evident public record are stored on blockchain.
+These layer boundaries are drawn along trust and technology. The identity simulator is decoupled from the relayer because it represents a different administrative authority. AI and IPFS services are comparatively slow and are best isolated behind asynchronous jobs rather than called synchronously. Consequently, the relayer and queue layer are maintained in a separated location from AI and IPFS. The blockchain layer is kept as thin as possible because every extra byte stored or computation executed on-chain is replicated and paid for by every node in the network. Therefore, only the facts that genuinely need a tamper-evident public record are stored on blockchain.
 
 The blockchain uses chain ID 1337 and a 5 $s$ Clique period. Three validator nodes seal blocks, and a fourth node does not mine but instead exposes the \ac{JSON}-\ac{RPC} interface used by the rest of the system, as shown in Figure~\ref{fig:validator-topology}. A 5 $s$ block period is short enough to give citizens fast confirmation feedback for a civic reporting workload, while still being long enough for three validators to agree reliably without specialised hardware. Separating the \ac{RPC}-only node from the three sealing validators means that read traffic from the dApp and write traffic from the relayer can never compete with or accidentally disrupt the block-sealing process. If the RPC node is restarted or briefly overloaded block production continues unaffected on the other three nodes. Direct reads are made by the dApp through this RPC interface. Citizen writes are normally sent through the relayer. Authority transactions are signed with MetaMask.
 
@@ -107,7 +107,7 @@ The blockchain uses chain ID 1337 and a 5 $s$ Clique period. Three validator nod
 \section{Trust Boundaries}
 \label{sec:trust-boundaries}
 
-The designed system contains multiple trust boundaries. Explicitly identifying these boundaries, rather than treating the system as one uniformly trusted entity clarifies which component must behave correctly for a given guarantee to hold. This distinction is essential for undersanding what the  blockchain's tamper-evidence does and does not ensure. 
+The designed system contains multiple trust boundaries. Explicitly identifying these boundaries, rather than treating the system as one uniformly trusted entity clarifies which component must behave correctly for a given guarantee to hold. This distinction is essential for understanding what the  blockchain's tamper-evidence does and does not ensure. 
 
 
 \begin{enumerate}
@@ -124,7 +124,7 @@ These boundaries show that blockchain integrity does not remove trust from ident
 \section{Privacy and Security Design}
 \label{sec:privacy-security-design}
 
-Citizen identity is decoupled from the public report record through a government identity check. A government ID and password are verified by the identity simulator, and government-signed, single-use ticket IDs are issued only after this check succeeds. Each ticket behave as a nullifier. The nullifier gives evidence that one unit of participation was issued to an eligible citizen, and the contract's nullifier mapping stops that same ticket from being used a second time. This ticket-based approach is used because it lets the prototype enforce single-action-per-eligible-citizen immediately using well-understood signature and mapping checks. This approach preserves the possibility of introducing a stronger anonymous-credential or \ac{ZKP}  system at a later stage, without requiring to modify how the relayer, the contracts, or the voting logic consume tickets.
+Citizen identity is decoupled from the public report record through a government identity check. A government ID and password are verified by the identity simulator, and government-signed, single-use ticket IDs are issued only after this check succeeds. Each ticket behaves as a nullifier. The nullifier gives evidence that one unit of participation was issued to an eligible citizen, and the contract's nullifier mapping stops that same ticket from being used a second time. This ticket-based approach is used because it lets the prototype enforce single-action-per-eligible-citizen immediately using well-understood signature and mapping checks. This approach preserves the possibility of introducing a stronger anonymous-credential or \ac{ZKP}  system at a later stage, without requiring to modify how the relayer, the contracts, or the voting logic consume tickets.
 
 % \begin{figure}[!htb]
 %     \centering
@@ -133,7 +133,7 @@ Citizen identity is decoupled from the public report record through a government
 %     \label{fig:authentication-workflow}
 % \end{figure}
 
-A citizen wallet is derived deterministically from a citizen seed in the browser. The relayer derives an on-chain pseudonym as given in Eq.~\ref{eq:pseudonym}.
+A citizen wallet is derived deterministically from a citizen seed in the browser. The relayer derives an on-chain pseudonym as given in Eq.(\ref{eq:pseudonym}).
 
 \begin{equation}
     P = \operatorname{keccak256}\left(A \parallel D\right),
@@ -158,14 +158,14 @@ The \ac{AI} aggregator is protected by an \ac{API} key, a relayer signature, a t
 
 The complete public report content is not stored in a smart contract due to storage and gas cost constraints. The IPFS complaint envelope contains the description, category, location, image count, image metadata, base64-encoded image data, and storage time. The blockchain record contains the IPFS CID, report hash, submission nullifier, citizen pseudonym, timestamps, status, vote counters, assigned authority, and latest authority evidence.
 
-Each image \(I_i\) is hashed by the client and checked by the relayer as given in Eq.~\ref{eq:image-hash}.
+Each image \(I_i\) is hashed by the client and checked by the relayer as given in Eq.(\ref{eq:image-hash}).
 
 \begin{equation}
     h_i = \operatorname{keccak256}(I_i).
     \label{eq:image-hash}
 \end{equation}
 
-The ordered image hashes are joined as \(H_I=h_1\parallel h_2\parallel\cdots\parallel h_n\). Hashing every image individually and then combining the hashes in the order the citizen uploaded them means that a single signature over the final report hash can protect the whole submission. If any image were swapped, dropped, or reordered after the citizen signed, the recomputed hash would no longer match and the relayer would reject it. The signed report hash is given by Eq.~\ref{eq:report-hash}.
+The ordered image hashes are joined as \(H_I=h_1\parallel h_2\parallel\cdots\parallel h_n\). Hashing every image individually and then combining the hashes in the order the citizen uploaded them means that a single signature over the final report hash can protect the whole submission. If any image were swapped, dropped, or reordered after the citizen signed, the recomputed hash would no longer match and the relayer would reject it. The signed report hash is given by Eq.(\ref{eq:report-hash}.
 
 \begin{equation}
     H_R = \operatorname{keccak256}\left(d \parallel t \parallel H_I\right),
@@ -218,7 +218,7 @@ The lifecycle of a standard report is illustrated in Figure~\ref{fig:report-life
 
 Two separate community checkpoints are built into this lifecycle on purpose. The first, PendingValidation, protects authority time by filtering out spam, duplicates, and clearly invalid reports before any government worker is asked to act on them. The second, PendingVerification, protects citizens by making sure an authority's claim of a fix is independently confirmed by the people affected before a report is closed, rather than letting an authority close its own work unchecked. Together, the two checkpoints ensure that neither the community nor the authority can unilaterally decide that an issue is resolved.
 
-The default voting window is six hours, which is short enough to keep the workflow responsive while still giving citizens across a working day a reasonable chance to see and vote on a new report. The voting method and window can be changed through governmente side configuration. As a result, a deployment can tune this balance without changing contract code. State changes are checked by contract functions, and events provide an audit trail.
+The default voting window is six hours, which is short enough to keep the workflow responsive while still giving citizens across a working day a reasonable chance to see and vote on a new report. The voting method and window can be changed through government-side configuration. As a result, a deployment can tune this balance without changing contract code. State changes are checked by contract functions, and events provide an audit trail.
 
 \section{Standard Report Workflow}
 \label{sec:standard-report-workflow}
@@ -234,9 +234,9 @@ A standard report is processed as follows, and Figure~\ref{fig:report-submission
 
 \begin{enumerate}
     \item The citizen is checked by the identity simulator, and a signed single-use ticket is selected.
-    \item The dApp hashes the images, forms \(H_R\) from Eq.~\ref{eq:report-hash}, and signs it with the derived citizen wallet.
-    \item The relayer verifies the government ticket signature, uploaded image hashes, and citizen signature. A pseudonym is derived using Eq.~\ref{eq:pseudonym}.
-    \item A BullMQ flow is created. AI moderation is run first, before any storage or blockchain cost is spent, so that rejected contentdoes not consume IPFS or gas resources. If it is accepted, the processed report is uploaded to IPFS. The CID and hash values are then submitted to the Reporting contract.
+    \item The dApp hashes the images, forms \(H_R\) from Eq.(\ref{eq:report-hash}), and signs it with the derived citizen wallet.
+    \item The relayer verifies the government ticket signature, uploaded image hashes, and citizen signature. A pseudonym is derived using Eq.(\ref{eq:pseudonym}).
+    \item A BullMQ flow is created. AI moderation is run first, before any storage or blockchain cost is spent, so that rejected content does not consume IPFS or gas resources. If it is accepted, the processed report is uploaded to IPFS. The CID and hash values are then submitted to the Reporting contract.
     \item The report is created as PendingValidation. The single-use ticket ID is stored as a submission nullifier.
     \item Community votes are accepted during the validation window. After finalization, the report becomes Open or CommunityRejected.
     \item An accepted report is handled by an authority worker. A solution or rejection is later reviewed by the community.
@@ -264,7 +264,7 @@ The three-step pipeline mentioned in step 4 is run asynchronously, outside the r
 \section{Emergency Report Workflow}
 \label{sec:emergency-workflow}
 
-Emergency reports use the same relayer checks, moderation pipeline, and IPFS storage process, so the same integrity and safety guarantees described above apply for them as well. However, a seperate smart contract (EmergencyReporting) is used and a submitted emergency becomes Open directly rather than waiting for standard community validation, as shown in Figure~\ref{fig:emergency-workflow}. This shortcut exists because the community voting window that protects the standard workflow from spam would be harmful for a genuine emergency, such as a gas leak or collapsing structure, where every additional hour of delay increases risk to public safety. In EmergencyReporting smart contract, four states are used, as summarized in Table~\ref{tab:emergency-statuses} and Figure~\ref{fig:emergency-lifecycle}.
+Emergency reports use the same relayer checks, moderation pipeline, and IPFS storage process, so the same integrity and safety guarantees described above apply for them as well. However, a separate smart contract (EmergencyReporting) is used and a submitted emergency becomes Open directly rather than waiting for standard community validation, as shown in Figure~\ref{fig:emergency-workflow}. This shortcut exists because the community voting window that protects the standard workflow from spam would be harmful for a genuine emergency, such as a gas leak or collapsing structure, where every additional hour of delay increases risk to public safety. In EmergencyReporting smart contract, four states are used, as summarized in Table~\ref{tab:emergency-statuses} and Figure~\ref{fig:emergency-lifecycle}.
 
 \begin{figure}[!htbp]
     \centering
@@ -304,7 +304,7 @@ Emergency reports use the same relayer checks, moderation pipeline, and IPFS sto
 
 An authority can start work, resolve an emergency, or reclassify a false emergency. Resolution can be made directly from Open state when a rapid response is needed, since a fast-moving emergency may already be handled by the time an authority formally logs progress.
 
-Because the emergency channel deliberately skips community validation for the sake of speed, it needs a different safeguard against misuse than the standard channel's voting step provides. The 30-day emergency penalty box fills that role. When a report is reclassified as a false emergency, the reporting pseudonym is temporarily blocked from the Emergency Reporting contract. This design keeps the emergency path immediate and unobstructed for citizens who use it honestly, while discouraging repeated false alarms.This block applies only to the emergency reports so a citizen can still use standard reporting during the cooldown period.
+Because the emergency channel deliberately skips community validation for the sake of speed, it needs a different safeguard against misuse than the standard channel's voting step provides. The 30-day emergency penalty box fills that role. When a report is reclassified as a false emergency, the reporting pseudonym is temporarily blocked from the Emergency Reporting contract. This design keeps the emergency path immediate and unobstructed for citizens who use it honestly, while discouraging repeated false alarms. This block applies only to the emergency reports so a citizen can still use standard reporting during the cooldown period.
 
 \section{Community Voting}
 \label{sec:community-voting}
@@ -369,7 +369,7 @@ An authorized worker uses MetaMask to act on reports, as shown in Figure~\ref{fi
     \label{fig:authority-workflow}
 \end{figure}
 
-Authority access is governed by the AuthorityMultiSig contract. Super Admins submit and vote on proposals to add, remove government authorities. A strict majority is required to approve a proposal, as given in Eq.~\ref{eq:governance-quorum}.
+Authority access is governed by the AuthorityMultiSig contract. Super Admins submit and vote on proposals to add, remove government authorities. A strict majority is required to approve a proposal, as given in Eq.(\ref{eq:governance-quorum}).
 
 \begin{equation}
     Q = \left\lfloor\frac{N}{2}\right\rfloor + 1,

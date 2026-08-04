@@ -35,7 +35,7 @@ Beyond the individual suites, one complete report lifecycle has been exercised a
 
 The dedicated    {Security.ts} suite targets the specific misuse patterns a public-facing civic-reporting system needs to withstand, and every case passes. A used submission nullifier is replayed 100 consecutive times and rejected on every attempt, which gives strong confidence that the single-ticket-one-action rule is a genuine result. Duplicate validation votes, duplicate verification votes, and duplicate poll votes from the same citizen pseudonym are all rejected even when a fresh vote nullifier is presented, and a reclassified emergency report correctly locks its citizen's pseudonym for the configured 30-day window before automatically restoring access afterwards. Together with the relayer's rejection of forged government tickets and tampered payloads, these results confirm that the layered defense described in Chapter~\ref{ch:architecture}, cryptographic signatures at the relayer boundary and nullifier checks at the contract boundary, holds up under the specific attack patterns it was designed for.
 
-On the privacy side, the pseudonym and single-use ticket design achieves its intended goal. Citizen's reports, votes, and poll participation are recorded on-chain without any government identifier, name, or other personally identifying data ever being written to the ledger. Only a stable pseudonym derived from the citizen's key, ticket hashes, and cryptographic proofs appear in contract storage. This is a practical and directly testable form of privacy protection, and it is precisely the property exercised by the passing Security suite. This gives citizens a working way to report sensitive local issues, vote on community outcomes, and take part in public consultations without linking that activity to their institutional identity in the permanent record.
+On the privacy side, the pseudonym and single-use ticket design achieves its intended goal. Citizens' reports, votes, and poll participation are recorded on-chain without any government identifier, name, or other personally identifying data ever being written to the ledger. Only a stable pseudonym derived from the citizen's key, ticket hashes, and cryptographic proofs appear in contract storage. This is a practical and directly testable form of privacy protection, and it is precisely the property exercised by the passing Security suite. This gives citizens a working way to report sensitive local issues, vote on community outcomes, and take part in public consultations without linking that activity to their institutional identity in the permanent record.
 
 \section{Performance Results and Suitability for Civic Reporting}
 \label{sec:performance-results}
@@ -88,7 +88,7 @@ Table~\ref{tab:objective-assessment} summarizes how the objectives defined in Ch
     \hline
     User-friendly citizen and authority interfaces for reporting and tracking & Web \ac{DApp} and identity portal exercised through the full end-to-end lifecycle scenario, with gas hidden by the relayer and progress shown through SSE & Achieved \\
     \hline
-    AI-based content moderation for text and media & 22 passing AI oracle cases covering request security and text/media classification, integrated ahead of IPFS and blockchain submission & Achieved \\
+    AI-based content moderation for text and media & 20 passing AI oracle cases covering request security and text/media classification, integrated ahead of IPFS and blockchain submission & Achieved \\
     
 \end{tabular}
 \end{table}

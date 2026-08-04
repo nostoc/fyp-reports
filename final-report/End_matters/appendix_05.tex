@@ -1,7 +1,7 @@
 \chapter{Testing Screenshots and Detailed Test Cases}
 \label{app:test-cases}
 
-This appendix lists every automated test case referenced in Chapter~\ref{ch:testing}, together with its identifier where the source file defines one, so that the full test inventory remains traceable without interrupting the discussion in the main chapter. The recorded pass/fail outcome and aggregate timing for each suite is presented in Chapter~\ref{ch:testing}; this appendix focuses on what each individual case verifies. Screenshots of the running system captured during testing are also collected here.
+This appendix lists every test case referenced in Chapter~\ref{ch:testing}, together with its identifier. Screenshots of the end-to-end testing are also collected here.
 
 \section{Smart-Contract Test Cases}
 \label{apndx:smart-contract-test-cases}
@@ -10,7 +10,7 @@ This appendix lists every automated test case referenced in Chapter~\ref{ch:test
 
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Reporting contract test cases} \\
-\hline
+
   {ID} &   {Purpose} \\
 \hline
 \endfirsthead
@@ -99,14 +99,14 @@ T1.1.39 & \texttt{getReportsByIds} returns the correct reports in order \\
 T1.1.40 & \texttt{getReport} with an invalid ID reverts \texttt{InvalidReportId} \\
 \hline
 T1.1.41 & The authority action log grows correctly across the full lifecycle \\
-\hline
+
 \end{longtable}
 
-\subsection{\texttt{EmergencyReporting.ts}}
+\subsection{EmergencyReporting.ts}
 
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Emergency reporting contract test cases} \\
-\hline
+
   {ID} &   {Purpose} \\
 \hline
 \endfirsthead
@@ -139,15 +139,15 @@ T1.2.11 & Authority resolves an \texttt{InProgress} emergency, moving it to \tex
 T1.2.12 & Authority can resolve directly from \texttt{Open}, bypassing \texttt{InProgress} \\
 \hline
 T1.2.13 & \texttt{startWork} on a non-\texttt{Open} report reverts \texttt{InvalidState()} \\
-\hline
+
 \end{longtable}
 
-\subsection{\texttt{Security.ts}}
-\;label{apndx:security-test-cases}
+\subsection{Security.ts}
+\label{apndx:security-test-cases}
 
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Security and Sybil-resistance test cases} \\
-\hline
+
   {ID} &   {Purpose} \\
 \hline
 \endfirsthead
@@ -155,121 +155,129 @@ T1.2.13 & \texttt{startWork} on a non-\texttt{Open} report reverts \texttt{Inval
   {ID} &   {Purpose} \\
 \hline
 \endhead
-T6.1 & All 100 duplicate submission-nullifier replay attempts are rejected \\
+T1.3.1 & All 100 duplicate submission-nullifier replay attempts are rejected \\
 \hline
-T6.2 & A non-relayer account calling \texttt{submitReport} directly is rejected as \texttt{Unauthorized} \\
+T1.3.2 & A non-relayer account calling \texttt{submitReport} directly is rejected as \texttt{Unauthorized} \\
 \hline
-T6.3 & A second validation vote from the same citizen pseudonym is rejected even with a fresh vote nullifier \\
+T1.3.3 & A second validation vote from the same citizen pseudonym is rejected even with a fresh vote nullifier \\
 \hline
-T6.4 & A second poll vote with the same nullifier is rejected \\
+T1.3.4 & A second poll vote with the same nullifier is rejected \\
 \hline
-T6.5a & A penalized citizen is blocked from submitting another emergency report for 30 days \\
+T1.3.5a & A penalized citizen is blocked from submitting another emergency report for 30 days \\
 \hline
-T6.5b & A penalized citizen can submit again once the 30-day penalty has expired \\
+T1.3.5b & A penalized citizen can submit again once the 30-day penalty has expired \\
 \hline
-T6.6 & A second verification vote from the same citizen pseudonym is rejected \\
-\hline
+T1.3.6 & A second verification vote from the same citizen pseudonym is rejected \\
+
 \end{longtable}
 
-\subsection{\texttt{OpinionPolling.ts}}
+\subsection{OpinionPolling.ts}
 
-\begin{longtable}{p{0.86\textwidth}}
+\begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Opinion polling contract test cases} \\
-\hline
-  {Purpose} \\
+
+  {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
-  {Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endhead
-An authorized authority can create a poll \\
+ T1.4.1 & An authorized authority can create a poll \\
 \hline
-Poll creation by a non-authority is reverted \\
+T1.4.2 & Poll creation by a non-authority is reverted \\
 \hline
-Poll creation with a deadline in the past or present is reverted \\
+T1.4.3 & Poll creation with a deadline in the past or present is reverted \\
 \hline
-Votes are recorded correctly and \texttt{VoteCast} is emitted \\
+T1.4.4 & Votes are recorded correctly and \texttt{VoteCast} is emitted \\
 \hline
-Double voting with the same nullifier is reverted \\
+T1.4.5 & Double voting with the same nullifier is reverted \\
 \hline
-Voting after the poll deadline is reverted \\
+T1.4.6 & Voting after the poll deadline is reverted \\
 \hline
-Voting on a finalized or deactivated poll is reverted \\
+T1.4.7 & Voting on a finalized or deactivated poll is reverted \\
 \hline
-Finalizing a poll deactivates it and emits \texttt{PollFinalized} \\
+T1.4.8 & Finalizing a poll deactivates it and emits \texttt{PollFinalized} \\
 \hline
-Finalizing a poll that does not exist is reverted \\
+T1.4.9 & Finalizing a poll that does not exist is reverted \\
 \hline
-Finalizing a poll that is already inactive is reverted \\
-\hline
+T1.4.10 & Finalizing a poll that is already inactive is reverted \\
+
 \end{longtable}
 
-\subsection{\texttt{AuthorityMultiSig.ts}}
+\subsection{AuthorityMultiSig.ts}
 
-\begin{longtable}{p{0.86\textwidth}}
+\begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{Authority multi-signature contract test cases} \\
-\hline
-  {Purpose} \\
+
+ {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
-  {Purpose} \\
+  {ID} &   {Purpose} \\
 \hline
 \endhead
-Super Admins can add a new Super Admin through majority vote \\
+T1.5.1 & Super Admins can add a new Super Admin through majority vote \\
 \hline
-Super Admins can remove a Super Admin \\
+T1.5.2 & Super Admins can remove a Super Admin \\
 \hline
-Super Admins can add an authority worker \\
+T1.5.3 & Super Admins can add an authority worker \\
 \hline
-Super Admins can remove an authority worker \\
-\hline
+T1.5.4 & Super Admins can remove an authority worker \\
+
 \end{longtable}
 
 \section{Relayer Test Cases}
 
 \label{apndx:relayer-test-cases}
 
+
+
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
-\caption{Relayer unit test cases} \\
-\hline
-  {ID} &   {Purpose} \\
+\caption{Relayer test cases of ai.oracle.service.spec.ts and app.controller.spec.ts} \\
+
+ {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
   {ID} &   {Purpose} \\
 \hline
 \endhead
-\multicolumn{2}{l}{\textit{app.controller.spec.ts}} \\
+T2.2.1 & \texttt{canonicalJson()} produces deterministic, sorted output regardless of key order \\
 \hline
---- & Application bootstrap smoke test (root controller returns a response) \\
+T2.2.2 & The relayer signature can be recovered and verified by ethers.js \\
 \hline
-\multicolumn{2}{l}{\textit{ai-oracle.service.spec.ts}} \\
+T2.2.3 & A missing \texttt{RELAYER\_PRIVATE\_KEY} logs a warning and fails safely \\
 \hline
-T2.5.1 & \texttt{canonicalJson()} produces deterministic, sorted output regardless of key order \\
+T2.2.4 & Application bootstrap smoke test (root controller returns a response) \\
+
+\end{longtable}
+
+\begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
+\caption{Relayer test cases of reporting.service.spec.ts} \\
+
+ {ID} &   {Purpose} \\
 \hline
-T2.5.2 & The relayer signature can be recovered and verified by ethers.js \\
+\endfirsthead
 \hline
-T2.5.3 & A missing \texttt{RELAYER\_PRIVATE\_KEY} logs a warning and fails safely \\
+  {ID} &   {Purpose} \\
 \hline
-\multicolumn{2}{l}{\textit{reporting.service.spec.ts}} \\
+\endhead
+T2.3.1 & A valid government signature is accepted and returns a job ID \\
 \hline
-T2.1.1 & A valid government signature is accepted and returns a job ID \\
+T2.3.2 & A wrong government signer address is rejected with \texttt{UnauthorizedException} \\
 \hline
-T2.1.2 & A wrong government signer address is rejected with \texttt{UnauthorizedException} \\
+T2.3.3 & A missing \texttt{zkpSignature} field throws \texttt{BadRequestException} \\
 \hline
-T2.1.3 & A missing \texttt{zkpSignature} field throws \texttt{BadRequestException} \\
+T2.3.1 & A valid citizen signature is accepted \\
 \hline
-T2.2.1 & A valid citizen signature is accepted \\
+T2.3.2 & A tampered description causes a signature mismatch, throwing \texttt{UnauthorizedException} \\
 \hline
-T2.2.2 & A tampered description causes a signature mismatch, throwing \texttt{UnauthorizedException} \\
+T2.3.3 & A wrong \texttt{citizenPubKey} (address mismatch) causes rejection \\
 \hline
-T2.2.3 & A wrong \texttt{citizenPubKey} (address mismatch) causes rejection \\
+T2.3.4 & An image count mismatch throws \texttt{BadRequestException} \\
 \hline
-T2.2.4 & An image count mismatch throws \texttt{BadRequestException} \\
-\hline
-T2.2.5 & Malformed \texttt{imageHashes} JSON throws \texttt{BadRequestException} \\
+T2.3.5 & Malformed \texttt{imageHashes} JSON throws \texttt{BadRequestException} \\
 \hline
 T2.3.1 & The same address and salt always produce the same pseudonym (deterministic) \\
 \hline
@@ -277,33 +285,32 @@ T2.3.2 & Different addresses produce different pseudonyms \\
 \hline
 T2.3.3 & A missing \texttt{PSEUDONYM\_DOMAIN\_SALT} throws \texttt{InternalServerErrorException} \\
 \hline
-T2.4.1 & A valid vote payload returns a job ID \\
+T2.3.1 & A valid vote payload returns a job ID \\
 \hline
-T2.4.2 & An invalid government ticket for a vote throws \texttt{UnauthorizedException} \\
+T2.3.2 & An invalid government ticket for a vote throws \texttt{UnauthorizedException} \\
 \hline
-T2.4.3 & A tampered vote citizen signature throws \texttt{UnauthorizedException} \\
+T2.3.3 & A tampered vote citizen signature throws \texttt{UnauthorizedException} \\
 \hline
-T2.4.4 & Missing required vote fields throw \texttt{BadRequestException} \\
+T2.3.4 & Missing required vote fields throw \texttt{BadRequestException} \\
 \hline
-T2.5.1 & A missing \texttt{GOV\_PUBLIC\_ADDRESS} throws on module initialization \\
-\hline
+T2.3.1 & A missing \texttt{GOV\_PUBLIC\_ADDRESS} throws on module initialization \\
 \end{longtable}
+
 
 \section{AI Oracle Test Cases}
 \label{apndx:ai-test-suite}
 
+
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
-\caption{AI oracle test cases} \\
-\hline
-  {ID} &   {Purpose} \\
+\caption{AI oracle security test cases} \\
+
+ {ID} &   {Purpose} \\
 \hline
 \endfirsthead
 \hline
   {ID} &   {Purpose} \\
 \hline
 \endhead
-\multicolumn{2}{l}{\textit{test\_api\_security.py}} \\
-\hline
 T3.1.1 & A fully valid signed request is accepted \\
 \hline
 T3.1.2 & A missing API key returns 401 or 403 \\
@@ -319,9 +326,19 @@ T3.1.7 & A file above 5\,MB is rejected \\
 T3.1.8 & A disallowed MIME type (PDF) is rejected \\
 \hline
 T3.1.9 & More than three files is rejected \\
+
+\end{longtable}
+
+\begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
+\caption{AI oracle classification test cases} \\
+
+ {ID} &   {Purpose} \\
 \hline
-\multicolumn{2}{l}{\textit{test\_classification.py}} \\
+\endfirsthead
 \hline
+  {ID} &   {Purpose} \\
+\hline
+\endhead
 T3.2.1 & A genuine civic complaint is accepted \\
 \hline
 T3.2.2 & Hate speech is rejected \\
@@ -349,7 +366,7 @@ T3.4.1 & The response always includes a non-empty explanation \\
 T3.4.2 & The response always includes a valid final decision \\
 \hline
 T3.4.3 & The response structure is consistent across repeated calls \\
-\hline
+
 \end{longtable}
 
 \section{IPFS Test Cases}
@@ -357,7 +374,7 @@ T3.4.3 & The response structure is consistent across repeated calls \\
 
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
 \caption{IPFS integration test cases} \\
-\hline
+
   {ID} &   {Purpose} \\
 \hline
 \endfirsthead
@@ -380,14 +397,16 @@ T4.6 & Poll metadata upload to IPFS succeeds \\
 T4.7 & An unreachable IPFS service correctly throws an error \\
 \hline
 T4.8 & Five concurrent uploads all succeed with no CID collisions \\
-\hline
+
 \end{longtable}
+
+
 \section{Blockchain Network Performance Test Cases}
 \label{apndx:blockchain-performance-test-cases}
  
 \begin{longtable}{p{0.14\textwidth}|p{0.86\textwidth}}
-\caption{Blockchain network performance benchmark test cases (\texttt{benchmark.ts})} \\
-\hline
+\caption{Blockchain network performance benchmark test cases} \\
+
   {ID} &   {Purpose} \\
 \hline
 \endfirsthead
@@ -406,8 +425,10 @@ T5.4 & Average gas usage per \texttt{submitReport()} call is measured across 5 s
 T5.5 & Average gas usage per \texttt{castValidationVote()} call is measured across up to 3 votes on a submitted report \\
 \hline
 T5.6 & Gas cost of \texttt{batchFinalizeVotingWindows()} is measured for a batch of 10 expired reports, including per-report gas cost \\
-\hline
+
 \end{longtable}
-\section{Testing Screenshots}
+
+
+\section{End-to-End Testing Screenshots}
 \label{apndx:e2e}
 % TODO: insert screenshots captured during manual and end-to-end testing here.
