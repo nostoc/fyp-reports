@@ -4,7 +4,7 @@
 \section{Overview}
 \label{sec:results-overview}
 
-Chapter~\ref{ch:testing} recorded 130 passing automated cases across four suites, a dedicated blockchain performance benchmark, and a complete end-to-end lifecycle scenario. This chapter interprets that evidence against the objectives set out in Chapter~\ref{ch:introduction} and the architecture decisions justified in Chapter~\ref{ch:architecture}. Taken together, the results show that the prototype correctly enforces the intended reporting, validation, and governance rules on-chain, integrates its off-chain services into one working pipeline, and does so at response times and costs that are well suited to a civic-reporting workload. The chapter also places the design in context by comparing it with the citizen-reporting and blockchain-governance frameworks introduced in Chapter~\ref{ch:introduction}, and closes by outlining how the validated prototype can be extended further.
+Chapter~\ref{ch:testing} recorded 128 passing test cases across four suites, a dedicated blockchain performance benchmark, and a complete end-to-end lifecycle scenario. This chapter interprets that evidence against the objectives set out in Chapter~\ref{ch:introduction} and the architecture decisions justified in Chapter~\ref{ch:architecture}. Taken together, the results show that the prototype correctly enforces the intended reporting, validation, and governance rules on-chain, integrates its off-chain services into one working pipeline, and does so at response times and costs that are well suited to a civic-reporting workload. The chapter also places the design in context by comparing it with the citizen-reporting and blockchain-governance frameworks introduced in Chapter~\ref{ch:introduction}, and closes by outlining how the validated prototype can be extended further.
 
 % Figure~\ref{fig:evidence-to-objectives} summarizes how each objective is supported by a specific, traceable body of evidence from Chapter~\ref{ch:testing}, before the rest of the chapter discusses each of these results in turn.
 
@@ -20,22 +20,22 @@ Chapter~\ref{ch:testing} recorded 130 passing automated cases across four suites
 
 \subsection{Smart-Contract Enforced Workflows}
 
-All 75 smart-contract cases pass in a single Hardhat run, covering \texttt{Reporting.sol} (41 cases), \texttt{EmergencyReporting.sol} (13 cases), \texttt{OpinionPolling.sol} (10 cases), \texttt{AuthorityMultiSig.sol} (4 cases), and the cross-contract \texttt{Security.ts} suite (7 cases). Every state transition described in the report lifecycle in Chapter~\ref{ch:architecture}, submission, community validation, authority action, post-resolution verification, and rejection review, is exercised directly against the compiled contract bytecode, together with pagination, per-citizen lookup, and the authority action history. This result demonstrates that the reporting rules are not merely suggestions enforced by the web interface: they are guaranteed by the blockchain itself, so an invalid state change is rejected regardless of which client submits it. The emergency and opinion-polling contracts add a fast-track path and a separate consultation mechanism, and both are covered end to end, confirming that the four-contract design from Chapter~\ref{ch:architecture} functions as one coherent system rather than as four independent artifacts.
+All 75 smart-contract cases pass in a single Hardhat run, covering    {Reporting.sol} (41 cases),    {EmergencyReporting.sol} (13 cases),    {OpinionPolling.sol} (10 cases),    {AuthorityMultiSig.sol} (4 cases), and the cross-contract    {Security.ts} suite (7 cases). Every state transition described in the report lifecycle in Chapter~\ref{ch:architecture}, submission, community validation, authority action, post-resolution verification, and rejection review, is exercised directly against the compiled contract bytecode, together with pagination, per-citizen lookup, and the authority action history. This result demonstrates that the reporting rules are not merely suggestions enforced by the web interface. They are guaranteed by the blockchain itself, so an invalid state change is rejected regardless of which client submits it. The emergency and opinion-polling contracts add a fast-track path and a separate consultation mechanism, and both are covered end to end, confirming that the four contracts designed in Chapter~\ref{ch:architecture} are functionally complete and behave as intended.
 
 \subsection{Integrated Relayer, AI Moderation, and Storage Pipeline}
 
-The 25 relayer unit-test cases confirm that every cryptographic check the relayer is responsible for, government-ticket verification, citizen signature verification, pseudonym derivation, and vote-payload verification, behaves correctly using real Ethers.js wallets rather than mocked stand-ins. The 22 AI oracle cases confirm that the request-protection layer (API keys, relayer signatures, nonce replay protection, file limits) and the classification layer (civic, hate, spam, off-topic, and emergency text, together with safe, corrupted, and unsafe images) both behave as designed, and that every recorded decision is returned with an accompanying explanation. The 8 IPFS cases confirm that uploaded content can always be retrieved by its returned CID with a matching hash, across file sizes from about 1\,KB to 5\,MB and under concurrent load. Because these three services sit directly in the path between a citizen's submission and its blockchain record, their combined pass rate is strong evidence that the pipeline architecture chosen in Chapter~\ref{ch:architecture}, relayer verification before AI moderation, before off-chain storage, before on-chain anchoring, works as intended rather than only in principle.
+The 25 relayer unit-test cases confirm that every cryptographic check the relayer is responsible for, government-ticket verification, citizen signature verification, pseudonym derivation, and vote-payload verification, behaves correctly using real Ethers.js wallets rather than mocked stand-ins. The 20 AI oracle cases confirm that the request-protection layer (API keys, relayer signatures, nonce replay protection, file limits) and the classification layer (civic, hate, spam, off-topic, and emergency text, together with safe, corrupted, and unsafe images) both behave as designed, and that every recorded decision is returned with an accompanying explanation. The 8 IPFS cases confirm that uploaded content can always be retrieved by its returned CID with a matching hash, across file sizes from about 1\,KB to 5\,MB and under concurrent load. Because these three services sit directly in the path between a citizen's submission and its blockchain record, their combined pass rate is strong evidence that the pipeline architecture chosen in Chapter~\ref{ch:architecture}, relayer verification before AI moderation, before off-chain storage, before on-chain anchoring, works as intended rather than only in principle.
 
 \subsection{End-to-End Lifecycle Confirmation}
 
-Beyond the individual suites, one complete report lifecycle has been exercised across every layer at once: a simulated citizen authenticates, receives a signed ticket, submits a report that passes through AI moderation, IPFS storage, and on-chain submission with ordered progress events, is validated by three community votes, is resolved by an authority, and is accepted by two verification votes to reach \texttt{Closed}. This scenario is significant because it shows that the individually tested components genuinely compose into the intended workflow, rather than each behaving correctly only in isolation. Combined with the 130 passing unit and integration cases, this is a coherent and mutually reinforcing body of evidence for the system's functional correctness.
+Beyond the individual suites, one complete report lifecycle has been exercised across every layer at once. A simulated citizen authenticates, receives a signed ticket, submits a report that passes through AI moderation, IPFS storage, and on-chain submission with ordered progress events.Then validated by three community votes, is resolved by an authority, and is accepted by two verification votes to reach {Closed}. This scenario is significant because it shows that the individually tested components genuinely compose into the intended workflow, rather than each behaving correctly only in isolation. Combined with the 128 passing unit and integration cases, this is a coherent and mutually reinforcing body of evidence for the system's functional correctness.
 
 \section{Security and Privacy Outcomes}
 \label{sec:security-privacy-findings}
 
-The dedicated \texttt{Security.ts} suite targets the specific misuse patterns a public-facing civic-reporting system needs to withstand, and every case passes. A used submission nullifier is replayed 100 consecutive times and rejected on every attempt, which gives strong confidence that the one-ticket-one-action rule is a genuine contract invariant rather than an artefact of a single test run. Duplicate validation votes, duplicate verification votes, and duplicate poll votes from the same citizen pseudonym are all rejected even when a fresh vote nullifier is presented, and a reclassified emergency report correctly locks its citizen's pseudonym for the configured 30-day window before automatically restoring access afterwards. Together with the relayer's rejection of forged government tickets and tampered payloads, these results confirm that the layered defense described in Chapter~\ref{ch:architecture}, cryptographic signatures at the relayer boundary and nullifier checks at the contract boundary, holds up under the specific attack patterns it was designed for.
+The dedicated    {Security.ts} suite targets the specific misuse patterns a public-facing civic-reporting system needs to withstand, and every case passes. A used submission nullifier is replayed 100 consecutive times and rejected on every attempt, which gives strong confidence that the single-ticket-one-action rule is a genuine result. Duplicate validation votes, duplicate verification votes, and duplicate poll votes from the same citizen pseudonym are all rejected even when a fresh vote nullifier is presented, and a reclassified emergency report correctly locks its citizen's pseudonym for the configured 30-day window before automatically restoring access afterwards. Together with the relayer's rejection of forged government tickets and tampered payloads, these results confirm that the layered defense described in Chapter~\ref{ch:architecture}, cryptographic signatures at the relayer boundary and nullifier checks at the contract boundary, holds up under the specific attack patterns it was designed for.
 
-On the privacy side, the pseudonym and one-time ticket design achieves its intended goal: citizen reports, votes, and poll participation are recorded on-chain without any government identifier, name, or other personally identifying data ever being written to the ledger. Only a stable pseudonym derived from the citizen's key, ticket hashes, and cryptographic proofs appear in contract storage. This is a practical and directly testable form of privacy protection, and it is precisely the property exercised by the passing Security suite: without it, the nullifier and pseudonym-based Sybil-resistance checks would have nothing to enforce. It gives citizens a working way to report sensitive local issues, vote on community outcomes, and take part in public consultations without linking that activity to their institutional identity in the permanent record.
+On the privacy side, the pseudonym and single-use ticket design achieves its intended goal. Citizen's reports, votes, and poll participation are recorded on-chain without any government identifier, name, or other personally identifying data ever being written to the ledger. Only a stable pseudonym derived from the citizen's key, ticket hashes, and cryptographic proofs appear in contract storage. This is a practical and directly testable form of privacy protection, and it is precisely the property exercised by the passing Security suite. This gives citizens a working way to report sensitive local issues, vote on community outcomes, and take part in public consultations without linking that activity to their institutional identity in the permanent record.
 
 \section{Performance Results and Suitability for Civic Reporting}
 \label{sec:performance-results}
@@ -50,7 +50,7 @@ Table~\ref{tab:performance-snapshot} restates the key measurements from the Chap
     
     Measurement & Recorded value & Significance \\
     \hline
-    Avg. gas per \texttt{submitReport()} & 309{,}056 gas & Paid transparently by the relayer, so a citizen can submit a report without holding cryptocurrency or managing a funded wallet \\
+    Avg. gas per    {submitReport()} & 309{,}056 gas & Paid transparently by the relayer, so a citizen can submit a report without holding cryptocurrency or managing a funded wallet \\
     \hline
     Avg. submit-to-confirm latency & 5{,}017\,ms & A report is confirmed on-chain within roughly one block period, comparable to the response time citizens already expect from a modern web form \\
     \hline
@@ -60,14 +60,14 @@ Table~\ref{tab:performance-snapshot} restates the key measurements from the Chap
     \hline
     Avg. gas per castValidationVote() & 51{,}806 gas & Substantially cheaper than submission, keeping repeated community participation (validation and verification voting) lightweight \\
     \hline
-    \texttt{batchFinalizeVotingWindows()} & 25{,}190 gas/report & Amortizing finalization across a batch of 10 reports keeps the per-report governance cost low as report volume grows \\
+       {batchFinalizeVoting Windows()} & 25{,}190 gas/report & Amortizing finalization across a batch of 10 reports keeps the per-report governance cost low as report volume grows \\
     \hline
     IPFS upload latency & 518--4{,}308\,ms & Scales gracefully with attachment size from 1\,KB to 5\,MB, keeping media-rich reports practical over an ordinary web connection \\
     
 \end{tabular}
 \end{table}
 
-These figures are consistent with the design reasoning given in Chapters~\ref{ch:architecture} and~\ref{ch:implementation}: moving gas payment to a relayer and processing the report submission asynchronously through a queue with progress updates were both chosen specifically so that blockchain confirmation time is never on the citizen's critical path. The recorded 5-second block interval and sub-6-second latency validate that choice, since a citizen sees their submission acknowledged immediately while the queue continues to process AI moderation, storage, and blockchain confirmation in the background. The gas figures likewise confirm that voting and batch finalization, the two actions repeated most often as a report moves through its lifecycle, are the cheapest operations in the system, which keeps the multisignature governance and community-validation mechanisms affordable to operate continuously.
+These figures are consistent with the design reasoning given in Chapters~\ref{ch:architecture} and~\ref{ch:implementation}. Moving gas payment to a relayer and processing the report submission asynchronously through a queue with progress updates were both chosen specifically so that blockchain confirmation time is never on the citizen's critical path. The recorded 5-second block interval and sub-6-second latency validate that choice, since a citizen sees their submission acknowledged immediately while the queue continues to process AI moderation, storage, and blockchain confirmation in the background. The gas figures likewise confirm that voting and batch finalization, the two actions repeated most often as a report moves through its lifecycle, are the cheapest operations in the system, which keeps the multisignature governance and community-validation mechanisms affordable to operate continuously.
 
 \section{Achievement of Project Objectives}
 \label{sec:objective-assessment}
@@ -84,7 +84,7 @@ Table~\ref{tab:objective-assessment} summarizes how the objectives defined in Ch
     \hline
     Permissioned PoA network for report integrity & Live three-validator Clique network; T5.1--T5.6 benchmark recording throughput, latency, block interval, and gas cost & Achieved \\
     \hline
-    Smart contracts automating reporting, resolution, community voting, and opinion polling & 75 passing contract cases across \texttt{Reporting}, \texttt{EmergencyReporting}, \texttt{OpinionPolling}, \texttt{AuthorityMultiSig}, and \texttt{Security} & Achieved \\
+    Smart contracts automating reporting, resolution, community voting, and opinion polling & 75 passing contract cases across    {Reporting},    {EmergencyReporting},    {OpinionPolling},    {AuthorityMultiSig}, and    {Security} & Achieved \\
     \hline
     User-friendly citizen and authority interfaces for reporting and tracking & Web \ac{DApp} and identity portal exercised through the full end-to-end lifecycle scenario, with gas hidden by the relayer and progress shown through SSE & Achieved \\
     \hline
@@ -93,78 +93,103 @@ Table~\ref{tab:objective-assessment} summarizes how the objectives defined in Ch
 \end{tabular}
 \end{table}
 
-Each objective is backed by a distinct, independently executable test suite rather than by a single combined demonstration, which means the achievement of one objective does not depend on assumptions about another. This traceability is a direct outcome of the modular architecture from Chapter~\ref{ch:architecture}: because the blockchain layer, the relayer, the AI service, and the storage service are separated by well-defined interfaces, each could be verified on its own before being exercised together in the end-to-end scenario.
+Each objective is backed by a distinct, independently executable test suite rather than by a single combined demonstration, which means the achievement of one objective does not depend on assumptions about another. This traceability is a direct outcome of the modular architecture from Chapter~\ref{ch:architecture}. Because the blockchain layer, the relayer, the AI service, and the storage service are separated by well-defined interfaces, each could be verified on its own before being integrated together in the end-to-end scenario.
 
 \section{Comparison with Existing Reporting Frameworks}
 \label{sec:comparison}
 
-Chapter~\ref{ch:introduction} reviewed several existing approaches to citizen reporting and blockchain-based governance: the centralized platforms FixMyStreet \cite{mysociety2026fixmystreet} and SeeClickFix \cite{seeclickfix2011democracy}, the blockchain-based police complaint system proposed by Pratheeba et al. \cite{pratheeba_blockchain_police_complaint}, the decentralized complaint-management framework proposed by Manjula et al. \cite{manjula2025decentralized}, and the privacy-preserving blockchain reporting system PriRPT \cite{lin2023prirpt}. Table~\ref{tab:framework-comparison} places the design implemented and tested in this project alongside these systems using the capabilities each is reported to provide in the literature.
+Chapter~\ref{ch:introduction} reviewed several existing approaches to citizen reporting and blockchain-based governance. The centralized platforms FixMyStreet \cite{mysociety2026fixmystreet} and SeeClickFix \cite{seeclickfix2011democracy}, the blockchain-based police complaint system proposed by Pratheeba et al. \cite{pratheeba_blockchain_police_complaint}, the decentralized complaint-management framework proposed by Manjula et al. \cite{manjula2025decentralized}, and the privacy-preserving blockchain reporting system PriRPT \cite{lin2023prirpt} are selected out of them. Table~\ref{tab:framework-comparison} places the design implemented and tested in this project alongside these systems using the capabilities each is reported to provide in the literature.
 
-\begin{table}[htbp]
+
+\begin{landscape}
+\begin{table}[htb]
 \centering
 \caption{Comparison with existing citizen-reporting and blockchain-governance frameworks}
 \label{tab:framework-comparison}
-\begin{tabular}{p{0.19\textwidth}|p{0.20\textwidth}|p{0.20\textwidth}|p{0.20\textwidth}|p{0.13\textwidth}}
-    
-    Framework & Domain & Data integrity & Identity / privacy & Moderation \\
+\begin{tabular}{p{0.15\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.30\textwidth}}
+
+    Framework & Domain & Data integrity & Identity / privacy & Moderation & Community voting & Emergency handling / governance \\
     \hline
-    FixMyStreet \cite{mysociety2026fixmystreet} & General local-issue reporting & Centralized database & Public, no anonymity mechanism & Manual \\
+    FixMyStreet \cite{mysociety2026fixmystreet} & General local-issue reporting & Centralized database & Public, no anonymity mechanism & Manual & Not reported & Not reported \\
     \hline
-    SeeClickFix \cite{seeclickfix2011democracy} & General local-issue reporting & Centralized database & Public, gamified profile & Manual \\
+    SeeClickFix \cite{seeclickfix2011democracy} & General local-issue reporting & Centralized database & Public, gamified profile & Manual & Not reported & Not reported \\
     \hline
-    Pratheeba's complaint system \cite{pratheeba_blockchain_police_complaint} & Police complaints & Blockchain hash-linking + encrypted storage & Access-controlled, not pseudonymous & \ac{NLP} categorization \\
+    Pratheeba's complaint system \cite{pratheeba_blockchain_police_complaint} & Police complaints & Blockchain hash-linking + encrypted storage & Access-controlled, not pseudonymous & \ac{NLP} categorization & Not reported & Not reported \\
     \hline
-    Manjula's complaint framework \cite{manjula2025decentralized} & Law-enforcement complaints & Three-tier blockchain, immutable evidence & Role-based access control & Not reported \\
+    Manjula's complaint framework \cite{manjula2025decentralized} & Law-enforcement complaints & Three-tier blockchain, immutable evidence & Role-based access control & Not reported & Not reported & Not reported \\
     \hline
-    PriRPT \cite{lin2023prirpt} & Privacy-preserving reporting with rewards & Blockchain ledger & Strong cryptographic privacy protocol & Not reported \\
+    PriRPT \cite{lin2023prirpt} & Privacy-preserving reporting with rewards & Blockchain ledger & Strong cryptographic privacy protocol & Not reported & Not reported & Not reported \\
     \hline
-    \textbf{Proposed framework} & \textbf{Local governance: standard reports, emergencies, and opinion polling} & \textbf{Permissioned PoA chain, on-chain hashes + IPFS \ac{CID}s} & \textbf{Pseudonymous one-time tickets, on-chain nullifiers} & \textbf{Multi-classifier AI moderation before anchoring} \\
-    
+    Proposed framework &   {Local governance: standard reports, emergencies, and opinion polling} &   {Permissioned PoA chain, on-chain hashes + IPFS \ac{CID}s} &   {Pseudonymous one-time tickets, on-chain nullifiers} &   {Multi-classifier AI moderation before anchoring} &   {On-chain two-stage voting: community validation and post-resolution verification} &   {Dedicated emergency fast-track with penalty mechanism; multisignature-governed authority actions and configuration} \\
+
 \end{tabular}
 \end{table}
+\end{landscape}
+% \begin{table}[htbp]
+% \centering
+% \caption{Comparison with existing citizen-reporting and blockchain-governance frameworks}
+% \label{tab:framework-comparison}
+% \begin{tabular}{p{0.15\textwidth}|p{0.18\textwidth}|p{0.20\textwidth}|p{0.20\textwidth}|p{0.13\textwidth}}
+    
+%     Framework & Domain & Data integrity & Identity / privacy & Moderation \\
+%     \hline
+%     FixMyStreet \cite{mysociety2026fixmystreet} & General local-issue reporting & Centralized database & Public, no anonymity mechanism & Manual \\
+%     \hline
+%     SeeClickFix \cite{seeclickfix2011democracy} & General local-issue reporting & Centralized database & Public, gamified profile & Manual \\
+%     \hline
+%     Pratheeba's complaint system \cite{pratheeba_blockchain_police_complaint} & Police complaints & Blockchain hash-linking + encrypted storage & Access-controlled, not pseudonymous & \ac{NLP} categorization \\
+%     \hline
+%     Manjula's complaint framework \cite{manjula2025decentralized} & Law-enforcement complaints & Three-tier blockchain, immutable evidence & Role-based access control & Not reported \\
+%     \hline
+%     PriRPT \cite{lin2023prirpt} & Privacy-preserving reporting with rewards & Blockchain ledger & Strong cryptographic privacy protocol & Not reported \\
+%     \hline
+%     Proposed framework &   {Local governance: standard reports, emergencies, and opinion polling} &   {Permissioned PoA chain, on-chain hashes + IPFS \ac{CID}s} &   {Pseudonymous one-time tickets, on-chain nullifiers} &   {Multi-classifier AI moderation before anchoring} \\
+    
+% \end{tabular}
+% \end{table}
 
-Two further capabilities are not shown in Table~\ref{tab:framework-comparison} for space, but are equally central to the comparison: the proposed framework records a two-stage community voting process (validation and post-resolution verification) directly on-chain, and it separates urgent civic issues into a dedicated emergency fast-track path guarded by a penalty mechanism, neither of which is reported in the reviewed systems. It also places authority actions and configuration changes under multisignature governance rather than a single administrative account, and supports a distinct opinion-polling mechanism for public consultation alongside issue reporting. Figure~\ref{fig:feature-comparison-chart} summarizes this breadth of coverage by counting, for each framework, how many of six representative design features (a decentralized ledger, an identity-privacy mechanism, automated content moderation, community validation, an emergency fast-track path, and on-chain governance or polling) are reported as present.
+ Figure~\ref{fig:feature-comparison-chart} summarizes this feature coverage by counting, for each framework, how many of six representative design features (a decentralized ledger, an identity-privacy mechanism, automated content moderation, community validation, an emergency fast-track path, and on-chain governance or polling) are reported as present.
 
-% \begin{figure}[!htb]
-%     \centering
-%     \begin{tikzpicture}
-%         \begin{axis}[
-%             ybar,
-%             width=0.9\textwidth,
-%             height=6.2cm,
-%             bar width=22pt,
-%             symbolic x coords={FixMyStreet,SeeClickFix,Police Complaint,Complaint Mgmt,PriRPT,Proposed},
-%             xtick=data,
-%             x tick label style={rotate=20, anchor=east, font=\small},
-%             nodes near coords,
-%             ymin=0, ymax=7,
-%             ylabel={Design features supported (out of 6)},
-%             enlarge x limits=0.12,
-%             axis lines*=left,
-%             clip=false,
-%             every node near coord/.append style={font=\small},
-%         ]
-%         \addplot[fill=barblue] coordinates {(FixMyStreet,0) (SeeClickFix,0) (Police Complaint,1) (Complaint Mgmt,1) (PriRPT,2) (Proposed,6)};
-%         \end{axis}
-%     \end{tikzpicture}
-%     \caption{Coverage of six representative design features across reviewed frameworks (decentralized ledger, identity privacy, AI moderation, community validation, emergency fast-track, and on-chain governance/polling)}
-%     \label{fig:feature-comparison-chart}
-% \end{figure}
+\begin{figure}[!htb]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            width=0.9\textwidth,
+            height=6.2cm,
+            bar width=22pt,
+            symbolic x coords={FixMyStreet,SeeClickFix,Police Complaint,Complaint Mgmt,PriRPT,Proposed},
+            xtick=data,
+            x tick label style={rotate=20, anchor=east, font=\small},
+            nodes near coords,
+            ymin=0, ymax=7,
+            ylabel={Design features supported (out of 6)},
+            enlarge x limits=0.12,
+            axis lines*=left,
+            clip=false,
+            every node near coord/.append style={font=\small},
+        ]
+        \addplot[fill=barblue] coordinates {(FixMyStreet,0) (SeeClickFix,0) (Police Complaint,1) (Complaint Mgmt,1) (PriRPT,2) (Proposed,6)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Coverage of six representative design features across reviewed frameworks (decentralized ledger, identity privacy, AI moderation, community validation, emergency fast-track, and on-chain governance/polling)}
+    \label{fig:feature-comparison-chart}
+\end{figure}
 
-This breadth is a direct consequence of combining several previously separate research directions, privacy-preserving identity, AI-assisted moderation, community validation, and contract-based governance, into a single tested prototype, rather than an indication that any one capability has been engineered to a greater depth than in the specialized literature it is drawn from. The centralized platforms remain valuable references for interface simplicity and proven civic engagement patterns, and the recorded results in this project show that a blockchain-based design can retain those qualities: citizens still submit a report through an ordinary web form, still see prompt confirmation, and are never asked to hold cryptocurrency or manage a wallet directly, since the relayer absorbs that complexity as described in Chapter~\ref{ch:implementation}. Compared with the blockchain-based complaint systems, the proposed framework additionally decouples citizen identity from on-chain records and applies AI moderation before content is anchored, and compared with PriRPT's stronger cryptographic privacy guarantee, it trades some of that cryptographic strength for a lighter-weight ticket-based mechanism that is fully implemented, integrated with the rest of the pipeline, and directly exercised by the passing Security suite in Chapter~\ref{ch:testing}.
+This achievement is a direct consequence of combining several separate research directions, privacy-preserving identity, AI-assisted moderation, community validation, and contract-based governance, into a single tested prototype. The centralized platforms remain valuable references for interface simplicity and proven civic engagement patterns, and the recorded results in this project show that a blockchain-based design can retain those qualities. Citizens still submit a report through an ordinary web form, still see prompt confirmation, and are never asked to hold cryptocurrency or manage a wallet directly, since the relayer absorbs that complexity as described in Chapter~\ref{ch:implementation}. Compared with the blockchain-based complaint systems, the proposed framework additionally decouples citizen identity from on-chain records and applies AI moderation before content is anchored. Compared with PriRPT's stronger cryptographic privacy guarantee, it trades some of that cryptographic strength for a lighter-weight ticket-based mechanism that is fully implemented, integrated with the rest of the pipeline, and directly validated by the passing Security suite in Chapter~\ref{ch:testing}.
 
 \section{Key Strengths of the Design}
 \label{sec:design-benefits}
 
-The recorded results support the following strengths of the implemented design:
+The recorded results support the following strengths of the implemented design.
 
 \begin{itemize}
     \item Reporting, validation, resolution, and governance rules are enforced by contract code, so they hold regardless of which client interacts with the system.
     \item Report state and authority actions are kept in an auditable, tamper-evident ledger, while large media files are kept off-chain and linked by verifiable content hashes.
-    \item Citizens never need to hold cryptocurrency or manage a wallet directly; the relayer absorbs gas payment and transaction submission on their behalf.
+    \item Citizens never need to hold cryptocurrency or manage a wallet directly, the relayer absorbs gas payment and transaction submission on their behalf.
     \item Queue-based processing with SSE progress updates keeps multi-service work (AI moderation, storage, blockchain submission) visible to the citizen rather than hidden behind a single opaque wait.
-    \item Nullifier and pseudonym checks give citizens a working, tested form of anonymous-but-accountable participation across reporting, validation, and polling.
-    \item AI moderation is applied before content is anchored on-chain, addressing the immutability concern raised in Chapter~\ref{ch:introduction} for permanently recorded harmful content.
+    \item Nullifier and pseudonym checks give citizens a working, tested form of pseudonymous participation across reporting, validation, and polling.
+    \item AI moderation is applied before content is anchored on-chain, addressing the toxic immutability concern raised in Chapter~\ref{ch:introduction} for permanently recorded harmful content.
     \item A dedicated emergency path and multisignature authority governance extend the design beyond a single reporting flow into a broader local-governance toolkit.
 \end{itemize}
 
@@ -173,9 +198,8 @@ These strengths follow directly from combining well-established techniques, perm
 \section{Scope for Future Enhancement}
 \label{sec:results-scope}
 
-The results in this chapter validate the core architecture and give a solid, tested foundation to build on. Several enhancements are natural next steps for extending that foundation toward broader deployment. Replacing the government identity simulator with a full zero-knowledge credential protocol would strengthen the privacy guarantee beyond ticket-based pseudonymity while preserving the same nullifier-based Sybil-resistance pattern already validated in the Security suite. Expanding the AI moderation evaluation with a larger, multilingual civic dataset would build on the demonstrated pipeline to establish broader accuracy figures across Sinhala, Tamil, and English content. Evaluating a decentralized oracle configuration for the AI aggregator would extend the current centralized moderation service toward the fuller decentralization goal discussed in Chapter~\ref{ch:introduction}. Finally, adding automated frontend testing, an accessibility review, and a supervised pilot deployment, following the phased plan discussed with the project supervisor, would extend the current component and integration testing toward validated real-world usability. Each of these directions builds on tested components rather than replacing them, which keeps the risk of extending the system manageable.
-
+The results in this chapter validate the core architecture and give a solid, tested foundation to build on. Several enhancements are natural next steps for extending that foundation toward broader deployment. Replacing the government identity simulator with a full zero-knowledge credential protocol would strengthen the privacy guarantee beyond ticket-based pseudonymity. Expanding the AI moderation evaluation with a larger, multilingual civic dataset would build on the demonstrated pipeline to establish broader accuracy across Sinhala, Tamil, and English content. Evaluating a decentralized oracle configuration for the AI aggregator would extend the current centralized moderation service toward the fuller decentralization goal discussed in Chapter~\ref{ch:introduction}. Finally, adding automated frontend testing, an accessibility review, and a supervised pilot deployment, would extend the current component and integration testing toward validated real-world usability. 
 \section{Chapter Summary}
 \label{sec:findings-summary}
 
-The recorded evidence supports a clear and consistent conclusion: the prototype correctly enforces its intended reporting, validation, and governance rules on a live permissioned blockchain, integrates its relayer, AI moderation, and storage services into one working pipeline, and does so within response times and costs well suited to civic reporting. All four project objectives are backed by dedicated, independently executable test evidence, and the completed end-to-end lifecycle scenario confirms that these individually verified components genuinely work together. Compared with the centralized and blockchain-based frameworks reviewed in Chapter~\ref{ch:introduction}, the implemented system combines a broader set of privacy, moderation, community-validation, and governance features into a single tested design, while retaining the citizen-facing simplicity that has made platforms like FixMyStreet and SeeClickFix successful. Chapter~\ref{ch:conclusions} builds on these findings to summarize the project's overall contribution and outline its future direction.
+The recorded evidence supports a clear and consistent conclusion. The prototype correctly enforces its intended reporting, validation, and governance rules on a live permissioned blockchain. The system integrates relayer, AI moderation, and storage services into one working pipeline, and does so within response times and costs well suited to civic reporting. All four project objectives are backed by dedicated, independently executable test evidence. The completed end-to-end lifecycle scenario confirms that these individually verified components genuinely work together. Compared with the centralized and blockchain-based frameworks reviewed in Chapter~\ref{ch:introduction}, the implemented system combines a broader set of privacy, moderation, community-validation, and governance features into a single tested design, while retaining the citizen-facing simplicity that has made platforms like FixMyStreet and SeeClickFix successful. Chapter~\ref{ch:conclusions} builds on these findings to summarize the project's overall contribution and outline its future direction.
