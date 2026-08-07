@@ -1,0 +1,16 @@
+%% Figure: Relationships between the four deployed smart contracts.
+%% Render to: Images/Chapter 4/contract-relationships.png
+flowchart TB
+    SuperAdmins["Super Admins"] -- "Submit and approve proposals" --> MultiSig["AuthorityMultiSig"]
+    MultiSig -- "Owns; can change voting method and authority roster" --> Reporting["Reporting"]
+    MultiSig -- "Can update authority roster when configured" --> Emergency["EmergencyReporting"]
+
+    Relayer["Backend relayer"] -- "submitReport, castVote" --> Reporting
+    Relayer -- "submitEmergency, resolve, reclassify" --> Emergency
+    Relayer -- "castVote" --> Polling["OpinionPolling"]
+
+    Authorities["Authority workers"] -- "startWork, markAsSolved, rejectIssue" --> Reporting
+    Authorities -- "startWork, resolve, reclassify" --> Emergency
+    Authorities -- "createOfficialPoll" --> Polling
+
+    Polling -- "Checks authority permission" --> Reporting

@@ -1,0 +1,17 @@
+%% Figure: Emergency report submission and response workflow.
+%% Render to: Images/Chapter 3/emergency-workflow.png
+flowchart TD
+    A["Citizen submits an emergency report and media"] --> B["Relayer verifies government ticket, image hashes, and citizen signature"]
+    B --> C["AI moderation checks safety, spam, and civic relevance"]
+    C --> D{"Content accepted?"}
+    D -- No --> E["Reject submission"]
+    D -- Yes --> F["Accepted content stored as one IPFS envelope"]
+    F --> G["EmergencyReporting contract records the report directly as Open"]
+    G --> H["Community validation is skipped so response can start immediately"]
+    H --> I{"Authority assessment"}
+    I -- "Genuine, needs work" --> J["Authority starts work: InProgress"]
+    J --> K["Authority resolves the emergency: Resolved"]
+    I -- "Genuine, already fixed" --> L["Authority resolves directly from Open: Resolved"]
+    I -- "False emergency" --> M["Authority reclassifies the report: Reclassified"]
+    M --> N["Citizen pseudonym enters a 30-day emergency penalty box"]
+    N --> O["New emergency submissions from that pseudonym resume after the penalty period"]

@@ -1,0 +1,9 @@
+%% Figure: Relayer dual-signature verification pipeline.
+%% Render to: Images/Chapter 3/relayer-verification.png
+flowchart TD
+    A["Report or vote request arrives at the relayer"] --> B{"Government ticket signature valid?"}
+    B -- No --> C["Reject request"]
+    B -- Yes --> D{"Citizen ECDSA signature on the payload hash valid?"}
+    D -- No --> E["Reject payload"]
+    D -- Yes --> F["Derive citizen pseudonym"]
+    F --> G["Forward payload to the processing queue"]

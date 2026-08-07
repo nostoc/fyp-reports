@@ -1,0 +1,18 @@
+%% Figure: Node and port configuration of the private Geth Clique PoA network.
+%% Render to: Images/Chapter 4/poa-node-configuration.png
+flowchart LR
+    subgraph Genesis["Genesis config: chain ID 1337, extraData lists 3 sealer addresses"]
+        direction LR
+    end
+    N1["Node 1\nValidator, sealing enabled"]
+    N2["Node 2\nValidator, sealing enabled"]
+    N3["Node 3\nValidator, sealing enabled"]
+    N4["Node 4\nNon-sealing RPC node\nHTTP JSON-RPC on port 8545"]
+
+    N1 <--> N2
+    N2 <--> N3
+    N3 <--> N4
+    N4 <--> N1
+
+    Relayer["Backend relayer"] -- "Signed transactions" --> N4
+    DApp["DApp"] -- "Contract reads" --> N4

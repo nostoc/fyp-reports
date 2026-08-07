@@ -1,0 +1,10 @@
+%% Figure: Stages of the blockchain performance benchmark script.
+%% Render to: Images/Chapter 5/benchmark-measurements.png
+flowchart LR
+    Deploy["Deploy Reporting contract\nand configure roles"] --> T54["T5.4\nGas per submitReport()"]
+    T54 --> T52["T5.2\n\ac{E2E} submit-to-confirm latency"]
+    T52 --> T51["T5.1\nConcurrent-batch throughput (TPS)"]
+    T51 --> T53["T5.3\nClique block interval observation"]
+    T53 --> T55["T5.5\nGas per castValidationVote()"]
+    T55 --> T56["T5.6\nbatchFinalizeVotingWindows() gas\nfor 50 reports"]
+    T56 --> Report["Console summary of\nall recorded measurements"]

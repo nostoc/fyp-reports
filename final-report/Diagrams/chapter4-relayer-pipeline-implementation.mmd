@@ -1,0 +1,22 @@
+%% Figure: Relayer verification checks and BullMQ job pipeline implementation.
+%% Render to: Images/Chapter 4/relayer-pipeline-implementation.png
+flowchart TD
+    A["Incoming report or vote request"] --> B{"Government ticket signature recovered and matches the configured government address?"}
+    B -- No --> R1["Reject request"]
+    B -- Yes --> C{"Each image hash matches the hash supplied by the dApp?"}
+    C -- No --> R2["Reject request"]
+    C -- Yes --> D{"Citizen signature over the composite report hash matches the claimed wallet?"}
+    D -- No --> R3["Reject request"]
+    D -- Yes --> E["Derive citizen pseudonym"]
+    E --> F["Return job ID immediately; enqueue a BullMQ flow"]
+    F --> G["Child job 1: AI moderation, 1 attempt"]
+    G --> H["Child job 2: IPFS upload, up to 3 attempts"]
+    H --> I["Child job 3: Blockchain submission, up to 3 attempts"]
+    I --> J["Flow completed"]
+    G -. "Rejected or failed" .-> K["Parent flow fails"]
+    H -. "Fails after retries" .-> K
+    I -. "Fails after retries" .-> K
+    F -.-> S["Progress streamed over SSE, filtered by citizen wallet"]
+    G -.-> S
+    H -.-> S
+    I -.-> S

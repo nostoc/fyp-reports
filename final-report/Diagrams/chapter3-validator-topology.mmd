@@ -1,0 +1,16 @@
+%% Figure: Private PoA validator and RPC node topology.
+%% Render to: Images/Chapter 3/validator-topology.png
+flowchart LR
+    subgraph PoA["Private Clique PoA network, chain ID 1337"]
+        V1["Node 1: Validator"]
+        V2["Node 2: Validator"]
+        V3["Node 3: Validator"]
+        RPC["Node 4: Non-mining RPC node"]
+        V1 <--> V2
+        V2 <--> V3
+        V3 <--> RPC
+        RPC <--> V1
+    end
+
+    Relayer["Backend relayer"] -- "Writes signed transactions" --> RPC
+    DApp["DApp"] -- "Reads contract state" --> RPC

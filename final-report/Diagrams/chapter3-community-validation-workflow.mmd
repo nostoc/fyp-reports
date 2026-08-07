@@ -1,0 +1,13 @@
+%% Figure: Community validation voting workflow for a newly submitted report.
+%% Render to: Images/Chapter 3/community-validation-workflow.png
+flowchart TD
+    A["Report enters PendingValidation and appears in the community feed"] --> B["Citizen requests an unused vote ticket and casts an upvote or downvote"]
+    B --> C["Relayer verifies the ticket and citizen signature"]
+    C --> D{"Ticket and pseudonym unused for this report phase?"}
+    D -- No --> E["Reject duplicate vote"]
+    D -- Yes --> F["Contract records the vote and updates the tally"]
+    F --> G{"Voting window closed?"}
+    G -- No --> B
+    G -- Yes --> H{"Result by the configured method"}
+    H -- Accepted --> I["Report becomes Open"]
+    H -- Rejected --> J["Report becomes CommunityRejected"]
