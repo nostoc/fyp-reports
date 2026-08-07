@@ -1,0 +1,11 @@
+%% Figure: State lifecycle of an emergency report.
+%% Render to: Images/Chapter 3/emergency-lifecycle.png
+stateDiagram-v2
+    [*] --> Open: Emergency submitted
+    Open --> InProgress: Authority starts work
+    InProgress --> Resolved: Authority completes work
+    Open --> Resolved: Authority resolves directly
+    Open --> Reclassified: Authority marks as false emergency
+    InProgress --> Reclassified: Authority marks as false emergency
+    Resolved --> [*]
+    Reclassified --> [*]

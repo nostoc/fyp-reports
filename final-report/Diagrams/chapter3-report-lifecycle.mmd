@@ -1,0 +1,16 @@
+%% Figure: State lifecycle of a standard civic report.
+%% Render to: Images/Chapter 3/report-lifecycle.png
+stateDiagram-v2
+    [*] --> PendingValidation: Submit report
+    PendingValidation --> Open: Community accepts
+    PendingValidation --> CommunityRejected: Community rejects
+    CommunityRejected --> PendingValidation: Approved revote
+    Open --> InProgress: Authority starts work
+    Reopened --> InProgress: Authority restarts work
+    InProgress --> PendingVerification: Solution submitted
+    InProgress --> PendingRejectionReview: Rejection submitted
+    PendingVerification --> Closed: Community accepts solution
+    PendingVerification --> Reopened: Community rejects solution
+    PendingRejectionReview --> Closed: Community upholds rejection
+    PendingRejectionReview --> Reopened: Community accepts appeal
+    Closed --> [*]

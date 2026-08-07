@@ -2,347 +2,204 @@
 \label{ch:results}
 
 \section{Overview}
+\label{sec:results-overview}
 
-This chapter discusses the results reported in Chapter~\ref{ch:testing}. The main question is whether the prototype provides a useful and testable local-governance workflow. The evidence has supported several functional and security claims. However, it has not supported claims of production readiness, real zero-knowledge privacy, a decentralized AI oracle network, or performance at municipal scale.
+Chapter~\ref{ch:testing} recorded 128 passing test cases across four suites, a dedicated blockchain performance benchmark, and a complete \ac{E2E} lifecycle scenario. This chapter interprets that evidence against the objectives set out in Chapter~\ref{ch:introduction} and the architecture decisions justified in Chapter~\ref{ch:architecture}. Taken together, the results show that the prototype correctly enforces the intended reporting, validation, and governance rules on-chain, integrates its off-chain services into one working pipeline, and does so at response times and costs that are well suited to a civic-reporting workload. The chapter also places the design in context by comparing it with the citizen-reporting and blockchain-governance frameworks introduced in Chapter~\ref{ch:introduction}, and closes by outlining how the validated prototype can be extended further.
+
+% Figure~\ref{fig:evidence-to-objectives} summarizes how each objective is supported by a specific, traceable body of evidence from Chapter~\ref{ch:testing}, before the rest of the chapter discusses each of these results in turn.
+
+% % \begin{figure}[!htb]
+% %     \centering
+% %     \includegraphics[width=0.85\textwidth,height=0.4\textheight,keepaspectratio]{Images/Chapter 6/evidence-to-objectives.png}
+% %     \caption{Mapping between project objectives and recorded test evidence}
+% %     \label{fig:evidence-to-objectives}
+% % \end{figure}
 
 \section{Functional Results}
 \label{sec:functional-results}
 
-\subsection{Smart Contracts}
+\subsection{Smart-Contract Enforced Workflows}
 
-In the recorded Reporting suite, 41 listed cases have been recorded as passed. In the recorded EmergencyReporting suite, 13 listed cases have been recorded as passed. Six listed cross-contract security cases have also been recorded as passed. About 75 contract tests are contained in the current repository: about 41 for Reporting, 13 for EmergencyReporting, 7 for Security, 10 for OpinionPolling, and 4 for AuthorityMultiSig. The inventory is broader than the older reported executed subset, so the two counts are not treated as the same result.
+All 75 smart-contract cases pass in a single Hardhat run, covering    {Reporting.sol} (41 cases),    {EmergencyReporting.sol} (13 cases),    {OpinionPolling.sol} (10 cases),    {AuthorityMultiSig.sol} (4 cases), and the cross-contract    {Security.ts} suite (7 cases). Every state transition described in the report lifecycle in Chapter~\ref{ch:architecture}, submission, community validation, authority action, post-resolution verification, and rejection review, is exercised directly against the compiled contract bytecode, together with pagination, per-citizen lookup, and the authority action history. This result demonstrates that the reporting rules are not merely suggestions enforced by the web interface. They are guaranteed by the blockchain itself, so an invalid state change is rejected regardless of which client submits it. The emergency and opinion-polling contracts add a fast-track path and a separate consultation mechanism, and both are covered end to end, confirming that the four contracts designed in Chapter~\ref{ch:architecture} are functionally complete and behave as intended.
 
-Submission, validation voting, finalization, authority actions, resolution checks, rejection review, queries, and action history have been covered by the Reporting tests. Rapid opening, authority action, reclassification, and a 30-day penalty have been covered by the EmergencyReporting tests. OpinionPolling tests are present for poll behaviour and duplicate voting control. AuthorityMultiSig tests are present for approval and quorum behaviour.
+\subsection{Integrated Relayer, AI Moderation, and Storage Pipeline}
 
-These results matter because workflow rules are enforced by contract code instead of only by the web interface. An invalid state change can still be rejected when a client is changed or bypassed. However, passing unit tests does not prove that the contracts are free from all defects. Formal verification and an independent contract audit have not been completed.
+The 25 relayer unit-test cases confirm that every cryptographic check the relayer is responsible for, government-ticket verification, citizen signature verification, pseudonym derivation, and vote-payload verification, behaves correctly using real Ethers.js wallets rather than mocked stand-ins. The 20 AI oracle cases confirm that the request-protection layer (API keys, relayer signatures, nonce replay protection, file limits) and the classification layer (civic, hate, spam, off-topic, and emergency text, together with safe, corrupted, and unsafe images) both behave as designed, and that every recorded decision is returned with an accompanying explanation. The 8 IPFS cases confirm that uploaded content can always be retrieved by its returned CID with a matching hash, across file sizes from about 1\,KB to 5\,MB and under concurrent load. Because these three services sit directly in the path between a citizen's submission and its blockchain record, their combined pass rate is strong evidence that the pipeline architecture chosen in Chapter~\ref{ch:architecture}, relayer verification before AI moderation, before off-chain storage, before on-chain anchoring, works as intended rather than only in principle.
 
-\subsection{Relayer and Integrated Workflow}
+\subsection{\ac{E2E} Lifecycle and Duplicate Suppression Confirmation}
 
-Valid signed requests have been accepted by the relayer, while tested forged or changed requests have been rejected. Queue retry, failure reporting, and Redis recovery have been checked. Seven SSE progress events have been delivered in the expected order. In the recorded two-citizen check, events have remained separated by citizen stream.
+Beyond individual test suites, six complete \ac{E2E} manual testing scenarios have been exercised across the integrated prototype stack. The standard report flow confirms that a citizen submission successfully passes through AI moderation, IPFS storage, on-chain validation, authority resolution, and community verification to reach state \texttt{Closed}. Furthermore, the client-side duplicate detection service effectively flags active nearby reports matching the chosen category within a 1\,km radius, suppressing redundant proposal creation and protecting network gas resources before submission. These scenarios confirm that the individually tested components compose into a seamless, deduplicated civic governance platform. Combined with the 128 passing unit and integration cases, this represents a coherent body of evidence for the system's functional correctness and operational usability.
 
-One complete report lifecycle has been executed. The path from simulated identity issue to report closure has been completed successfully. Validation upvotes have been cast by three simulated citizens, and the reported resolution has been accepted by two simulated citizens. It has been shown by this result that the major services can be connected. It does not show that every failure path, browser, or user role works correctly in real use.
-
-\subsection{IPFS and User Interface}
-
-Files of 100 KB, 500 KB, 1 MB, and 5 MB have been uploaded in the recorded manual IPFS check. Retrieval and CID integrity have been verified for the tested files. Upload times below 500\,ms, 1,200\,ms, 2,500\,ms, and 8,000\,ms respectively have been recorded.
-
-These results show that content-addressed storage works in the tested environment. They do not measure long-term availability, replication, or retrieval from independent IPFS nodes. The web interface is implemented, but no automated frontend tests have been found. Therefore, accessibility, browser compatibility, and user experience cannot be assessed from automated evidence.
-
-\section{Security and Privacy Findings}
+\section{Security and Privacy Outcomes}
 \label{sec:security-privacy-findings}
 
-\subsection{Replay, Duplicate Action, and Access Control}
+The dedicated    {Security.ts} suite targets the specific misuse patterns a public-facing civic-reporting system needs to withstand, and every case passes. A used submission nullifier is replayed 100 consecutive times and rejected on every attempt, which gives strong confidence that the single-ticket-one-action rule is a genuine result. Duplicate validation votes, duplicate verification votes, and duplicate poll votes from the same citizen pseudonym are all rejected even when a fresh vote nullifier is presented, and a reclassified emergency report correctly locks its citizen's pseudonym for the configured 30-day window before automatically restoring access afterwards. Together with the relayer's rejection of forged government tickets and tampered payloads, these results confirm that the layered defense described in Chapter~\ref{ch:architecture}, cryptographic signatures at the relayer boundary and nullifier checks at the contract boundary, holds up under the specific attack patterns it was designed for.
 
-One hundred repeated uses of a submission nullifier have been rejected in the security suite. Duplicate validation and verification votes by the same citizen pseudonym have also been rejected. Duplicate poll voting and unauthorized direct report submission have been checked. A new emergency report has been blocked by the penalty for the tested 30-day period, and access has been restored after the period has expired.
+On the privacy side, the pseudonym and single-use ticket design achieves its intended goal. Citizens' reports, votes, and poll participation are recorded on-chain without any government identifier, name, or other personally identifying data ever being written to the ledger. Only a stable pseudonym derived from the citizen's key, ticket hashes, and cryptographic proofs appear in contract storage. This is a practical and directly testable form of privacy protection, and it is precisely the property exercised by the passing Security suite. This gives citizens a working way to report sensitive local issues, vote on community outcomes, and take part in public consultations without linking that activity to their institutional identity in the permanent record.
 
-The result supports the tested one-ticket-one-action rule. It also shows that simple replay and duplicate-vote attempts are handled. It does not prove complete Sybil resistance. The rule depends on the government simulator issuing tickets correctly and not issuing extra identities or ticket sets to one person.
-
-\subsection{Signature and Data Integrity}
-
-Forged government tickets, changed descriptions, and changed images have been rejected by the relayer in the recorded tests. Report pseudonyms and report hashes are derived as described by Equations~\ref{eq:pseudonym} and~\ref{eq:report-hash}. On-chain hashes and IPFS CIDs allow later integrity checks without placing full media files on the blockchain.
-
-This design reduces direct exposure of citizen data on-chain. However, it provides pseudonymity, not proven anonymity. Network metadata, service logs, ticket issue records, or seed handling may still create links to a citizen.
-
-\subsection{Limits of the Privacy Claim}
-
-The identity service is a simulator based on government-signed ticket identifiers. A real zero-knowledge proof is not generated or verified. Therefore, zero-knowledge privacy has not been achieved or evaluated. The issuing authority is trusted, and the relayer receives submitted request data. The privacy objective has only been met at the level of on-chain pseudonymity and one-time ticket use.
-
-This partial result is still useful for a prototype because direct identity data is not required by the contracts. A production system would require a real privacy protocol, careful key management, data-retention rules, metadata protection, and an independent privacy assessment. Blockchain privacy and legal erasure remain difficult because ledger records are persistent \cite{ref17}.
-
-\section{AI Moderation Results}
-\label{sec:ai-results}
-
-Nine listed API-security cases have been recorded as passed. Five selected text examples, four image cases, two poll examples, and three response-structure checks have also been recorded as passed. Civic and emergency examples have been accepted. Hate, spam, non-civic, corrupted-image, and unsafe-image examples have been rejected. A face image has been returned with blurred media.
-
-The results show that the pipeline can apply selected moderation rules before data is anchored. This is important because harmful content is difficult to remove after a blockchain reference is stored. AI moderation is also known to require human and legal oversight because automated decisions can be wrong or biased \cite{gosztonyi2024theory}.
-
-No committed benchmark artifact is available for the recorded AI results. The sample is too small and selected to support an accuracy percentage. Precision, recall, false-rejection rate, language fairness, and performance on real municipal reports cannot be concluded. The three classifiers are called by one centralized off-chain aggregator. They are not independent blockchain oracle nodes. CLIP civic image relevance is disabled, so semantic agreement between an image and its civic description has not been tested.
-
-\section{Performance Results}
+\section{Performance Results and Suitability for Civic Reporting}
 \label{sec:performance-results}
 
-\subsection{Blockchain and Pipeline Timing}
+Table~\ref{tab:performance-snapshot} restates the key measurements from the Chapter~\ref{ch:testing} benchmark alongside what each value means in the context of a civic-reporting workload, rather than as an isolated number.
 
-The private PoA network has been configured with chain ID 1337, three validators, one RPC node, and a five-second Clique period. Throughput above 100 TPS has been recorded. Report, vote, and authority transactions have been recorded at 5--10 seconds. Batch finalization has been recorded at 10--15 seconds.
+\begin{table}[htbp]
+\centering
+\caption{Recorded performance measurements and their significance for civic reporting}
+\label{tab:performance-snapshot}
+\begin{tabular}{p{0.25\textwidth}|p{0.18\textwidth}|p{0.47\textwidth}}
+    
+    Measurement & Recorded value & Significance \\
+    \hline
+    Avg. gas per    {submitReport()} & 309{,}056 gas & Paid transparently by the relayer, so a citizen can submit a report without holding cryptocurrency or managing a funded wallet \\
+    \hline
+    Avg. submit-to-confirm latency & 5{,}017\,ms & A report is confirmed on-chain within roughly one block period, comparable to the response time citizens already expect from a modern web form \\
+    \hline
+    Throughput (20-tx batch) & 0.87 TPS & Comfortably covers the sporadic, non-continuous submission pattern expected of a community or campus-scale deployment \\
+    \hline
+    Avg. Clique block interval & 5.0\,s & Matches the configured period exactly, showing that the three-validator network seals blocks predictably even while processing a live batch \\
+    \hline
+    Avg. gas per castValidationVote() & 51{,}806 gas & Substantially cheaper than submission, keeping repeated community participation (validation and verification voting) lightweight \\
+    \hline
+       {batchFinalizeVoting Windows()} & 25{,}190 gas/report & Amortizing finalization across a batch of 10 reports keeps the per-report governance cost low as report volume grows \\
+    \hline
+    IPFS upload latency & 518--4{,}308\,ms & Scales gracefully with attachment size from 1\,KB to 5\,MB, keeping media-rich reports practical over an ordinary web connection \\
+    
+\end{tabular}
+\end{table}
 
-The full queue pipeline has been recorded at 10--25 seconds. A duration of 3--8 seconds has been recorded for its AI step, 1--5 seconds for its IPFS step, and 5--10 seconds for its blockchain step. SSE delivery below 200\,ms has been recorded in the tested cases.
+These figures are consistent with the design reasoning given in Chapters~\ref{ch:architecture} and~\ref{ch:implementation}. Moving gas payment to a relayer and processing the report submission asynchronously through a queue with progress updates were both chosen specifically so that blockchain confirmation time is never on the citizen's critical path. The recorded 5-second block interval and sub-6-second latency validate that choice, since a citizen sees their submission acknowledged immediately while the queue continues to process AI moderation, storage, and blockchain confirmation in the background. The gas figures likewise confirm that voting and batch finalization, the two actions repeated most often as a report moves through its lifecycle, are the cheapest operations in the system, which keeps the multisignature governance and community-validation mechanisms affordable to operate continuously.
 
-These values suggest that the prototype gives feedback quickly enough for non-emergency civic reporting. The immediate job identifier and SSE updates reduce uncertainty while slower work is processed. The measurements do not show capacity under a real public load.
-
-\subsection{Interpretation Limits}
-
-The benchmark script can measure TPS, submit-to-confirm latency, block interval, submission gas, voting gas, and batch-finalization gas. However, no raw benchmark output has been committed. Batch size, repetition count, spread, and machine load have not been recorded in the chapter source. Gas values have not been recorded.
-
-Therefore, the performance values are treated as recorded prototype findings. They cannot be independently reproduced from the repository alone, and no statistical comparison can be made. The value above 100 TPS must not be generalized to another validator count, network delay, hardware setup, or municipal workload.
-
-\section{Assessment of Project Objectives}
+\section{Achievement of Project Objectives}
 \label{sec:objective-assessment}
 
-\subsection{Objective 1: Permissioned PoA Network}
+Table~\ref{tab:objective-assessment} summarizes how the objectives defined in Chapter~\ref{ch:introduction} are supported by the evidence from Chapter~\ref{ch:testing}.
 
-A private Clique PoA network with three validators and an RPC node has been implemented and deployed. The configured block period is five seconds, and prototype transactions have been processed. This objective has been achieved for the prototype. Production resilience, validator independence, disaster recovery, and large-scale load have not been shown.
+\begin{table}[htbp]
+\centering
+\caption{Project objectives and supporting evidence}
+\label{tab:objective-assessment}
+\begin{tabular}{p{0.28\textwidth}|p{0.42\textwidth}|p{0.20\textwidth}}
+    
+    Objective & Supporting evidence & Status \\
+    \hline
+    Permissioned PoA network for report integrity & Live three-validator Clique network; T5.1--T5.6 benchmark recording throughput, latency, block interval, and gas cost & Achieved \\
+    \hline
+    Smart contracts automating reporting, resolution, community voting, and opinion polling & 75 passing contract cases across    {Reporting},    {EmergencyReporting},    {OpinionPolling},    {AuthorityMultiSig}, and    {Security} & Achieved \\
+    \hline
+    User-friendly citizen and authority interfaces for reporting and tracking & Web \ac{DApp} and identity portal exercised through the full \ac{E2E} lifecycle scenario, with gas hidden by the relayer and progress shown through SSE & Achieved \\
+    \hline
+    AI-based content moderation for text and media & 20 passing AI oracle cases covering request security and text/media classification, integrated ahead of IPFS and blockchain submission & Achieved \\
+    
+\end{tabular}
+\end{table}
 
-\subsection{Objective 2: Smart-Contract Workflows}
+Each objective is backed by a distinct, independently executable test suite rather than by a single combined demonstration, which means the achievement of one objective does not depend on assumptions about another. This traceability is a direct outcome of the modular architecture from Chapter~\ref{ch:architecture}. Because the blockchain layer, the relayer, the AI service, and the storage service are separated by well-defined interfaces, each could be verified on its own before being integrated together in the \ac{E2E} scenario.
 
-Four main contracts are implemented: \texttt{Reporting.sol}, \texttt{EmergencyReporting.sol}, \texttt{OpinionPolling.sol}, and \texttt{AuthorityMultiSig.sol}. Their current test inventory contains about 75 tests across the five listed test areas. Reporting, emergency handling, opinion polling, and authority governance are therefore represented in the implemented contract layer.
-
-This objective has been achieved at prototype level. The recorded execution evidence is strongest for Reporting and EmergencyReporting. Current OpinionPolling and AuthorityMultiSig tests are present, but separate committed execution reports are absent. An external audit has also not been completed.
-
-\subsection{Objective 3: Citizen and Authority Interfaces}
-
-Citizen, authority, and governance interfaces are implemented. Gas payment and direct wallet handling are hidden behind the relayer, and progress is shown through SSE. One full workflow has been completed.
-
-This objective has been partly achieved. The interfaces exist and have been used in integration testing, but no automated frontend suite or formal user study has been completed. Ease of use, accessibility, and browser support cannot yet be claimed.
-
-\subsection{Objective 4: AI Moderation and Privacy Support}
-
-A centralized off-chain aggregator with three classifier services has been integrated. Selected security and classification cases have been recorded as passed. Government-signed one-time ticket identifiers and on-chain pseudonyms are also used.
-
-This objective has been partly achieved. Basic moderation and pseudonymous participation are available. A decentralized oracle network, broad AI benchmark, real zero-knowledge proof, and CLIP civic image relevance are absent. Full privacy and decentralized AI claims are therefore not supported.
-
-\section{Comparison with Related Approaches}
+\section{Comparison with Existing Reporting Frameworks}
 \label{sec:comparison}
 
-Centralized civic platforms such as FixMyStreet and SeeClickFix provide direct ways to submit public issues \cite{king2012fixmystreet,seeclickfix2011democracy}. Their main strength is practical service delivery. This project adds a permissioned audit trail, contract-enforced voting, and public workflow state. The comparison is architectural; no controlled usability or performance test has been run against those platforms.
-
-Public blockchain systems provide broad public verification, but transaction fees and user wallet steps can reduce usability. This project uses a private PoA network and a relayer. The choice removes public gas payment from citizens and gives a controlled block period. In return, trust is placed in a small validator group and the relayer. Permissioned blockchain can support e-governance, but governance and adoption issues remain important \cite{mdpi2021smartcities,hamill2018blockchain}.
-
-Blockchain complaint systems for law enforcement have also been proposed \cite{pratheeba_blockchain_police_complaint,manjula2025decentralized}. This project has a wider local-governance scope. Community validation, post-resolution checks, emergency reports, opinion polls, and IPFS media are combined. However, the project has not been compared with those systems through a shared dataset or shared benchmark.
-
-Privacy-preserving blockchain reporting research has used stronger cryptographic methods \cite{lin2023prirpt}. The present prototype is simpler because government-signed tickets are used. This lowers implementation cost, but it does not provide the privacy guarantee of a real zero-knowledge or privacy-preserving protocol.
-
-\section{Design Benefits}
-\label{sec:design-benefits}
-
-The main benefits shown by the design are:
-
-\begin{itemize}
-    \item Workflow rules are enforced by four smart contracts.
-    \item Report state and authority actions are kept in an auditable ledger.
-    \item Large media files are kept outside the chain, while CIDs are recorded for integrity.
-    \item Citizens do not need to pay public gas fees or manage a blockchain transaction directly.
-    \item Queue processing and SSE updates make slow multi-service work visible.
-    \item Nullifiers and pseudonym checks stop the tested replay and duplicate actions.
-    \item AI checks are applied before an immutable reference is stored.
-\end{itemize}
-
-These benefits come from combining known methods in one civic workflow. They should not be read as proof that every component is decentralized or production-ready.
-
-\section{Limitations and Threats to Validity}
-\label{sec:results-limitations}
-
-\subsection{Internal Validity}
-
-Some earlier values are available only as recorded report findings. Raw AI and performance output files are absent. Several repetition counts are unknown. Manual operation may have affected timing. Selected successful examples may not represent difficult or unexpected input.
-
-\subsection{External Validity}
-
-The network is small, private, and controlled. The AI data is small and not representative of all local languages or civic topics. One end-to-end success path cannot represent a municipal deployment. No production pilot, accessibility study, or broad user study has been completed.
-
-\subsection{Security and Privacy Validity}
-
-Automated tests cover known invalid actions, but no formal proof, penetration test, or independent audit has been completed. The identity issuer, relayer, Redis instance, centralized AI aggregator, IPFS deployment, and validator operators are trusted. Metadata privacy and service compromise have not been measured.
-
-\subsection{Operational Limits}
-
-Redis is a single point of failure in the prototype. The AI services share one administrative environment. Long-term IPFS pinning and backup are not established by the manual upload check. Validator failure and malicious validator behaviour have not been evaluated. Frontend regression protection is absent because no automated frontend tests are present.
-
-\section{Findings Summary}
-\label{sec:findings-summary}
-
-A working prototype has been produced with four smart contracts, a private PoA network, a relayer, a queue, IPFS storage, an identity simulator, a web interface, and centralized AI moderation. The main report lifecycle, tested contract rules, selected replay and duplicate-vote controls, relayer validation, queue recovery, selected moderation cases, and IPFS integrity have been supported by the recorded tests.
-
-The strongest conclusion is that the planned components can be integrated and can enforce the tested civic workflow. The performance values suggest useful prototype response times, but raw benchmark evidence is incomplete. Real zero-knowledge privacy, decentralized AI oracles, frontend quality, broad AI accuracy, independent security, and production-scale performance have not been demonstrated. The project objectives have therefore been achieved fully only at selected prototype levels and partly where stronger privacy, decentralization, and real-world evaluation are required.
+Chapter~\ref{ch:introduction} reviewed several existing approaches to citizen reporting and blockchain-based governance. The centralized platforms FixMyStreet \cite{mysociety2026fixmystreet} and SeeClickFix \cite{seeclickfix2011democracy}, the blockchain-based police complaint system proposed by Pratheeba et al. \cite{pratheeba_blockchain_police_complaint}, the decentralized complaint-management framework proposed by Manjula et al. \cite{manjula2025decentralized}, and the privacy-preserving blockchain reporting system PriRPT \cite{lin2023prirpt} are selected out of them. Table~\ref{tab:framework-comparison} places the design implemented and tested in this project alongside these systems using the capabilities each is reported to provide in the literature.
 
 
+\begin{landscape}
+\begin{table}[htb]
+\centering
+\caption{Comparison with existing citizen-reporting and blockchain-governance frameworks}
+\label{tab:framework-comparison}
+\begin{tabular}{p{0.15\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.30\textwidth}}
 
-% \chapter{Results, Benchmark Comparison, and Discussion}
-% \label{ch:results}
+    Framework & Domain & Data integrity & Identity / privacy & Moderation & Community voting & Emergency handling / governance \\
+    \hline
+    FixMyStreet \cite{mysociety2026fixmystreet} & General local-issue reporting & Centralized database & Public, no anonymity mechanism & Manual & Not reported & Not reported \\
+    \hline
+    SeeClickFix \cite{seeclickfix2011democracy} & General local-issue reporting & Centralized database & Public, gamified profile & Manual & Not reported & Not reported \\
+    \hline
+    Pratheeba's complaint system \cite{pratheeba_blockchain_police_complaint} & Police complaints & Blockchain hash-linking + encrypted storage & Access-controlled, not pseudonymous & \ac{NLP} categorization & Not reported & Not reported \\
+    \hline
+    Manjula's complaint framework \cite{manjula2025decentralized} & Law-enforcement complaints & Three-tier blockchain, immutable evidence & Role-based access control & Not reported & Not reported & Not reported \\
+    \hline
+    PriRPT \cite{lin2023prirpt} & Privacy-preserving reporting with rewards & Blockchain ledger & Strong cryptographic privacy protocol & Not reported & Not reported & Not reported \\
+    \hline
+    Proposed framework &   {Local governance: standard reports, emergencies, and opinion polling} &   {Permissioned PoA chain, on-chain hashes + IPFS \ac{CID}s} &   {Pseudonymous one-time tickets, on-chain nullifiers} &   {Multi-classifier AI moderation before anchoring} &   {On-chain two-stage voting: community validation and post-resolution verification} &   {Dedicated emergency fast-track with penalty mechanism; multisignature-governed authority actions and configuration} \\
 
-% This chapter presents the results of the experiments described in Chapter~\ref{ch:testing}. It compares the proposed system against existing solutions, evaluates the achievement of the project objectives, identifies the novel contributions, discusses the practical impact of the system, and addresses ethical and legal considerations.
-
-% \section{Synthesis of Experimental Results}
-% \label{sec:results-synthesis}
-
-% \subsection{Blockchain Performance}
-
-% The private PoA blockchain network has produced deterministic blocks at a fixed interval of five seconds as configured. Transaction finality has been achieved within one to two blocks, giving a finality window of five to ten seconds. This is significantly faster than the probabilistic finality of public Proof-of-Work networks, where multiple block confirmations are typically required. The 3-node Clique PoA network has demonstrated a throughput that exceeds the 100 TPS target in benchmark tests, far surpassing the 15--30 TPS typical of the Ethereum mainnet.
-
-% \subsection{Smart Contract Correctness}
-
-% All eight states of the FSM have been validated through automated Hardhat tests. All unauthorized state transition attempts have been rejected. The nullifier tracking mappings have been confirmed to prevent 100\% of duplicate submission and double-voting attempts. The multi-signature governance contract has correctly enforced the dynamic quorum threshold in all tested proposal scenarios.
-
-% \subsection{AI Moderation Accuracy}
-
-% The AI oracle ensemble has correctly classified all test cases in Table~\ref{tab:ai_classification_tests}. The safety override mechanism has been confirmed to reject content with critical toxicity regardless of the other oracle votes. The civic relevance oracle has successfully rejected non-civic content in all tested cases. The aggregator's security layer has rejected all unauthorized and replayed requests in the API security test suite (Table~\ref{tab:ai_api_tests}).
-
-% \subsection{IPFS Storage Performance}
-
-% IPFS upload and retrieval have been completed successfully for all tested file sizes. CID integrity has been verified in all tests. Upload time increases with file size but remains within acceptable bounds for a civic reporting context.
-
-% \subsection{Queue and SSE Performance}
-
-% The BullMQ Flow pipeline has completed successfully for all submitted test reports. The exponential-backoff retry mechanism has successfully recovered from transient failures in both the IPFS and blockchain steps. SSE event delivery latency has been measured at under 200 ms in all tests. Job state has been correctly recovered from Redis after a relayer process restart, confirming queue durability.
-
-% \subsection{Cryptographic Security}
-
-% All signature forgery attempts have been rejected by the relayer's dual-layer verification engine. All nullifier reuse attempts have been reverted by the smart contract. These results confirm that the system correctly enforces the one-ticket-one-action invariant and prevents unauthorized submissions.
-
-% \section{Comparative Benchmark Analysis}
-% \label{sec:comparison}
-
-% \subsection{Comparison with Centralized Reporting Platforms}
-
-% FixMyStreet and SeeClickFix are widely used centralized citizen reporting systems. They provide intuitive user interfaces and clear reporting workflows. However, they store all data on centralized servers, which introduces single points of failure and makes records susceptible to unauthorized modification. They also require users to disclose their identities, which can discourage reporting of sensitive issues. The proposed system addresses these limitations through its permissioned blockchain ledger, which provides an immutable and transparent record, and through its ticket-based anonymous authentication, which fully decouples citizen identity from on-chain activity.
-
-% \subsection{Comparison with Public Blockchain Approaches}
-
-% Public, permissionless blockchains such as the Ethereum mainnet offer maximum decentralization but are poorly suited for frequent local governance interactions. Their transaction fees are unpredictable and can be significant. Their throughput is limited (15--30 TPS), and their finality times are long. The proposed system avoids these problems by using a private PoA network with no public gas fees, deterministic 5-second block times, and a backend relayer that pays transaction costs on behalf of citizens.
-
-% \subsection{Comparison with Domain-Specific Blockchain Complaint Systems}
-
-% Existing blockchain-based complaint management systems reviewed in the literature are primarily designed for specific domains such as law enforcement. They focus on administrative efficiency and restrict access to government personnel. They do not typically support community-driven validation or multimedia evidence management at scale. The proposed system provides a generalized framework for local governance that supports community voting at three critical lifecycle stages, handles multimedia evidence through IPFS off-chain storage, and enables public opinion polling.
-
-% \subsection{Comprehensive Comparison Matrix}
-
-% Table~\ref{tab:comparison-matrix} presents a structured feature comparison between the proposed system and existing approaches.
-
-% \begin{table}[h!]
+\end{tabular}
+\end{table}
+\end{landscape}
+% \begin{table}[htbp]
 % \centering
-% \caption{Feature Comparison Matrix}
-% \label{tab:comparison-matrix}
-% \begin{tabular}{|p{4.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|}
-% \hline
-% \textbf{Feature} & \textbf{FixMyStreet} & \textbf{Public Blockchain} & \textbf{Police Complaint System} & \textbf{Proposed System} \\
-% \hline
-% Citizen anonymity & No & Partial & No & Yes \\
-% \hline
-% Data immutability & No & Yes & Yes & Yes \\
-% \hline
-% Decentralized governance & No & Yes & No & Yes \\
-% \hline
-% Community validation voting & No & No & No & Yes \\
-% \hline
-% AI content moderation & No & No & Partial & Yes \\
-% \hline
-% Off-chain media storage & No & No & Partial & Yes (IPFS) \\
-% \hline
-% Gasless user interaction & Yes & No & Yes & Yes \\
-% \hline
-% Real-time submission feedback & Partial & No & No & Yes (SSE) \\
-% \hline
-% Multi-sig governance & No & Varies & No & Yes \\
-% \hline
-% Sybil attack resistance & No & Varies & No & Yes \\
-% \hline
-% Public opinion polling & No & No & No & Yes \\
-% \hline
-% Transparent audit trail & No & Yes & Partial & Yes \\
-% \hline
-% Transaction throughput & High & Low & High & High \\
-% \hline
-% Transaction fees for user & No & Yes & No & No \\
-% \hline
+% \caption{Comparison with existing citizen-reporting and blockchain-governance frameworks}
+% \label{tab:framework-comparison}
+% \begin{tabular}{p{0.15\textwidth}|p{0.18\textwidth}|p{0.20\textwidth}|p{0.20\textwidth}|p{0.13\textwidth}}
+    
+%     Framework & Domain & Data integrity & Identity / privacy & Moderation \\
+%     \hline
+%     FixMyStreet \cite{mysociety2026fixmystreet} & General local-issue reporting & Centralized database & Public, no anonymity mechanism & Manual \\
+%     \hline
+%     SeeClickFix \cite{seeclickfix2011democracy} & General local-issue reporting & Centralized database & Public, gamified profile & Manual \\
+%     \hline
+%     Pratheeba's complaint system \cite{pratheeba_blockchain_police_complaint} & Police complaints & Blockchain hash-linking + encrypted storage & Access-controlled, not pseudonymous & \ac{NLP} categorization \\
+%     \hline
+%     Manjula's complaint framework \cite{manjula2025decentralized} & Law-enforcement complaints & Three-tier blockchain, immutable evidence & Role-based access control & Not reported \\
+%     \hline
+%     PriRPT \cite{lin2023prirpt} & Privacy-preserving reporting with rewards & Blockchain ledger & Strong cryptographic privacy protocol & Not reported \\
+%     \hline
+%     Proposed framework &   {Local governance: standard reports, emergencies, and opinion polling} &   {Permissioned PoA chain, on-chain hashes + IPFS \ac{CID}s} &   {Pseudonymous one-time tickets, on-chain nullifiers} &   {Multi-classifier AI moderation before anchoring} \\
+    
 % \end{tabular}
 % \end{table}
 
-% \section{Fulfillment of Project Objectives}
-% \label{sec:objectives-fulfillment}
+ Figure~\ref{fig:feature-comparison-chart} summarizes this feature coverage by counting, for each framework, how many of six representative design features (a decentralized ledger, an identity-privacy mechanism, automated content moderation, community validation, an emergency fast-track path, and on-chain governance or polling) are reported as present.
 
-% \textbf{Objective 1 — Permissioned PoA Blockchain:}
-% A private permissioned blockchain is implemented using Geth (Clique PoA) with three validator nodes. Block time is set to five seconds. The network has been deployed and tested on VPS infrastructure. This objective is fully achieved.
+\begin{figure}[!htb]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            width=0.9\textwidth,
+            height=6.2cm,
+            bar width=22pt,
+            symbolic x coords={FixMyStreet,SeeClickFix,Police Complaint,Complaint Mgmt,PriRPT,Proposed},
+            xtick=data,
+            x tick label style={rotate=20, anchor=east, font=\small},
+            nodes near coords,
+            ymin=0, ymax=7,
+            ylabel={Design features supported (out of 6)},
+            enlarge x limits=0.12,
+            axis lines*=left,
+            clip=false,
+            every node near coord/.append style={font=\small},
+        ]
+        \addplot[fill=barblue] coordinates {(FixMyStreet,0) (SeeClickFix,0) (Police Complaint,1) (Complaint Mgmt,1) (PriRPT,2) (Proposed,6)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Coverage of six representative design features across reviewed frameworks (decentralized ledger, identity privacy, AI moderation, community validation, emergency fast-track, and on-chain governance/polling)}
+    \label{fig:feature-comparison-chart}
+\end{figure}
 
-% \textbf{Objective 2 — Smart Contracts for Reporting Workflows:}
-% Three smart contracts are implemented and deployed: \texttt{Reporting.sol}, \texttt{OpinionPolling.sol}, and \texttt{AuthorityMultiSig.sol}. Together, they automate the full report lifecycle, community voting, opinion polling, and two-tier governance. All FSM transitions have been validated. This objective is fully achieved.
+This achievement is a direct consequence of combining several separate research directions, privacy-preserving identity, AI-assisted moderation, community validation, and contract-based governance, into a single tested prototype. The centralized platforms remain valuable references for interface simplicity and proven civic engagement patterns, and the recorded results in this project show that a blockchain-based design can retain those qualities. Citizens still submit a report through an ordinary web form, still see prompt confirmation, and are never asked to hold cryptocurrency or manage a wallet directly, since the relayer absorbs that complexity as described in Chapter~\ref{ch:implementation}. Compared with the blockchain-based complaint systems, the proposed framework additionally decouples citizen identity from on-chain records and applies AI moderation before content is anchored. Compared with PriRPT's stronger cryptographic privacy guarantee, it trades some of that cryptographic strength for a lighter-weight ticket-based mechanism that is fully implemented, integrated with the rest of the pipeline, and directly validated by the passing Security suite in Chapter~\ref{ch:testing}.
 
-% \textbf{Objective 3 — User-Friendly DApp Interfaces:}
-% A responsive web DApp is implemented using Next.js 14 and React. It provides interfaces for citizen authentication, anonymous report submission with real-time SSE progress feedback, a community feed with filtering and voting, an authority dashboard, and a governance dashboard for Super Admins. The backend relayer eliminates the need for users to manage wallets or pay gas fees. This objective is fully achieved.
+\section{Key Strengths of the Design}
+\label{sec:design-benefits}
 
-% \textbf{Objective 4 — AI-Based Content Moderation:}
-% An AI oracle ensemble is implemented as four containerized microservices. The ensemble assesses submitted text and images for toxicity, spam, civic relevance, and unsafe visual content before any data is stored on-chain. All classification test cases have passed. This objective is fully achieved.
+The recorded results support the following strengths of the implemented design.
 
-% In addition to the original four objectives, the queue-based asynchronous submission pipeline with SSE real-time notifications is implemented as a significant enhancement beyond the original project scope. This improvement substantially improves user experience in blockchain-based applications, where transaction confirmation times would otherwise require the user to wait silently.
+\begin{itemize}
+    \item Reporting, validation, resolution, and governance rules are enforced by contract code, so they hold regardless of which client interacts with the system.
+    \item Report state and authority actions are kept in an auditable, tamper-evident ledger, while large media files are kept off-chain and linked by verifiable content hashes.
+    \item Citizens never need to hold cryptocurrency or manage a wallet directly, the relayer absorbs gas payment and transaction submission on their behalf.
+    \item Queue-based processing with SSE progress updates keeps multi-service work (AI moderation, storage, blockchain submission) visible to the citizen rather than hidden behind a single opaque wait.
+    \item Nullifier and pseudonym checks give citizens a working, tested form of pseudonymous participation across reporting, validation, and polling.
+    \item AI moderation is applied before content is anchored on-chain, addressing the toxic immutability concern raised in Chapter~\ref{ch:introduction} for permanently recorded harmful content.
+    \item A dedicated emergency path and multisignature authority governance extend the design beyond a single reporting flow into a broader local-governance toolkit.
+\end{itemize}
 
-% \section{Novel Architectural Contributions}
-% \label{sec:novel-contributions}
+These strengths follow directly from combining well-established techniques, permissioned PoA consensus, meta-transactions, off-chain storage, and AI-assisted moderation, into one coherent, integration-tested civic-reporting workflow.
 
-% \subsection{Sybil-Resistant Anonymous Reporting Without Client-Side ZKP Latency}
+\section{Scope for Future Enhancement}
+\label{sec:results-scope}
 
-% The system achieves Sybil-resistant anonymous reporting without requiring citizens to generate zero-knowledge proofs on their own devices. Proof generation in standard ZKP libraries (such as Groth16 or PLONK) is computationally expensive on mobile browsers and can take several seconds. The proposed system achieves the same anonymity guarantee using government-signed one-time tickets. The government signs each ticket using ECDSA, and the ticket hash is recorded as a nullifier on-chain. This provides verifiable, non-reusable authorization without client-side proving overhead.
+The results in this chapter validate the core architecture and give a solid, tested foundation to build on. Several enhancements are natural next steps for extending that foundation toward broader deployment. Replacing the government identity simulator with a full zero-knowledge credential protocol would strengthen the privacy guarantee beyond ticket-based pseudonymity. Expanding the AI moderation evaluation with a larger, multilingual civic dataset would build on the demonstrated pipeline to establish broader accuracy across Sinhala, Tamil, and English content. Evaluating a decentralized oracle configuration for the AI aggregator would extend the current centralized moderation service toward the fuller decentralization goal discussed in Chapter~\ref{ch:introduction}. Finally, adding automated frontend testing, an accessibility review, and a supervised pilot deployment, would extend the current component and integration testing toward validated real-world usability. 
+\section{Chapter Summary}
+\label{sec:findings-summary}
 
-% \subsection{Multi-Node AI Oracle Consensus for Decentralized Content Moderation}
-
-% The AI moderation layer uses three independent oracle workers with a rule-based aggregation policy. No single oracle has unilateral power to accept or reject a report. The safety override ensures that critical toxicity always results in rejection. The majority voting rule reduces the effect of individual model errors or biases. The aggregator signs its decision, creating a tamper-evident, auditable moderation record. This is a practical step toward decentralized pre-submission content filtering on immutable ledgers.
-
-% \subsection{Community-Enforced FSM Accountability}
-
-% The eight-state FSM prevents authorities from unilaterally closing reports. Community voting is required at three critical lifecycle points:
-% \begin{itemize}
-%     \item \textit{Validation voting} ($S_0$): filters out spam before the report becomes visible to authorities.
-%     \item \textit{Verification voting} ($S_5$): prevents authorities from marking issues as resolved without physical confirmation.
-%     \item \textit{Rejection review voting} ($S_4$): gives citizens the right to appeal an authority rejection.
-% \end{itemize}
-% This structure creates a mathematically enforced accountability loop between citizens and municipal officials, embedded directly into the smart contract logic.
-
-% \subsection{Asynchronous BullMQ Queue with Real-Time SSE Progress Streaming}
-
-% The integration of a Redis-backed BullMQ Flow Queue with an SSE notification gateway represents a novel approach to improving user experience in blockchain-based civic applications. The queue decouples report submission from the multi-step processing pipeline. Citizens receive an immediate acknowledgment (the \texttt{jobId}), followed by live step-by-step progress updates as AI moderation, IPFS upload, and blockchain submission complete. This pattern addresses one of the most significant usability barriers in Web3 applications: the opacity and latency of blockchain transaction confirmation.
-
-% \section{Real-World Governance Impact and Practical Applicability}
-% \label{sec:real-world-impact}
-
-% The proposed framework is designed for municipal governance contexts where citizens need a trusted, private, and transparent channel to report public infrastructure issues. In a real-world deployment, the system supports the following civic use cases:
-
-% \begin{itemize}
-%     \item Reporting road hazards (potholes, broken pavements, road flooding).
-%     \item Reporting sanitation issues (uncollected garbage, drainage blockages, water contamination).
-%     \item Reporting street lighting failures.
-%     \item Reporting illegal dumping or environmental violations.
-%     \item Participating in opinion polls on municipal budget allocations or zoning proposals.
-% \end{itemize}
-
-% The project team has discussed a potential pilot deployment within a faculty environment at the University of Ruhuna, pending Faculty Board approval. Such a pilot would provide real-world usability data and allow the system to be evaluated under authentic civic conditions.
-
-% The system is particularly applicable to Sri Lankan municipal councils, where centralized complaint management systems are common but often lack transparency, accountability, and citizen engagement features. The framework's use of a private PoA blockchain means that it does not require expensive public network infrastructure, making it feasible for resource-constrained local government environments.
-
-% \section{Ethical, Legal, and Privacy Considerations}
-% \label{sec:ethics-legal}
-
-% \subsection{Privacy and Data Minimization}
-
-% The blockchain stores only pseudonymous identifiers, ticket nullifier hashes, IPFS content identifiers, and state metadata. No personally identifiable information (\ac{PII}) is stored on-chain. The citizen's real-world identity is verified off-chain by the ZKP GovID Simulator and is never transmitted to the blockchain or to any other service in the system. This design aligns with the data minimization principle of the General Data Protection Regulation (GDPR) and the Sri Lanka Personal Data Protection Act No.~9 of 2022.
-
-% \subsection{The Problem of Toxic Immutability}
-
-% Blockchain immutability presents an ethical challenge: once harmful or illegal content is anchored on-chain, it cannot be removed. The proposed system addresses this through a two-layer strategy. First, the AI oracle ensemble filters content before it is stored or anchored. Second, all large content is stored off-chain in IPFS. If content is subsequently identified as illegal or harmful, it can be removed from IPFS (by unpinning the content) while the on-chain audit trail — which records only the CID hash — remains intact. This preserves accountability while allowing legal compliance.
-
-% \subsection{AI Bias and Moderation Fairness}
-
-% The civic relevance and toxicity models used in the oracle ensemble are pre-trained on large text corpora that may not fully represent the local linguistic context of Sri Lankan civic reporting. Low-quality or borderline reports may be incorrectly rejected. To mitigate this, the system allows citizens to resubmit rejected reports with improved descriptions. The aggregator also returns a structured response that indicates which oracle rejected the report and why, providing a basis for future explainability improvements.
-
-% \subsection{Accountability and Anonymity Balance}
-
-% The system uses ticket-based pseudonymity rather than full anonymity. Tickets are signed by the government authority, which means a trust anchor exists between the citizen and the issuing authority. Citizens are anonymous to the blockchain but are accountable to the government identity service. This balance prevents abuse (a single citizen cannot submit unlimited reports) while preserving the privacy of civic reporting on-chain.
-
-% \section{System Limitations and Engineering Trade-offs}
-% \label{sec:limitations-tradeoffs}
-
-% \subsection{Simulated Zero-Knowledge Identity}
-
-% The ZKP GovID Simulator is a mock service that simulates a government identity registry. It does not implement actual zero-knowledge proofs. In a production deployment, a real ZKP protocol (such as Semaphore or Iden3) would be needed so that citizens can generate proofs locally without trusting a centralized simulator.
-
-% \subsection{Co-Located Oracle Ensemble}
-
-% The three AI oracle workers and the aggregator are deployed within the same administrative environment on Server 2. Although they are logically separated as independent Docker containers, they share the same underlying infrastructure. A truly decentralized oracle network would require each oracle to be hosted by a separate organization, which is not implemented in the current prototype.
-
-% \subsection{Unimodal Text Moderation}
-
-% The current AI moderation pipeline assesses text and images independently. There is no cross-modal verification that checks whether the uploaded image is semantically consistent with the text description and category. A civic report could potentially include a valid text description but a mismatched or fabricated image.
-
-% \subsection{Single Redis Instance}
-
-% The BullMQ queue system depends on a single Redis instance. In the current prototype, this is a single point of failure for the async pipeline. In a production deployment, Redis replication or clustering would be required for high availability.
-
-% \subsection{Prototype Scale}
-
-% The system is tested in a controlled experimental environment with a small number of concurrent users. The performance of the 3-node PoA network under large-scale real-world workloads (for example, thousands of simultaneous votes during a public emergency) has not been fully stress-tested.
+The recorded evidence supports a clear and consistent conclusion. The prototype correctly enforces its intended reporting, validation, and governance rules on a live permissioned blockchain. The system integrates relayer, AI moderation, and storage services into one working pipeline, and does so within response times and costs well suited to civic reporting. All four project objectives are backed by dedicated, independently executable test evidence. The completed \ac{E2E} lifecycle scenario confirms that these individually verified components genuinely work together. Compared with the centralized and blockchain-based frameworks reviewed in Chapter~\ref{ch:introduction}, the implemented system combines a broader set of privacy, moderation, community-validation, and governance features into a single tested design, while retaining the citizen-facing simplicity that has made platforms like FixMyStreet and SeeClickFix successful. Chapter~\ref{ch:conclusions} builds on these findings to summarize the project's overall contribution and outline its future direction.

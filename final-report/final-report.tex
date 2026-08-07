@@ -36,12 +36,15 @@
 \def\UrlBreaks{\do/} 
 %\usepackage{breakurl}
 
+\usepackage{pdflscape}
 \usepackage{pgfgantt}  % For creating the chart
 \usepackage{xcolor}    % For custom colors
 \usepackage{rotating}  % For rotating the chart (sidewaysfigure)
 \usepackage{geometry}  % To ensure margins fit large figures
 \usepackage{graphicx}
 \usepackage[export]{adjustbox}
+\usepackage{pgfplots}  % Native bar/line charts for test-result data
+\pgfplotsset{compat=1.18}
 \usepackage{microtype} % For micro-typography and reducing overfull hboxes
 \emergencystretch=3em
 \tolerance=2000
@@ -234,6 +237,11 @@
   long = Advanced Encryption Standard
 }
 
+\DeclareAcronym{GCM}{
+  short = GCM,
+  long = Galois/Counter Mode
+}
+
 \DeclareAcronym{HTTP}{
   short = HTTP,
   long = Hypertext Transfer Protocol
@@ -248,6 +256,16 @@
   short = UUID,
   long = Universally Unique Identifier
 }
+
+\DeclareAcronym{UI}{
+  short = UI,
+  long = User Interface
+}
+
+\DeclareAcronym{E2E}{
+  short = E2E,
+  long = End-to-End
+  }
 
 
 % --- COLOR DEFINITIONS (Global) ---
@@ -269,13 +287,16 @@
 % Title Page
 \include{Front_matters/cover}
 
-\pagenumbering{roman} % Start page numbering in roman
-\setcounter{page}{1}
-\pagestyle{romanstyle}
+
+\renewcommand{\thepage}{\roman{page}} % Start page numbering in roman
 
 % Abstract, Acknowledgements, Preface, list of tables, list of figures and Acronyms
 \input{Front_matters/abstract}
 \addcontentsline{toc}{chapter}{Abstract} % add line to the table of contents
+
+\input{Front_matters/preface}
+\addcontentsline{toc}{chapter}{Preface} % add line to the table of contents
+
 \input{Front_matters/acknowledgements}
 \addcontentsline{toc}{chapter}{Acknowledgements} % add line to the table of contents
 
@@ -295,15 +316,16 @@
 %%%%%%%%%%%%%%%%%%%%%%% The main matters %%%%%%%%%%%%%%%%%%%%%%%%
 
 \cleardoublepage
-\pagenumbering{arabic} % Start page numbering in arabic
-\setcounter{page}{1}
-\pagestyle{arabicstyle}
+
 \fancypagestyle{plain}{%
   \fancyhf{}
   \fancyhead[R]{\thepage}
   \renewcommand{\headrulewidth}{0pt}
   \renewcommand{\footrulewidth}{0pt}
 }
+
+\renewcommand{\thepage}{\arabic{page}} % Start page numbering in arabic 
+\setcounter{page}{1} % start page numbering from 1
 
 \input{Chapters/ch_1}
 \input{Chapters/ch_2}
@@ -318,17 +340,17 @@
 
 %%%%%%%%%%%%%%%%%%%%% The End matters %%%%%%%%%%%%%%%%%%%%%
 
-% \begin{appendix}
+\begin{appendix}
 % \include{End_matters/appendix_01}
 % \include{End_matters/appendix_02}
 % \include{End_matters/appendix_03}
 % \include{End_matters/appendix_04}
-% \include{End_matters/appendix_05}
+\include{End_matters/appendix_05}
 % \include{End_matters/appendix_06}
 
-% \end{appendix}
+\end{appendix}
 
-% \addcontentsline{toc}{chapter}{APPENDIX}
+\addcontentsline{toc}{chapter}{APPENDIX}
 
 %%%%%%%%%%%%%%%%%%%%% Bibiliography %%%%%%%%%%%%%%%%%%%%%
 \cleardoublepage

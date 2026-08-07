@@ -1,0 +1,16 @@
+%% Figure: Authority action and multisig governance workflow.
+%% Render to: Images/Chapter 3/authority-workflow.png
+flowchart TD
+    A["Authority signs in with MetaMask"] --> B["Authority claims an Open or Reopened report"]
+    B --> C["Report becomes InProgress"]
+    C --> D["Authority posts optional progress updates and image evidence"]
+    D --> E{"Outcome of the work"}
+    E -- "Issue fixed" --> F["Authority marks the report as solved with evidence"]
+    F --> G["Report becomes PendingVerification"]
+    E -- "Issue invalid" --> H["Authority rejects the report"]
+    H --> I["Report becomes PendingRejectionReview"]
+
+    SA["Super Admins submit and approve a proposal"] --> Q{"Approvals reach floor(N/2) + 1?"}
+    Q -- No --> W["Proposal remains open"]
+    Q -- Yes --> X["Proposal executes: authority roster or voting method updated"]
+    X --> A

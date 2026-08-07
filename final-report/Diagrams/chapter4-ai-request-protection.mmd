@@ -1,0 +1,18 @@
+%% Figure: AI moderation request protection and aggregation sequence.
+%% Render to: Images/Chapter 4/ai-request-protection.png
+sequenceDiagram
+    participant Relayer
+    participant Aggregator as Moderation aggregator
+    participant Nonces as SQLite nonce store
+    participant Classifiers as Safety, spam, and civic classifiers
+
+    Relayer->>Relayer: Build canonical request and sign it
+    Relayer->>Aggregator: Send request with API key, signature, timestamp, and nonce
+    Aggregator->>Aggregator: Recover signer and compare to trusted relayer address
+    Aggregator->>Aggregator: Check timestamp within configured maximum age
+    Aggregator->>Nonces: Check and record nonce
+    Nonces-->>Aggregator: Reject if the nonce was already used
+    Aggregator->>Classifiers: Forward content for classification
+    Classifiers-->>Aggregator: Return accept or reject with confidence
+    Aggregator->>Aggregator: Apply fail-closed aggregation rule
+    Aggregator-->>Relayer: Return decision, hashes, and optional signature

@@ -1,0 +1,22 @@
+%% Figure: Processing sequence for a standard citizen report.
+%% Render to: Images/Chapter 3/report-submission-sequence.png
+sequenceDiagram
+    participant Citizen
+    participant Identity as Identity simulator
+    participant Relayer
+    participant AI as AI aggregator
+    participant IPFS
+    participant Chain as Reporting contract
+
+    Citizen->>Identity: Authenticate and request tickets
+    Identity-->>Citizen: Signed ticket batch and citizen seed
+    Citizen->>Citizen: Hash images and sign composite report hash
+    Citizen->>Relayer: Submit signed report, ticket, and media
+    Relayer->>Relayer: Verify ticket signature and citizen signature
+    Relayer->>AI: Request moderation decision
+    AI-->>Relayer: Return accept or reject
+    Relayer->>IPFS: Store accepted complaint envelope
+    IPFS-->>Relayer: Return content identifier
+    Relayer->>Chain: Submit report with CID and hashes
+    Chain-->>Relayer: Confirm PendingValidation
+    Relayer-->>Citizen: Stream progress over SSE

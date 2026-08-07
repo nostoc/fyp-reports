@@ -1,0 +1,17 @@
+%% Figure: Public opinion polling workflow.
+%% Render to: Images/Chapter 3/opinion-polling-workflow.png
+flowchart TD
+    A["Authority creates a poll with an IPFS metadata CID, a deadline, and a poll type"] --> B["OpinionPolling contract checks authority permission via the Reporting contract"]
+    B --> C{"Authority permitted?"}
+    C -- No --> D["Reject poll creation"]
+    C -- Yes --> E["Poll is stored on-chain with a unique poll ID"]
+    E --> F["DApp fetches poll metadata from IPFS and shows the options"]
+    F --> G["Citizen selects an option using a one-use government-signed ticket"]
+    G --> H["Relayer verifies the ticket and citizen signature"]
+    H --> I{"Nullifier already used for this poll?"}
+    I -- Yes --> J["Reject duplicate vote"]
+    I -- No --> K["Contract marks the nullifier as used and increments the option tally"]
+    K --> L{"Poll deadline reached?"}
+    L -- No --> F
+    L -- Yes --> M["Poll is finalized and marked inactive"]
+    M --> N["Option counts stand as the public consultation result"]

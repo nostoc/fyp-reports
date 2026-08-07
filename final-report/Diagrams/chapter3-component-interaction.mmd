@@ -1,0 +1,18 @@
+%% Figure: High-level interaction between the main system components.
+%% Render to: Images/Chapter 3/component-interaction.png
+flowchart LR
+    Users["Citizens and authorities"]
+    Clients["Web dApp and identity portal"]
+    Identity["Government identity simulator"]
+    Relayer["Backend relayer and queue"]
+    AI["AI moderation services"]
+    IPFS["IPFS storage service"]
+    Chain["Private PoA blockchain\n(reporting, emergency, governance, polling contracts)"]
+
+    Users --> Clients
+    Clients --> Identity
+    Clients -- "Citizen writes" --> Relayer
+    Relayer --> AI
+    Relayer --> IPFS
+    Relayer --> Chain
+    Clients -- "Direct reads and authority writes" --> Chain
