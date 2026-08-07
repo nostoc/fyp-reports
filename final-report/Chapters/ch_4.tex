@@ -471,6 +471,16 @@ A verified citizen can submit a standard report through the interface shown in F
     \label{fig:standard-report-submission-ui}
 \end{figure}
 
+To prevent duplicate reports and save transation fees, the report submission workflow utilizes a real time similar report suggestion component as explained in ~\ref{sec:duplicate-detection-arch}. The modal showing similar reports is shown in Figure~\ref{fig:similar-report-modal}. 
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth,keepaspectratio]{Images/Chapter 4/citizen/standard-report-submission-ui.png}
+    \caption{Modal displaying similar reports }
+    \label{fig:similar-report-modal}
+\end{figure}
+
+
 After submitting a report, citizens can track the progress of their submission through the interface shown in Figure~\ref{fig:sse-notifications}. The system provides real-time updates on the status of the report, including moderation results, IPFS storage confirmation, and blockchain anchoring using \ac{SSE} and BullMQ as explained in \ref{sec:relayer-queue-implementation}. This transparency ensures that citizens are informed about the handling of their reports and can trust that their concerns are being addressed.
 
 \begin{figure}[!htbp]

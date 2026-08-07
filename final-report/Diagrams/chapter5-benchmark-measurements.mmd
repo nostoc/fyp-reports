@@ -2,7 +2,7 @@
 %% Render to: Images/Chapter 5/benchmark-measurements.png
 flowchart LR
     Deploy["Deploy Reporting contract\nand configure roles"] --> T54["T5.4\nGas per submitReport()"]
-    T54 --> T52["T5.2\nEnd-to-end submit-to-confirm latency"]
+    T54 --> T52["T5.2\n\ac{E2E} submit-to-confirm latency"]
     T52 --> T51["T5.1\nConcurrent-batch throughput (TPS)"]
     T51 --> T53["T5.3\nClique block interval observation"]
     T53 --> T55["T5.5\nGas per castValidationVote()"]

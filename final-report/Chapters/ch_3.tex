@@ -261,6 +261,31 @@ The three-step pipeline mentioned in step 4 is run asynchronously, outside the r
     \label{fig:bullmq-pipeline}
 \end{figure}
 
+\subsubsection{Pre-Submission Duplicate Detection and Similar Report Suggestions}
+\label{sec:duplicate-detection-arch}
+
+The system is designed to reduce duplicate reports and avoid redundant blockchain transaction fees. This is achieved via client-assisted pre-submission duplicate detection service. Before a report is submitted to the relayer queue, the client interface checks for existing active reports in the geographic vicinity of the targeted issue. Through this feature, the system can avoid overloading governance authorities with duplicate complaints. 
+
+The detection workflow is described below. 
+
+\begin{enumerate}
+    \item When a citizen selects a report category and adjusts the geographic location pin, the web application triggers a debounced (300\,ms) query to the relayer API endpoint   {/api/reports/check-duplicate}.
+    \item The backend service queries the   {Reporting} smart contract to fetch recent active reports.
+    \item Report metadata stored on \ac{IPFS} is fetched and parsed. To eliminate redundant network requests for immutable IPFS content, the server maintains an in-memory cache mapping CIDs to parsed metadata structures (category, description, coordinates).
+    \item The backend calculates the great-circle distance between the user's coordinates $(lat_1, lng_1)$ and each existing report's coordinates $(lat_2, lng_2)$ using the Haversine formula given in Eq.(\ref{eq:haversine-a}) and Eq.(\ref{eq:haversine-d}). 
+    \begin{equation}
+        a = \sin^2\left(\frac{\Delta lat}{2}\right) + \cos(lat_1) \cdot \cos(lat_2) \cdot \sin^2\left(\frac{\Delta lng}{2}\right)
+        \label{eq:haversine-a}
+    \end{equation}
+    \begin{equation}
+        d = 2 \cdot R \cdot \operatorname{atan2}\left(\sqrt{a}, \sqrt{1-a}\right)
+        \label{eq:haversine-d}
+    \end{equation}
+    where $R = 6{,}371\,\text{km}$ is the Earth's mean radius.
+    \item  Candidate reports matching the user's selected category within a $1{,}000\,\text{meter}$ ($1\,\text{km}$) geofenced radius are flagged as potential duplicates.
+    \item  If duplicates are detected, a modal dialog is rendered to the citizen displaying matching report IDs, categories, descriptions, and locations. The citizen can inspect existing active reports to determine if their issue is already undergoing civic validation or choose to proceed with submission if it represents a distinct new incident.
+\end{enumerate}
+
 \section{Emergency Report Workflow}
 \label{sec:emergency-workflow}
 
