@@ -436,8 +436,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \subsection{Authentication and Access Control}
 
-
-\subsubsection{Scenario 1 - Citizen Registration }
+\subsubsection{Scenario 1 - Citizen Registration}
 {Role:} Citizen. \\
 {Preconditions:} None
 
@@ -448,8 +447,9 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \item Observe getting redirected to \href{https://dapp.internalbuildtools.online/} {https://dapp.internalbuildtools.online/}.
 \end{enumerate}
 
-\noindent{Expected result:} The citizen is registered successfully and redirected to the dApp. \\
-\noindent{Screenshots:} Fig.~\ref{fig:me2e-register}, Fig.~\ref{fig:me2e-register-success}.
+\noindent{Expected result:} The citizen is registered successfully and redirected to the dApp.
+
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-register}, Figure.~\ref{fig:me2e-register-success}.
 
 \subsubsection{Scenario 2 - Citizen Authentication}
 {Role:} Citizen. \\
@@ -457,230 +457,260 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \begin{enumerate}
     
-    \item Open the \ac{DApp} and navigate to login page. 
-    \item Select the citizen tab.
-    \item Enter a valid GovID and password, then submit. 
-    \item Observe redirection to feed page. 
-    Open the \ac{DApp} and navigate to \texttt{/login}.
+    \item Open the \ac{DApp} and navigate to {/login}.
     \item Select the Citizen tab.
     \item Enter a valid GovID and password, then submit.
     \item Confirm that a ticket batch is issued and a citizen seed is returned.
-    \item create a PIn and confirm it. 
-    \item Observe redirection to \texttt{/feed}.
+    \item create a PIN and confirm it. 
+    \item Observe redirection to {/feed}.
 \end{enumerate}
 \noindent{Expected result:} The session is established, citizen only routes are visible and accessible. 
 
-\noindent{Screenshots:} Fig.~\ref{fig:me2e-login}, {fig:me2e-pin-creation}, and  Fig.~\ref{fig:me2e-feed}. 
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-login}, Figure.~\ref{fig:me2e-pin-creation}, and  Figure.~\ref{fig:me2e-feed}. 
 
 \subsubsection{Scenario 3 - Invalid Citizen Credentials}
-{Role:} Unauthenticated visitor.
+{Role:} Unauthenticated visitor. \\
 {Preconditions:} None.
-
 \begin{enumerate}
     \item Navigate to login screen and select the Citizen tab.
     \item Enter an invalid GovID and/or password, then submit.
 \end{enumerate}
-\noindent{Expected result:} Authentication fails with a clear error; no ticket batch is issued and no citizen session is created.
-\noindent{Screenshots:} Fig.~\ref{fig:m1-3-invalid}.
+\noindent{Expected result:} Authentication fails with a clear error. 
 
-\paragraph{Scenario M1.4 --- Authority MetaMask connection (happy path).}
-\textbf{Role:} Authority worker.
-\textbf{Preconditions:} MetaMask is installed, connected to the private PoA network, and the selected account holds \texttt{AUTHORITY\_ROLE}.
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-invalid}.
+
+\subsubsection{Scenario 4 - Authority MetaMask connection}
+{Role:} Authority worker. \\
+{Preconditions:} Metamask extension should be installed, and connected to the private \ac{PoA} network using \href{https://rpc.internalbuildtools.online/}{\ac{RPC} URL}. The selected account should have AUTHORITY\_ROLE. 
 
 \begin{enumerate}
-    \item Navigate to \texttt{/login} and select the Authority tab.
+    \item Navigate to login and select Authority tab.
     \item Connect MetaMask and approve the connection request.
-    \item Open \texttt{/admin} (Authority Portal).
+    \item Observe redirection to authority dashboard.
 \end{enumerate}
-\noindent\textbf{Expected result:} The Authority Dashboard loads with Civic, Emergency, and Polls tabs and report listings.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m1-4-admin}.
 
-\paragraph{Scenario M1.5 --- Unauthorized access to authority portal (negative path).}
-\textbf{Role:} Citizen or unregistered wallet.
-\textbf{Preconditions:} A citizen session is active, or MetaMask is connected with a wallet that holds neither authority nor Super Admin roles.
+\noindent{Expected result:} The Authority Dashboard loads with Civic, Emergency, and Polls tabs. 
+
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-authority-dashboard}.
+
+\subsubsection{Scenario 5 - Unauthorized access to authority portal}
+{Role:} Unregistered wallet.\\
+{Preconditions:} MetaMask is connected with a wallet that does not have AUTHORITY\_ROLE or SUPER\_ADMIN\_ROLE.
 
 \begin{enumerate}
-    \item While authenticated only as a citizen (or with an unregistered wallet), navigate directly to \texttt{/admin}.
+    \item Go to login page, select Authority tab, and click Connect MetaMask
 \end{enumerate}
-\noindent\textbf{Expected result:} RouteGuard denies access and an Access Denied (or equivalent) screen is shown; no authority actions are available.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m1-5-denied}.
 
-\paragraph{Scenario M1.6 --- Unauthenticated access to citizen routes (negative path).}
-\textbf{Role:} Unauthenticated visitor.
-\textbf{Preconditions:} No citizen session.
+
+\noindent{Expected result:} Displays access denied error message 
+
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-authority-access-denied}.
+
+\subsubsection{Scenario 6 - Unauthenticated access to protected citizen routes}
+{Role:} Unauthenticated citizen.\\
+{Preconditions:} No citizen session.
 
 \begin{enumerate}
-    \item With no login, navigate to \texttt{/report}.
-    \item With no login, navigate to \texttt{/profile}.
+    \item With no login, navigate to {/report} page.
+    \item With no login, navigate to {/profile}.
 \end{enumerate}
-\noindent\textbf{Expected result:} Both routes redirect to login or show an access barrier; report submission and profile data are unavailable.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m1-6-guard}.
+\noindent{Expected result:} Both routes show access denied error.
 
-\subsection{Standard Report Lifecycle (Happy Path)}
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-citizen-access-denied}.
 
-\paragraph{Scenario M2.1 --- Submit standard report through the pipeline.}
-\textbf{Role:} Citizen.
-\textbf{Preconditions:} Citizen logged in with remaining tickets; emergency toggle off.
+\subsection{Standard Report Lifecycle }
+
+\subsubsection{Scenario 1 - Submit standard report through the pipeline}
+\label{e2e:submit-report}
+{Role:} Citizen.\\
+{Preconditions:} Already logged in citizen with at least one valid ticket remaining.
 
 \begin{enumerate}
-    \item Navigate to \texttt{/report}.
-    \item Select a category (for example Road \& Traffic), enter a civic description of at most 1000 characters, attach up to five images, and set a map location.
-    \item Submit the report and open \texttt{/notifications}.
-    \item Observe ordered progress: AI moderation, then IPFS storage, then blockchain submission, ending in completion.
-    \item Open the new report detail page and confirm status \texttt{PendingValidation}.
+    \item Navigate to {/report}.
+    \item Select a category such as Infrastructure Damage, enter a report description, attach up to five images, and pin the map location.
+    \item Submit the report and open {/notifications}.
+    \item Observe progress of the report submission. 
+    \item Open the submitted report and verify the state is changed to PendingValidation. Open the new report detail page and confirm that the report is in state {PendingValidation}.
 \end{enumerate}
-\noindent\textbf{Expected result:} One ticket is consumed; the report is moderated, stored, and anchored on-chain with status \texttt{PendingValidation}; SSE events complete without failure.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m2-1-form}, Fig.~\ref{fig:m2-1-notifications}, Fig.~\ref{fig:m2-1-pending}.
 
-\paragraph{Scenario M2.2 --- Community validation to Open.}
-\textbf{Role:} Other citizens (validators).
-\textbf{Preconditions:} A report from M2.1 is in \texttt{PendingValidation}; voting window has been shortened if needed; at least three other citizens are logged in separately.
+\noindent{Expected result:} One ticket is used. The report is moderated, stored, and submitted to blockchain. The state update is correct.
+
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-standard-report-submit}, Figure.~\ref{fig:sse-progress}, and Figure.~\ref{fig:me2e-standard-report-detail}
+
+\subsubsection{Scenario 2 - Community validation to Open}
+\label{e2e:community-validation}
+{Role:} Other citizens in the community. \\
+{Preconditions:} The report submitted in test~\ref{e2e:submit-report} is in PendingValidation state. At least three other citizens are logged in to the DApp.
 
 \begin{enumerate}
-    \item As citizen~B, open the report on \texttt{/issues/[id]} and cast an upvote.
-    \item As citizen~C and citizen~D, repeat the upvote.
-    \item Wait for the voting window to expire (or trigger finalization), then refresh the report detail.
+    \item Open the previous submitted report as citizen B, and cast an upvote validating the report. 
+    \item As citizen C and citizen D repeat step 1. 
+    \item Wait till voting window expires, refresh the report detail page, and confirm that the report state is transitioned to Open. 
 \end{enumerate}
-\noindent\textbf{Expected result:} Status transitions to \texttt{Open}; vote tallies and countdown behaviour match the UI.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m2-2-vote}, Fig.~\ref{fig:m2-2-open}.
 
-\paragraph{Scenario M2.3 --- Authority claim, update, and mark solved.}
-\textbf{Role:} Authority worker.
-\textbf{Preconditions:} Report from M2.2 is \texttt{Open}; authority wallet connected.
+\noindent{Expected result:} Report state changed to Open. Three upvotes are recorded. 
+
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-community-validation-vote} and  Figure.~\ref{fig:me2e-pending-validation-to-open}.
+
+\subsubsection{Scenario 3 - Authority claim the report, update, and mark solved}
+\label{e2e:open-inprogress-pending-verification}
+{Role:} Authority worker\\
+{Preconditions:} Report from test~\ref{e2e:community-validation} is in the state {Open}. Authority worker is logged in to the authority portal.
 
 \begin{enumerate}
-    \item Open \texttt{/admin}, locate the report under the Civic tab (Open filter), and open its detail page.
-    \item Choose Start Work and confirm; verify status \texttt{InProgress}.
+    \item Go to authority dashboard, locate the report under Open/Actionable tab, and open the detailed view of the report. 
+    \item Choose Start Work and confirm.  verify that report state is updated to {InProgress}.
     \item Post an optional progress update.
-    \item Choose Mark as Solved and confirm; verify status \texttt{PendingVerification}.
+    \item Mark the report as solved. Verify state transition to PendingVerification from Open. 
 \end{enumerate}
-\noindent\textbf{Expected result:} The assigned authority can act; the report moves \texttt{Open} $\rightarrow$ \texttt{InProgress} $\rightarrow$ \texttt{PendingVerification} with an action history entry for each step.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m2-3-inprogress}, Fig.~\ref{fig:m2-3-pending-verif}.
 
-\paragraph{Scenario M2.4 --- Community verification to Closed.}
-\textbf{Role:} Citizens.
-\textbf{Preconditions:} Report from M2.3 is \texttt{PendingVerification}; at least two citizens available to vote Accept.
+\noindent{Expected result:} Authority worker can start working, and report state is updated from Open $\rightarrow$ InProgress $\rightarrow$ PendingVerification.
+
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-actionable-report-view}, Figure.~\ref{fig:me2e-opened-report}, Figure.~\ref{fig:me2e-authority-worker-start-work}, Figure.~\ref{fig:me2e-inprogress}, Figure.~\ref{fig:me2e-post-progress-update}, Figure.~\ref{fig:me2e-markasresolved}, and Figure.~\ref{fig:me2e-pending-verification}.
+
+
+\subsubsection{Scenario 4 - Community verification to Closed}
+{Role:} Citizens.\\
+{Preconditions:} Report from test~\ref{e2e:open-inprogress-pending-verification} is in {PendingVerification} state. At least two citizens are available to accept the resolution.
 
 \begin{enumerate}
     \item As two distinct citizens, open the report and cast Accept on the proposed resolution.
-    \item Wait for window expiry / finalization and refresh.
+    \item Wait for voting window to expire and refresh.
 \end{enumerate}
-\noindent\textbf{Expected result:} Status becomes \texttt{Closed}, completing the canonical standard-report lifecycle described in Chapter~\ref{ch:testing}.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m2-4-closed}.
 
-\paragraph{Scenario M2.5 --- Citizen profile, my reports, and notifications.}
-\textbf{Role:} Reporting citizen from M2.1.
-\textbf{Preconditions:} At least one report submitted by this citizen.
+\noindent{Expected result:} Status becomes {Closed}, completing the report life cycle described in  Chapter~\ref{ch:testing}. Progress update is visible to citizens. 
+
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-community-verification}, Figure.~\ref{fig:me2e-authority-action-log}, and Figure.~\ref{fig:me2e-closed-report}.
+
+
+\subsubsection{Scenario 4 - Citizen profile, my reports, and notifications}
+{Role:} The citizen who submitted report during test~\ref{e2e:submit-report}. \\
+{Preconditions:} At least one report submitted by this citizen.
 
 \begin{enumerate}
-    \item Open \texttt{/profile} and note pseudonym and remaining tickets.
-    \item Open \texttt{/my-reports} and confirm the submitted report(s) appear.
-    \item Open \texttt{/notifications} and confirm completed (or historical) job statuses are listed.
+    \item Open {/profile} and note pseudonym and remaining tickets.
+    \item Open {/my-reports} and confirm the submitted report(s) appear.
+    \item Open {/notifications} and confirm completed (or historical) job statuses are listed.
 \end{enumerate}
-\noindent\textbf{Expected result:} Profile and my-reports reflect the citizen's pseudonym-scoped data; notifications show pipeline outcomes.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m2-5-profile}, Fig.~\ref{fig:m2-5-myreports}.
+
+\noindent{Expected result:} Profile page shows submitted reports, notifications tab show pipeline outcomes.
+
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-profile} and Figure.~\ref{fig:me2e-notifications}
 
 \subsection{Standard Report Alternate and Negative Paths}
 
-\paragraph{Scenario M3.1 --- Community rejection at validation.}
-\textbf{Role:} Citizens.
-\textbf{Preconditions:} A fresh standard report in \texttt{PendingValidation}.
+\subsubsection{Scenario 1 - Community rejection at validation}
+{Role:} Citizens \\
+{Preconditions:} There should be a fresh standard report in the state {PendingValidation}.
 
 \begin{enumerate}
-    \item Cast enough downvotes so that downvotes are greater than or equal to upvotes by window end.
-    \item Finalize / wait for expiry and refresh.
+    \item Log in as several citizens and cast downvotes on the report such that downvotes are greater than upvotes. 
+    \item Wait for the voting duration to expire, and refresh the report detail page.
 \end{enumerate}
-\noindent\textbf{Expected result:} Status becomes \texttt{CommunityRejected}.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m3-1-rejected}.
 
-\paragraph{Scenario M3.2 --- Authority reject upheld by community.}
-\textbf{Role:} Authority, then citizens.
-\textbf{Preconditions:} A report in \texttt{Open} or \texttt{InProgress}.
+\noindent {Expected result:} Report state transitioned from PendingVerification $\rightarrow$ CommunityRejected.
+
+\noindent {Screenshots:} Fig.~\ref{fig:m3-1-rejected}.
+
+\subsubsection{Scenario 2 - Authority reject upheld by community}
+ {Role:} Authority, then citizens. \\
+ {Preconditions:} A report in the state Open or InProgress.
 
 \begin{enumerate}
-    \item As authority, choose Reject Issue and confirm; status becomes \texttt{PendingRejectionReview}.
-    \item As citizens, cast Uphold votes until upholds are greater than or equal to appeals at window end.
-    \item Finalize and refresh.
+    \item Log in as authority, open the report detail page, and choose reject issue. 
+    \item Verify the report transition to PendingRejectionReview. 
+    \item Log in as several citizens and cast enough upvotes to uphold authority's decision. Verify report state updated to Closed, after voting window expires.
 \end{enumerate}
-\noindent\textbf{Expected result:} Status becomes \texttt{Closed} after the rejection is upheld.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m3-2-review}, Fig.~\ref{fig:m3-2-closed}.
+\noindent {Expected result:} Status of the report transitioned from Open/InProgress $\rightarrow$ PendingRejectionReview $\rightarrow$ Closed.
 
-\paragraph{Scenario M3.3 --- Authority reject appealed; report reopened.}
-\textbf{Role:} Authority, then citizens.
-\textbf{Preconditions:} A report in \texttt{Open} or \texttt{InProgress}.
+\noindent {Screenshots:} Fig.~\ref{fig:m3-2-review}, Fig.~\ref{fig:m3-2-closed}.
+
+\subsubsection{Scenario 3 - Authority reject appealed, report reopened}
+ {Role:} Authority, then citizens \\
+ {Preconditions:} A report in the state {Open} or {InProgress}.
 
 \begin{enumerate}
-    \item As authority, reject the issue to \texttt{PendingRejectionReview}.
-    \item As citizens, cast Appeal votes so appeals exceed upholds at window end.
-    \item Finalize and refresh; confirm \texttt{Reopened}.
-    \item As authority, Start Work again and proceed toward resolution.
+    \item Log in as authority, open the report detail page, and choose reject issue. Verify the report state transition to PendingRejectionReview.
+    \item Log in as several citizens and cast enough downvotes to appeal the authrority's decision. Verify state transition to Reopened after voting window expires. 
+    \item Log in as authority, start working on the Reopened report again. 
 \end{enumerate}
-\noindent\textbf{Expected result:} Appeal majority returns the report to \texttt{Reopened}; authority can claim it again.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m3-3-reopened}.
 
-\paragraph{Scenario M3.4 --- Verification reject majority reopens the report.}
-\textbf{Role:} Authority, then citizens.
-\textbf{Preconditions:} A report in \texttt{PendingVerification} after Mark as Solved.
+\noindent {Expected result:} Report state transition from Open/InProgress $\rightarrow$ PendingRejectionReview $\rightarrow$ Reopened $\rightarrow$ InProgress.
+
+\noindent {Screenshots:} Fig.~\ref{fig:m3-3-reopened}.
+
+\subsubsection{Scenario 4 - Verification reject reopens the report}
+ {Role:} Citizens\\
+ {Preconditions:} A report in the state {PendingVerification} after Mark as Solved.
 
 \begin{enumerate}
-    \item As citizens, cast Reject votes so rejects exceed accepts at window end.
-    \item Finalize and refresh.
+    \item Log in as several citizens and cast enough downvotes to reject the report resolution. 
+    \item Wait untill voting window expires and refresh. Verify the transition of report state  to Reopened.
 \end{enumerate}
-\noindent\textbf{Expected result:} Status becomes \texttt{Reopened}.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m3-4-verif-reopen}.
+\noindent {Expected result:} Report state becomes {Reopened}.
 
-\paragraph{Scenario M3.5 --- Client-side submission validation (negative path).}
-\textbf{Role:} Citizen.
-\textbf{Preconditions:} Citizen logged in at \texttt{/report}.
+\noindent {Screenshots:} Fig.~\ref{fig:m3-4-verif-reopen}.
+
+\subsubsection{Scenario 5 - Client-side submission validation}
+ {Role:} Citizen\\
+ {Preconditions:} Logged in citizen ready to submit a report. 
+ Citizen logged in at \texttt{/report}.
 
 \begin{enumerate}
-    \item Attempt submit with an empty description.
-    \item Attempt submit without a map location.
-    \item Attempt to attach more than five images.
-    \item Attempt a description longer than 1000 characters (if the UI allows typing past the limit, confirm it blocks or truncates).
+    \item Try to submit a report with empty description. 
+    \item Try to submit a report without a map location.
+    \item Try to attach more than five images.
+    \item Try to submit a report with a description longer than 1000 characters
+    \item Verify whether validations are enforced. 
 \end{enumerate}
-\noindent\textbf{Expected result:} Each invalid attempt is blocked in the client with a validation message; no relayer job is created.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m3-5-validation}.
+\noindent {Expected result:} Each invalid report is rejected with a clear validation error. 
 
-\paragraph{Scenario M3.6 --- AI moderation rejection (negative path).}
-\textbf{Role:} Citizen.
-\textbf{Preconditions:} Citizen logged in with remaining tickets.
+\noindent {Screenshots:} Fig.~\ref{fig:m3-5-validation}.
+
+\subsubsection{Scenario 6 - AI moderation rejection}
+ {Role:} Citizen \\
+ {Preconditions:} Logged in citizen logged ready to submit a report.
 
 \begin{enumerate}
-    \item Submit a report whose text or image is expected to fail moderation (for example hate speech, spam, non-civic content, or an unsafe image sample used in AI testing).
-    \item Open \texttt{/notifications} and wait for the AI stage outcome.
+    \item Submit a report with a spam, toxic, or noncivic description.
+    \item Open notifications and confirm that the report is failed at AI moderation stage.
 \end{enumerate}
-\noindent\textbf{Expected result:} The job fails at AI moderation with a rejection status; the report is not anchored on-chain as an accepted civic issue.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m3-6-ai-reject}.
+\noindent {Expected result:} The job fails at AI moderation stage. Report submission fails. 
 
-\paragraph{Scenario M3.7 --- Duplicate geo and category warning.}
-\textbf{Role:} Citizen.
-\textbf{Preconditions:} An existing open or recent report near a known location and category.
+\noindent {Screenshots:} Fig.~\ref{fig:m3-6-ai-reject}.
+
+\subsubsection{Scenario 7 - Similar report detection}
+ {Role:} Citizen \\
+ {Preconditions:} A logged in citizen and a recently submitted report with a known location and category. 
 
 \begin{enumerate}
-    \item Start a new report with the same category and a location within about 1\,km of the existing report.
-    \item Observe the duplicate-warning modal and any preview of nearby reports.
-    \item Either cancel or acknowledge and continue, depending on the intended test outcome.
+    \item Submit a new report with the same category and location within about 1\,km of the existing report.
+    \item Observe the duplicate report warning modal. 
+    \item Acknowledge the warning and cancel submission to avoid duplication. 
+    \item Verify the redirection to the existing report detail page.
 \end{enumerate}
-\noindent\textbf{Expected result:} The duplicate warning appears before final submission; the citizen can review nearby reports.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m3-7-duplicate}.
+\noindent {Expected result:} The similar report warning appears, the citizen can select to cancel submission or proceed. If cancelled, the citizen is redirected to the existing report detail page.
 
-\paragraph{Scenario M3.8 --- Double vote and ticket exhaustion (negative path).}
-\textbf{Role:} Citizen.
-\textbf{Preconditions:} A report in an active voting phase; a citizen who has already voted, and optionally a citizen with tickets nearly exhausted.
+\noindent {Screenshots:} Fig.~\ref{fig:m3-7-duplicate}.
+
+\subsubsection{Scenario 8 - Double vote}
+ {Role:} Citizen \\
+ {Preconditions:} A report in an active voting phase(PendingVerification, PendingValidation, PendingRejectionReview) and a citizen who has already voted
 
 \begin{enumerate}
-    \item Attempt a second vote on the same report with the same citizen session.
-    \item Continue casting ticket-consuming actions until the ticket batch is exhausted, then attempt another action.
+    \item Attempt to vote for the same report with the same citizen session. 
+    \item Verify that the second vote is rejected with a clear error message.
 \end{enumerate}
-\noindent\textbf{Expected result:} The second vote is rejected (nullifier or citizen-already-voted); exhausted tickets require re-login to obtain a new batch before further actions succeed.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m3-8-double-vote}.
+
+\noindent {Expected result:} The second vote is rejected. 
+
+\noindent {Screenshots:} Fig.~\ref{fig:m3-8-double-vote}.
 
 \subsection{Emergency Flows}
 
-\paragraph{Scenario M4.1 --- Emergency report submission (happy path).}
-\textbf{Role:} Citizen.
-\textbf{Preconditions:} Citizen logged in; citizen is not under an emergency-channel penalty.
+\subsubsection{Scenario M4.1 --- Emergency report submission (happy path).}
+ {Role:} Citizen. \\
+ {Preconditions:} Citizen logged in; citizen is not under an emergency-channel penalty.
 
 \begin{enumerate}
     \item On \texttt{/report}, enable the Urgent/Emergency toggle.
@@ -688,57 +718,62 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \item Complete category, description, location, and optional images, then submit.
     \item Track notifications through AI, IPFS, and chain stages.
 \end{enumerate}
-\noindent\textbf{Expected result:} The report is created on the emergency path with status \texttt{Open} immediately (validation skipped).
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m4-1-consent}, Fig.~\ref{fig:m4-1-open}.
+\noindent {Expected result:} The report is created on the emergency path with status \texttt{Open} immediately (validation skipped).
 
-\paragraph{Scenario M4.2 --- Authority resolve emergency.}
-\textbf{Role:} Authority worker.
-\textbf{Preconditions:} An emergency report in \texttt{Open} (from M4.1).
+\noindent {Screenshots:} Fig.~\ref{fig:m4-1-consent}, Fig.~\ref{fig:m4-1-open}.
+
+\subsubsection{Scenario M4.2 --- Authority resolve emergency.}
+ {Role:} Authority worker. \\
+ {Preconditions:} An emergency report in \texttt{Open} (from M4.1).
 
 \begin{enumerate}
     \item Open the Authority Dashboard Emergency tab and open the report.
     \item Optionally Start Work (\texttt{InProgress}), then Resolve; or Resolve directly from \texttt{Open}.
 \end{enumerate}
-\noindent\textbf{Expected result:} Status becomes \texttt{Resolved}.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m4-2-resolved}.
+\noindent {Expected result:} Status becomes \texttt{Resolved}.
 
-\paragraph{Scenario M4.3 --- Reclassify false emergency.}
-\textbf{Role:} Authority worker.
-\textbf{Preconditions:} A separate emergency report that should be treated as non-urgent abuse of the channel.
+\noindent {Screenshots:} Fig.~\ref{fig:m4-2-resolved}.
+
+\subsubsection{Scenario M4.3 --- Reclassify false emergency.}
+ {Role:} Authority worker. \\
+ {Preconditions:} A separate emergency report that should be treated as non-urgent abuse of the channel.
 
 \begin{enumerate}
     \item On the emergency report detail, choose Downgrade / Reclassify (false emergency) and confirm.
 \end{enumerate}
-\noindent\textbf{Expected result:} Status becomes \texttt{Reclassified}; the reporting citizen receives a 30-day lock on the emergency channel.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m4-3-reclassified}.
+\noindent {Expected result:} Status becomes \texttt{Reclassified}; the reporting citizen receives a 30-day lock on the emergency channel.
 
-\paragraph{Scenario M4.4 --- Emergency penalty enforcement (negative path).}
-\textbf{Role:} Penalized citizen.
-\textbf{Preconditions:} Citizen from M4.3 is within the 30-day emergency lock.
+\noindent {Screenshots:} Fig.~\ref{fig:m4-3-reclassified}.
+
+\subsubsection{Scenario M4.4 --- Emergency penalty enforcement (negative path).}
+ {Role:} Penalized citizen. \\
+ {Preconditions:} Citizen from M4.3 is within the 30-day emergency lock.
 
 \begin{enumerate}
     \item Attempt to submit another emergency report.
     \item Submit a standard (non-emergency) report with the same account.
 \end{enumerate}
-\noindent\textbf{Expected result:} The second emergency submission is blocked; the standard report is still accepted through the normal pipeline.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m4-4-penalty}.
+\noindent {Expected result:} The second emergency submission is blocked; the standard report is still accepted through the normal pipeline.
 
-\paragraph{Scenario M4.5 --- Emergency without consent (negative path).}
-\textbf{Role:} Citizen.
-\textbf{Preconditions:} Citizen on \texttt{/report}.
+\noindent {Screenshots:} Fig.~\ref{fig:m4-4-penalty}.
+
+\subsubsection{Scenario M4.5 --- Emergency without consent (negative path).}
+ {Role:} Citizen. \\
+ {Preconditions:} Citizen on \texttt{/report}.
 
 \begin{enumerate}
     \item Enable the Emergency toggle, then dismiss or cancel the consent modal without confirming.
     \item Attempt to submit without having accepted consent.
 \end{enumerate}
-\noindent\textbf{Expected result:} Emergency submission does not proceed without consent.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m4-5-cancel-consent}.
+\noindent {Expected result:} Emergency submission does not proceed without consent.
+
+\noindent {Screenshots:} Fig.~\ref{fig:m4-5-cancel-consent}.
 
 \subsection{Opinion Polling}
 
-\paragraph{Scenario M5.1 --- Authority creates a poll.}
-\textbf{Role:} Authority worker.
-\textbf{Preconditions:} Authority wallet connected.
+\subsubsection{Scenario M5.1 --- Authority creates a poll.}
+ {Role:} Authority worker. \\
+ {Preconditions:} Authority wallet connected.
 
 \begin{enumerate}
     \item Navigate to \texttt{/polls/create}.
@@ -746,36 +781,38 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \item Confirm metadata is uploaded and the on-chain poll is created.
     \item Verify the poll appears on \texttt{/polls} or the feed for citizens.
 \end{enumerate}
-\noindent\textbf{Expected result:} Poll is visible to citizens and listed under the Authority Polls tab.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m5-1-create}, Fig.~\ref{fig:m5-1-list}.
+\noindent {Expected result:} Poll is visible to citizens and listed under the Authority Polls tab.
 
-\paragraph{Scenario M5.2 --- Citizens vote and authority finalizes.}
-\textbf{Role:} Citizens, then authority.
-\textbf{Preconditions:} Active poll from M5.1 within its deadline.
+\noindent {Screenshots:} Fig.~\ref{fig:m5-1-create}, Fig.~\ref{fig:m5-1-list}.
+
+\subsubsection{Scenario M5.2 --- Citizens vote and authority finalizes.}
+ {Role:} Citizens, then authority.
+ {Preconditions:} Active poll from M5.1 within its deadline.
 
 \begin{enumerate}
     \item As two or more citizens, open the poll and cast a vote.
     \item As authority, finalize the poll from the Admin Polls tab when ready.
 \end{enumerate}
-\noindent\textbf{Expected result:} Votes are recorded via the relayer; finalized poll no longer accepts new votes and shows a completed state.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m5-2-vote}, Fig.~\ref{fig:m5-2-finalized}.
+\noindent {Expected result:} Votes are recorded via the relayer; finalized poll no longer accepts new votes and shows a completed state.
+\noindent {Screenshots:} Fig.~\ref{fig:m5-2-vote}, Fig.~\ref{fig:m5-2-finalized}.
 
-\paragraph{Scenario M5.3 --- Poll access and double-vote controls (negative path).}
-\textbf{Role:} Citizen.
-\textbf{Preconditions:} Active poll; citizen already voted once.
+\subsubsection{Scenario M5.3 --- Poll access and double-vote controls (negative path).}
+ {Role:} Citizen. \\
+ {Preconditions:} Active poll; citizen already voted once.
 
 \begin{enumerate}
     \item As a citizen, navigate to \texttt{/polls/create} and confirm access is denied.
     \item Attempt a second vote on the same poll with the same citizen.
 \end{enumerate}
-\noindent\textbf{Expected result:} Citizens cannot create official polls; double vote is rejected (nullifier reuse).
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m5-3-denied}.
+\noindent {Expected result:} Citizens cannot create official polls; double vote is rejected (nullifier reuse).
+
+\noindent {Screenshots:} Fig.~\ref{fig:m5-3-denied}.
 
 \subsection{Super Admin Governance}
 
-\paragraph{Scenario M6.1 --- Multisig proposal and majority approval (happy path).}
-\textbf{Role:} Super Admins.
-\textbf{Preconditions:} At least two Super Admin wallets; useful first action is setting a short voting-window duration for later M2/M3 scenarios.
+\subsubsection{Scenario M6.1 --- Multisig proposal and majority approval (happy path).}
+ {Role:} Super Admins. \\
+ {Preconditions:} At least two Super Admin wallets; useful first action is setting a short voting-window duration for later M2/M3 scenarios.
 
 \begin{enumerate}
     \item As Super Admin~A, open \texttt{/super-admin} and submit a proposal (for example set voting-window duration, or add/remove an authority).
@@ -783,19 +820,21 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \item As Super Admin~B, approve the same proposal until majority quorum $Q=\lfloor N/2\rfloor+1$ is reached.
     \item Confirm execution and verify the on-chain configuration or roster change.
 \end{enumerate}
-\noindent\textbf{Expected result:} The change applies only after majority approval; the dashboard reflects the new config or roster.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m6-1-propose}, Fig.~\ref{fig:m6-1-executed}.
+\noindent {Expected result:} The change applies only after majority approval; the dashboard reflects the new config or roster.
 
-\paragraph{Scenario M6.2 --- Unilateral change and unauthorized access (negative path).}
-\textbf{Role:} Single Super Admin; then a non--Super Admin.
-\textbf{Preconditions:} At least two Super Admins registered so quorum is greater than one.
+\noindent {Screenshots:} Fig.~\ref{fig:m6-1-propose}, Fig.~\ref{fig:m6-1-executed}.
+
+\subsubsection{Scenario M6.2 --- Unilateral change and unauthorized access (negative path).}
+ {Role:} Single Super Admin; then a non-Super Admin. \\
+ {Preconditions:} At least two Super Admins registered so quorum is greater than one.
 
 \begin{enumerate}
     \item As a single Super Admin, submit a proposal and leave it without a second approval; confirm it is not executed.
     \item As a citizen or ordinary authority wallet, navigate to \texttt{/super-admin}.
 \end{enumerate}
-\noindent\textbf{Expected result:} Unilateral proposals do not execute; non--Super Admin users are denied the Super Admin dashboard.
-\noindent\textbf{Screenshots:} Fig.~\ref{fig:m6-2-denied}.
+\noindent {Expected result:} Unilateral proposals do not execute; non--Super Admin users are denied the Super Admin dashboard.
+
+\noindent {Screenshots:} Fig.~\ref{fig:m6-2-denied}.
 
 \section{Testing Screenshots}
 \label{sec:testing-screenshots}
@@ -804,35 +843,63 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 \subsection{Authentication Screenshots}
 
+
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/register.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
-    \caption{Registration screen of government identity simulator}
-    \label{fig:me2e-register}
+     \centering
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/register.png}
+          \caption{Registration screen of government identity simulator}
+        \label{fig:me2e-register}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/register-success.png}
+         \caption{Successfull registration of a citizen via government identity simulator}
+         \label{fig:me2e-register-success}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/login-screen.png}
+         \caption{Citizen login to the DApp}
+         \label{fig:me2e-login}
+     \end{subfigure}
+        \caption{Citizen authentication}
+        \label{fig:authentication}
 \end{figure}
 
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/register.png}
+%     %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
+%     \caption{Registration screen of government identity simulator}
+%     \label{fig:me2e-register}
+% \end{figure}
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/register-success.png}
+%    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
+%     \caption{Successfull registration of a citizen via government identity simulator}
+%     \label{fig:me2e-register-success}
+% \end{figure}
+
+
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/login-screen.png}
+%     %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
+%     \caption{Citizen login to the DApp}
+%     \label{fig:me2e-login}
+% \end{figure}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/register-success.png}
-   % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
-    \caption{Successfull registration of a citizen via government identity simulator}
-    \label{fig:me2e-register-success}
-\end{figure}
-
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/login-screen.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
-    \caption{Citizen login to the DApp}
-    \label{fig:me2e-login}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/pin-creation.png}
+    \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/pin-creation.png}
     %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
     \caption{PIN creation screen}
     \label{fig:me2e-pin-creation}
@@ -840,7 +907,7 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/feed.png}
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/feed.png}
     %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
     \caption{Citizen feed after successful authentication}
     \label{fig:me2e-feed}
@@ -848,87 +915,205 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m1-1-feed.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-b: Citizen feed after login]\vspace{3.5cm}}}
-%     \caption{Citizen feed after successful authentication (scenario M1.1)}
-%     \label{fig:m1-1-feed}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/invalid.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Invalid citizen credentials error}
+    \label{fig:me2e-invalid}
+\end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m1-2-pin.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.2: PIN create or unlock]\vspace{3.5cm}}}
-%     \caption{Session PIN create or unlock screen (scenario M1.2)}
-%     \label{fig:m1-2-pin}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-dashboard.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority dashboard after login via Metamask}
+    \label{fig:me2e-authority-dashboard}
+\end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m1-3-invalid.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-%     \caption{Invalid citizen credentials error (scenario M1.3)}
-%     \label{fig:m1-3-invalid}
-% \end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m1-4-admin.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.4: Authority dashboard]\vspace{3.5cm}}}
-%     \caption{Authority dashboard after MetaMask connection (scenario M1.4)}
-%     \label{fig:m1-4-admin}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-access-denied.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Access denied when a unauthorized goverment worker tries to access authority portal }
+    \label{fig:me2e-authority-access-denied}
+\end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m1-5-denied.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.5: Access denied to /admin]\vspace{3.5cm}}}
-%     \caption{Access denied when a non-authority user opens the authority portal (scenario M1.5)}
-%     \label{fig:m1-5-denied}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m1-6-guard.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.6: Guarded citizen route]\vspace{3.5cm}}}
-%     \caption{Unauthenticated access blocked on a citizen route (scenario M1.6)}
-%     \label{fig:m1-6-guard}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/citizen-route-access-denied.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Access denied when a unauthorized citizen try to access a protected route }
+    \label{fig:me2e-citizen-access-denied}
+\end{figure}
 
 \subsection{Standard Lifecycle Screenshots}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-1-form.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.1-a: Report submission form]\vspace{3.5cm}}}
-%     \caption{Standard report submission form (scenario M2.1)}
-%     \label{fig:m2-1-form}
-% \end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-1-notifications.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.1-b: Pipeline notifications]\vspace{3.5cm}}}
-%     \caption{SSE pipeline progress on the notifications page (scenario M2.1)}
-%     \label{fig:m2-1-notifications}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/standard-report-submit.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Standard report submission form}
+    \label{fig:me2e-standard-report-submit}
+\end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-1-pending.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.1-c: PendingValidation status]\vspace{3.5cm}}}
-%     \caption{Report detail in \texttt{PendingValidation} (scenario M2.1)}
-%     \label{fig:m2-1-pending}
-% \end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-2-vote.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.2-a: Validation upvote UI]\vspace{3.5cm}}}
-%     \caption{Community validation voting UI (scenario M2.2)}
-%     \label{fig:m2-2-vote}
-% \end{figure}
+
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-1.png}
+          \caption{SSE pipeline progress (AI moderation step)}
+         \label{fig:me2e-sse-1}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-2.png}
+         \caption{SSE pipeline progress (IPFS upload step)}
+         \label{fig:me2e-sse-2}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-3.png}
+         \caption{SSE pipeline progress (on-chain anchoring step)}
+         \label{fig:me2e-sse-3}
+     \end{subfigure}
+        \caption{SSE pipeline progress}
+        \label{fig:sse-progress}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/standard-report-detail-page.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Detailed report page with state transitioned to PendingValidation after submission}
+    \label{fig:me2e-standard-report-detail}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/other-people-voting.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Community validation voting}
+    \label{fig:me2e-community-validation-vote}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/pendinvalidation-to-open.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Reportstate transition from PendingValidation to Open}
+    \label{fig:me2e-pending-validation-to-open}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/actiobale-report-view.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority worker locating the report under Actionable tab}
+    \label{fig:me2e-actionable-report-view}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/opened-report.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority worker views Open report}
+    \label{fig:me2e-opened-report}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-worker-start-work.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority worker starts working on a report}
+    \label{fig:me2e-authority-worker-start-work}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/inprogress.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transitioned to Inprogress after authority worker starts work}
+    \label{fig:me2e-inprogress}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/post-progress-update.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority worker adding a progress update to the report}
+    \label{fig:me2e-post-progress-update}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/markasresolved.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority worker marking a report as resolved}
+    \label{fig:me2e-markasresolved}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/pending-verification.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transition from InProgress to PendingVerification after authority marks as resolved}
+    \label{fig:me2e-pending-verification}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/community-verification.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{A citizen accept the resolution by upvoting}
+    \label{fig:me2e-community-verification}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-action-log.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority action log visible to citizens}
+    \label{fig:me2e-authority-action-log}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/closed.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report successfully closed after community verification accepts the resolution}
+    \label{fig:me2e-closed-report}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/profile.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Profile page of citizen showing previously submitted reports}
+    \label{fig:me2e-profile}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/notifications.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Notifications page for the citizen}
+    \label{fig:me2e-notifications}
+\end{figure}
+
+
+
+
+
+
 
 % \begin{figure}[H]
 %     \centering
