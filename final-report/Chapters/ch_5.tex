@@ -238,7 +238,7 @@ The relayer's cryptographic and validation logic has been tested in isolation wi
 \end{tabular}
 \end{table}
 
-  Real Ethers.js wallets has been used to sign and verify messages in these tests, so the actual cryptographic recovery logic has been exercised rather than a mocked implementation.  
+  Real Ethers.js wallets have been used to sign and verify messages in these tests, so the actual cryptographic recovery logic has been exercised rather than a mocked implementation.  
 \subsection{Results}
 
 \begin{table}[htbp]
@@ -300,7 +300,7 @@ The test suite is split into two files, one for API security and one for classif
 
 \subsection{Results}
 
-The results of the AI oracle test suite are summarized in Table~\ref{tab:ai-results}. All 20 cases pass, completing in 21.33\,s. More details on the test cases are provided in Appendix~\ref{apndx:ai-test-suite}. Genuine civic and emergency reports has been accepted, while hate speech, spam, and off-topic texthas been rejected. The corrupted and unsafe image cases has been rejected, the safe-image and face-containing cases has been accepted, and every recorded response includes both a decision and an explanation. 
+The results of the AI oracle test suite are summarized in Table~\ref{tab:ai-results}. All 20 cases pass, completing in 21.33\,s. More details on the test cases are provided in Appendix~\ref{apndx:ai-test-suite}. Genuine civic and emergency reports has been accepted, while hate speech, spam, and off-topic text has been rejected. The corrupted and unsafe image cases has been rejected, the safe-image and face-containing cases has been accepted, and every recorded response includes both a decision and an explanation. 
 
 \begin{table}[htbp]
 \centering
@@ -361,7 +361,9 @@ A dedicated Hardhat script measures the private network's practical performance 
     \label{fig:benchmark-measurements}
 \end{figure}
 
-Gas cost for  {submitReport()} has been measured first, over five submissions, so that a representative average is available before any other activity affects network conditions. Then, \ac{E2E} latency has been measured from the moment a transaction is dispatched to the moment its receipt confirms inclusion in a block, giving a citizen-facing value. Throughput has been measured by dispatching a batch of transactions concurrently, with explicit nonce and fee management so that the batch is genuinely submitted together, and dividing the confirmed count by the elapsed time. The Clique block interval has been read directly from consecutive block timestamps rather than assumed from the configured period, which lets the recorded interval reflect real validator behaviour. Voting gas has been measured the same way as submission gas, and batch-finalization gas has been measured by submitting reports to a short-window contract instance and finalizing them together in one call.
+Gas for submitReport() was averaged over five submissions run before any other benchmark load, so the figure reflects a quiet network. End-to-end latency was timed from dispatch until the receipt confirmed inclusion in a block, matching the wait a citizen sees after the relayer submits on their behalf. Throughput was estimated by broadcasting a batch of transactions in parallel with explicit nonce and fee assignment, then dividing the number that confirmed by the elapsed time.
+
+The Clique block interval was derived from consecutive sealed block timestamps rather than the configured period alone, because live validator timing can differ slightly from the nominal setting. Vote transactions were costed with the same five-sample method used for report submission. Batch-finalization gas was captured by pointing at a short voting-window contract, opening several reports against it, and invoking the finalize routine once to close them in a single transaction.
 
 \subsection{Results}
 
@@ -522,4 +524,4 @@ In addition to this happy path, full manual E2E UI test cases and together with 
 \section{Chapter Summary}
 \label{sec:testing-summary}
 
-This chapter has described how the prototype is tested and recorded the results obtained. 75 smart-contract cases across five test files, 25 relayer unit-test cases across three spec files, 20 AI moderation cases across two test files, and 8 IPFS integration cases, for a combined 128 passing test cases, together with a dedicated performance benchmark on the live private network and six \ac{E2E} manual testing scenarios. The recorded benchmark values include an average of 309{,}056 gas per \texttt{submitReport()}, a 5{,}017\,ms average submit-to-confirm latency, 0.87 TPS on a 20-transaction batch, and a 5.0\,s average Clique block interval. The complete, itemized list of individual test cases is provided in Appendix~\ref{app:test-cases} for full traceability. What these results mean for the project's stated objectives is discussed next in Chapter~\ref{ch:results}.
+This chapter explained how the prototype was exercised and what the runs produced. In total, 128 automated cases passed. 75 smart-contract tests across five files, 25 relayer unit tests across three specs, 20 AI moderation checks across two files, and 8 \ac{IPFS} integration checks. Six manual \ac{E2E} walkthroughs and a benchmark against the live private network complemented that automated coverage. On the benchmark host, submitReport() averaged 309{,}056 gas, submit-to-confirm latency averaged 5{,}017\,ms, a batch of twenty concurrent transactions reached 0.87 TPS, and the observed Clique block interval averaged 5.0\,s. Appendix~\ref{app:test-cases} lists every case for traceability. Chapter~\ref{ch:results} picks up from those figures and compares the measured behaviour with the targets set in the design chapters.

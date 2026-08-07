@@ -1,24 +1,24 @@
 \chapter{Background}
 
-This chapter introduces the main background technologies used in the proposed blockchain-based reporting framework. It explains the basic concepts of blockchain technology, permissioned networks, PoA consensus, smart contracts, decentralized applications, \ac{IPFS} , privacy-preserving identity concepts, and AI-based content moderation. Through this chapter we aim to give the reader an enough technical understanding to follow the system design and implementation discussed in the later chapters.
+This chapter introduces the main background technologies used in the proposed blockchain-based reporting framework. It explains the basic concepts of blockchain technology, permissioned networks, PoA consensus, smart contracts, decentralized applications, \ac{IPFS} , privacy-preserving identity concepts, and AI-based content moderation. Through this chapter we aim to give the reader enough technical understanding to follow the system design and implementation discussed in the later chapters.
 
 \section{Blockchain Technology}
 
 
-Blockchain is a distributed, digital, append-only ledger technology. It enables data to be stored in immutable and transparent manner across multiple nodes in a network. Unlike centralized systems, blockchain systems maintain a syncronized copy of the ledger among all authorized participants. This approach reduces the dependency on a single intermediary controlling authority. Each block in the blockchain contains a set of validated transactions, a timestamp, and a cryptographic hash of the previous block. This hash-chaining mechanism ensures that any alteration to previous recorded data becomes immediately detectable.
+Blockchain is a distributed, digital, append-only ledger technology. It enables data to be stored in immutable and transparent manner across multiple nodes in a network. Unlike centralized systems, blockchain systems maintain a synchronized copy of the ledger among all authorized participants. This approach reduces the dependency on a single intermediary controlling authority. Each block in the blockchain contains a set of validated transactions, a timestamp, and a cryptographic hash of the previous block. This hash-chaining mechanism ensures that any alteration to previous recorded data becomes immediately detectable.
 
-Immutability is a key characteristic in blockchain technology. It is computationally impractical to alter or delete a transaction after it is confirmed and appened to the blockchain. In systems that deal with governance, the immutable property is crucial for ensuring integrity and transparency.
+Immutability is a key characteristic in blockchain technology. It is computationally impractical to alter or delete a transaction after it is confirmed and appended to the blockchain. In systems that deal with governance, the immutable property is crucial for ensuring integrity and transparency.
 
-Another key component of blockchain systems is Cryptography. Hash functions are used to make digital fingerprints that are unique for each piece of data. And also digital signatures are used to verify the authenticity and the ownership of the transactions. Therefore the use of cryptographic methods in blockchain systems gurantee the integrity, authenticity and non-repudiation of data.
+Another key component of blockchain systems is Cryptography. Hash functions are used to make digital fingerprints that are unique for each piece of data. And also digital signatures are used to verify the authenticity and the ownership of the transactions. Therefore the use of cryptographic methods in blockchain systems guarantee the integrity, authenticity and non-repudiation of data.
 
 
-% Cryptography plays a significant role in blockchain systems. To generate unique digital fingerprints of data, hash functions are used. To verify ownership and authenticity of transactions, digital signatures are used. By using above cryptographic methods, blockchain systems gurantee integirty, authenticity and non-repudiation of data. 
+% Cryptography plays a significant role in blockchain systems. To generate unique digital fingerprints of data, hash functions are used. To verify ownership and authenticity of transactions, digital signatures are used. By using above cryptographic methods, blockchain systems guarantee integrity, authenticity and non-repudiation of data. 
 
 \section{Permissioned Blockchain and PoA Consensus}
 
 % Bitcoin and Ethereum are permissionless blockchains, where anyone can participate as a node and validate transactions. In contrast, permissioned blockchains restrict participation to a predefined set of entities. These entities are often referred to as validator nodes. They are responsible for validating transactions and maintaining the integrity of the blockchain. 
 %
-% While permissionless blockchains rely on consensus mechanisms like \ac{PoW} or \ac{PoS}, the \ac{PoA} consensus mechanism is specially designed for permissioned blockchains. In here instead of relying on computationally expensive mining or staking process the validator nodes in the permissioned blockchain are validating blocks. Therefore this approach is a reputation and indetity-based mechanism, where the authority of the validators is based on their identity and reputation within the network. This allows for faster transaction processing and lower energy consumption compared to traditional consensus mechanisms. This makes permissioned blockchains more suitable for enterprise applications and private networks.
+% While permissionless blockchains rely on consensus mechanisms like \ac{PoW} or \ac{PoS}, the \ac{PoA} consensus mechanism is specially designed for permissioned blockchains. In here instead of relying on computationally expensive mining or staking process the validator nodes in the permissioned blockchain are validating blocks. Therefore this approach is a reputation and indetity-based mechanism, where the authority of the validators are based on their identity and reputation within the network. This allows for faster transaction processing and lower energy consumption compared to traditional consensus mechanisms. This makes permissioned blockchains more suitable for enterprise applications and private networks.
 
 % Bitcoin and Ethereum are public, permissionless networks. A participant can run a node and help validate transactions without first obtaining approval from a central administrator. Permissioned blockchains follow a stricter model. Only a predefined set of organisations may join, and these members typically operate as validator nodes that verify transactions and append blocks to the shared ledger.
 
@@ -34,7 +34,7 @@ Local governance related system requires predictable performance, immutability, 
 
 \section{Smart Contracts}
 
-Smart contracts are first introduced by Ethereum blockchain. They are self-executing contracts with the terms of the agreement directly written into code. In a blockchain based governance systems smart contract can be used to eliminate centralized administrative control. It can automate workflows that would traditionally require human intervention. Therefore this reduce the reliance on intermediaries, hence improve the transparancy and trusthworthiness.
+Smart contracts are first introduced by Ethereum blockchain. They are self-executing contracts with the terms of the agreement directly written into code. In a blockchain based governance systems smart contract can be used to eliminate centralized administrative control. It can automate workflows that would traditionally require human intervention. Therefore this reduce the reliance on intermediaries, hence improve the transparency and trustworthiness.
 
 The proposed system uses Solidity based smart contracts deployed on a private permissioned PoA blockchain.
 
@@ -59,9 +59,9 @@ Storing bulky files directly on a blockchain is expensive and slow, which is why
 
 \section{Zero-Knowledge and Identity Concepts}
 
-Zero-knowledge proofs allow a user to prove that they possess sensitive information without actually revaling the information itself. 
+Zero-knowledge proofs allow a user to prove that they possess sensitive information without actually revealing the information itself. 
 
-The identity decoupling is critical requirment because citizens may hesitate to report sensitive problems they have if their identity is linked to the submitted report. Therefore we decouple identity of the citizen by using public-private key pair associated with the citizen. By leveraging this approach the blockchain ledger will record only pseudonymous identifiers, authorization tickets and cryptographic proofs. This ensure no sensitive personal information is ever oublically exposed.
+The identity decoupling is critical requirment because citizens may hesitate to report sensitive problems they have if their identity is linked to the submitted report. Therefore we decouple identity of the citizen by using public-private key pair associated with the citizen. By leveraging this approach the blockchain ledger will record only pseudonymous identifiers, authorization tickets and cryptographic proofs. This ensure no sensitive personal information is ever publicly exposed.
 
 \section{AI-based Content Moderation}
 
@@ -69,4 +69,4 @@ Citizen reporting platforms are vulnerable to spam Submissions, abusive content,
 
 \ac{AI} techniques are widely used for automated content moderation. \ac{NLP} techniques are used in text moderation tasks such as:toxicity detection, hate speech detection, spam filtering, and sentiment Analysis. For image moderation, computer vision and deep learning approaches are mostly used. \ac{CNN}s and transformer-based vision models can classify images based on categories like: explicit content, graphic violence, hate symbols, and unrelated media. 
 
-
+With these technical primitives established, Chapter 3~\ref{ch:architecture} details how they are integrated into a multi-layered architecture for local governance reporting system.
