@@ -677,7 +677,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{enumerate}
 \noindent {Expected result:} The job fails at AI moderation stage. Report submission fails. 
 
-\noindent {Screenshots:} Fig.~\ref{fig:m3-6-ai-reject}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-spam-report-submit}, and Figure.~\ref{fig:me2e-ai-moderation-report-rejection}.
 
 \subsubsection{Scenario 7 - Similar report detection}
  {Role:} Citizen \\
@@ -1134,7 +1134,7 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reject-open-report-authority.png}
+    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/alteranate/reject-open-report-authority.png}
     %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
     \caption{Authority rejects an open report}
     \label{fig:me2e-reject-open-report}
@@ -1221,7 +1221,7 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 \subsubsection{Scenario 5 - Client-side submission validation}
 
 
-\begin{figure}
+\begin{figure}[H]
      \centering
      \begin{subfigure}[b]{0.45\textwidth}
          \centering
@@ -1240,7 +1240,7 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
         \label{fig:me2e-client-side-validation-errors-1}    
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
      \centering
      \begin{subfigure}[b]{0.45\textwidth}
          \centering
@@ -1262,6 +1262,33 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 
 \subsubsection{Scenario 6 - AI moderation rejection}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/spam-report-submission.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Submitting a spam report}
+    \label{fig:me2e-spam-report-submit}
+\end{figure}
+
+\begin{figure}[H]
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/ai-validation.png}
+          \caption{AI moderation rejects the report submission}
+         \label{fig:me2e-ai-moderation-reject}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/notification-showing-ai-reection.png}
+        \caption{SSE notification showing AI moderation rejection}
+          \label{fig:me2e-image-error}
+     \end{subfigure}
+        \caption{AI moderation rejection of a report}
+        \label{fig:me2e-ai-moderation-report-rejection}    
+\end{figure}
 
 \subsubsection{Scenario 7 - Similar report detection}
 
