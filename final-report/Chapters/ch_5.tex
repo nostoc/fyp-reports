@@ -424,7 +424,7 @@ The results of the blockchain performance benchmark are summarized in Table~\ref
         \begin{axis}[
             width=0.82\textwidth,
             height=6cm,
-            xlabel={Report index in the T5.2 measurement},
+            xlabel={Report index},
             ylabel={Submit-to-confirm latency (ms)},
             xtick={5,6,7,8,9},
             ymin=0, ymax=6500,
@@ -437,7 +437,7 @@ The results of the blockchain performance benchmark are summarized in Table~\ref
         \addlegendentry{Configured 5\,s block period}
         \end{axis}
     \end{tikzpicture}
-    \caption{Submit-to-confirm latency for the five T5.2 report submissions}
+    \caption{Submit-to-confirm latency for the five report submissions}
     \label{fig:latency-chart}
 \end{figure}
 
@@ -503,7 +503,7 @@ The test cases, their descriptions, and the results of the IPFS integration test
         \addplot[fill=barblue] coordinates {(1KB,518) (100KB,1034) (1MB,1331) (5MB,4308)};
         \end{axis}
     \end{tikzpicture}
-    \caption{IPFS upload latency by attachment size (T4.1--T4.4)}
+    \caption{IPFS upload latency by attachment size}
     \label{fig:ipfs-latency-chart}
 \end{figure}
 

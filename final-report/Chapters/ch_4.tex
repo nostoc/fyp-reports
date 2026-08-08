@@ -134,7 +134,7 @@ The EmergencyReporting contract stores urgent reports separately. This keeps the
 An emergency can be resolved from Open or InProgress, since an emergency may already be resolved by the time an authority formally starts work on it. A false emergency can be reclassified. When reclassification is recorded, the citizen pseudonym is blocked from new emergency submissions for 30 days, which is implemented by computing the unlock time according to Eq.(~\ref{eq:emergency-penalty}).
 
 \begin{equation}
-    T_{\mathrm{unlock}} = T_{\mathrm{block}} + 30 \times 24 \times 60 \times 60,
+    T_{\mathrm{unlock}} = T_{\mathrm{block}} + ( 30 \times 24 \times 60 \times 60)
     \label{eq:emergency-penalty}
 \end{equation}
 
@@ -308,20 +308,25 @@ Super Admins sign in the same way, by linking a MetaMask wallet that the multisi
 
 Figure~\ref{fig:voting-window-configuration} shows where a Super Admin sets how long community voting stays open on standard reports. The value is written through a multisig proposal, so governance bodies can lengthen or shorten the finalization window for their deployment without redeploying contracts.
 
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=0.5\textwidth,keepaspectratio]{Images/Chapter 4/authority/voting-window-configuration.png}
-    \caption{Voting window configuration}
-    \label{fig:voting-window-configuration}
-\end{figure}
 
 Figure~\ref{fig:voting-methods} shows the screen where Super Admins pick how standard-report votes are finalised. The contract supports simple majority, two-thirds supermajority, a minimum turnout threshold, and a hybrid rule that combines two criteria. No single option suits every governance body, so the active method is chosen at deploy time and then applied to every new voting window once the multisig proposal passes.
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.9\textwidth,height=0.8\textwidth,keepaspectratio]{Images/Chapter 4/authority/voting-methods.png}
-    \caption{Voting methods configuration}
-    \label{fig:voting-methods}
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,keepaspectratio]{Images/Chapter 4/authority/voting-window-configuration.png}
+        \caption{Voting window configuration}
+        \label{fig:voting-window-configuration}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=0.8\textwidth,keepaspectratio]{Images/Chapter 4/authority/voting-methods.png}
+        \caption{Voting methods configuration}
+        \label{fig:voting-methods}
+    \end{subfigure}
+    \caption{System configurations}
 \end{figure}
 
 

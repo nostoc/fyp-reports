@@ -436,7 +436,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \subsection{Authentication and Access Control}
 
-\subsubsection{Scenario 1 - Citizen Registration}
+\subsubsection*{Scenario 1 - Citizen Registration}
 {Role:} Citizen. \\
 {Preconditions:} None
 
@@ -478,7 +478,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 2 - Citizen Authentication}
+\subsubsection*{Scenario 2 - Citizen Authentication}
 {Role:} Citizen. \\
 {Preconditions:} Already registered citizen with a valid government ID and password. 
 
@@ -513,7 +513,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 
 
-\subsubsection{Scenario 3 - Invalid Citizen Credentials}
+\subsubsection*{Scenario 3 - Invalid Citizen Credentials}
 {Role:} Unauthenticated visitor. \\
 {Preconditions:} None.
 \begin{enumerate}
@@ -534,7 +534,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 4 - Authority MetaMask connection}
+\subsubsection*{Scenario 4 - Authority MetaMask connection}
 {Role:} Authority worker. \\
 {Preconditions:} Metamask extension should be installed, and connected to the private \ac{PoA} network using \href{https://rpc.internalbuildtools.online/}{\ac{RPC} URL}. The selected account should have AUTHORITY\_ROLE. 
 
@@ -559,7 +559,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 
 
-\subsubsection{Scenario 5 - Unauthorized access to authority portal}
+\subsubsection*{Scenario 5 - Unauthorized access to authority portal}
 {Role:} Unregistered wallet.\\
 {Preconditions:} MetaMask is connected with a wallet that does not have AUTHORITY\_ROLE or SUPER\_ADMIN\_ROLE.
 
@@ -581,7 +581,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 6 - Unauthenticated access to protected citizen routes}
+\subsubsection*{Scenario 6 - Unauthenticated access to protected citizen routes}
 {Role:} Unauthenticated citizen.\\
 {Preconditions:} No citizen session.
 
@@ -603,7 +603,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \subsection{Standard Report Lifecycle }
 
-\subsubsection{Scenario 1 - Submit standard report through the pipeline}
+\subsubsection*{Scenario 1 - Submit standard report through the pipeline}
 \label{e2e:submit-report}
 {Role:} Citizen.\\
 {Preconditions:} Already logged in citizen with at least one valid ticket remaining.
@@ -664,7 +664,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \label{fig:me2e-standard-report-detail}
 \end{figure}
 
-\subsubsection{Scenario 2 - Community validation to Open}
+\subsubsection*{Scenario 2 - Community validation to Open}
 \label{e2e:community-validation}
 {Role:} Other citizens in the community. \\
 {Preconditions:} The report submitted in test~\ref{e2e:submit-report} is in PendingValidation state. At least three other citizens are logged in to the DApp.
@@ -696,7 +696,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 
 
-\subsubsection{Scenario 3 - Authority claim the report, update, and mark solved}
+\subsubsection*{Scenario 3 - Authority claim the report, update, and mark solved}
 \label{e2e:open-inprogress-pending-verification}
 {Role:} Authority worker\\
 {Preconditions:} Report from test~\ref{e2e:community-validation} is in the state {Open}. Authority worker is logged in to the authority portal.
@@ -775,7 +775,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 4 - Community verification to Closed}
+\subsubsection*{Scenario 4 - Community verification to Closed}
 {Role:} Citizens.\\
 {Preconditions:} Report from test~\ref{e2e:open-inprogress-pending-verification} is in {PendingVerification} state. At least two citizens are available to accept the resolution.
 
@@ -815,7 +815,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 4 - Citizen profile, my reports, and notifications}
+\subsubsection*{Scenario 4 - Citizen profile, my reports, and notifications}
 {Role:} The citizen who submitted report during test~\ref{e2e:submit-report}. \\
 {Preconditions:} At least one report submitted by this citizen.
 
@@ -851,7 +851,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \subsection{Standard Report Alternate and Negative Paths}
 
-\subsubsection{Scenario 1 - Community rejection at validation}
+\subsubsection*{Scenario 1 - Community rejection at validation}
 {Role:} Citizens \\
 {Preconditions:} There should be a fresh standard report in the state {PendingValidation}.
 
@@ -880,7 +880,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \label{fig:me2e-community-rejected-report}
 \end{figure}
 
-\subsubsection{Scenario 2 - Authority reject upheld by community}
+\subsubsection*{Scenario 2 - Authority reject upheld by community}
  {Role:} Authority, then citizens. \\
  {Preconditions:} A report in the state Open or InProgress.
 
@@ -927,7 +927,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 3 - Authority reject appealed, report reopened}
+\subsubsection*{Scenario 3 - Authority reject appealed, report reopened}
  {Role:} Authority, then citizens \\
  {Preconditions:} A report in the state {Open} or {InProgress}.
 
@@ -973,7 +973,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \label{fig:me2e-reopened-report}
 \end{figure}
 
-\subsubsection{Scenario 4 - Verification reject reopens the report}
+\subsubsection*{Scenario 4 - Verification reject reopens the report}
  {Role:} Citizens\\
  {Preconditions:} A report in the state {PendingVerification} after Mark as Solved.
 
@@ -1003,7 +1003,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 5 - Client-side submission validation}
+\subsubsection*{Scenario 5 - Client-side submission validation}
  {Role:} Citizen\\
  {Preconditions:} Logged in citizen ready to submit a report. 
  Citizen logged in at {/report}.
@@ -1059,7 +1059,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 6 - AI moderation rejection}
+\subsubsection*{Scenario 6 - AI moderation rejection}
  {Role:} Citizen \\
  {Preconditions:} Logged in citizen logged ready to submit a report.
 
@@ -1099,7 +1099,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 7 - Similar report detection}
+\subsubsection*{Scenario 7 - Similar report detection}
  {Role:} Citizen \\
  {Preconditions:} A logged in citizen and a recently submitted report with a known location and category. 
 
@@ -1128,7 +1128,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
           \label{fig:me2e-similar-report-preview}
 \end{figure}
 
-\subsubsection{Scenario 8 - Double vote prevention}
+\subsubsection*{Scenario 8 - Double vote prevention}
  {Role:} Citizen \\
  {Preconditions:} A report in an active voting phase(PendingVerification, PendingValidation, PendingRejectionReview) and a citizen who has already voted
 
@@ -1153,7 +1153,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \subsection{Emergency Report Submission Flows}
 
-\subsubsection{Scenario 1 - Emergency report submission}
+\subsubsection*{Scenario 1 - Emergency report submission}
 \label{e2e:emergency-report}
  {Role:} Citizen\\
  {Preconditions:} A loggged in citizen who is not under emergency report guideline violation penalty. 
@@ -1186,7 +1186,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 2 - Authority resolve emergency}
+\subsubsection*{Scenario 2 - Authority resolve emergency}
 
  {Role:} Authority worker \\
  {Preconditions:} The emergency report in the state Open submitted in test~\ref{e2e:emergency-report}.
@@ -1235,7 +1235,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-\subsubsection{Scenario 3 - Reclassify false emergency}
+\subsubsection*{Scenario 3 - Reclassify false emergency}
 \label{e2e:false-emergency-report}
  {Role:} Authority worker \\
  {Preconditions:} A emergency report that should be treated as standard report. 
@@ -1257,7 +1257,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{figure}
 
 
-% \subsubsection{Scenario 4 - Emergency penalty enforcement }
+% \subsubsection**{Scenario 4 - Emergency penalty enforcement }
 %  {Role:} Penalized citizen \\
 %  {Preconditions:} The citizen who submitted false emergency report in test~\ref{e2e:false-emergency-report}, should be under 30-day penalty. 
 
@@ -1271,7 +1271,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 % \noindent {Screenshots:} Figure~\ref{fig:m4-4-penalty}.
 
-% \subsubsection{Scenario 5 - Emergency report without consent}
+% \subsubsection**{Scenario 5 - Emergency report without consent}
 %  {Role:} Citizen \\
 %  {Preconditions:}  None
 
@@ -1288,7 +1288,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \subsection{Opinion Polling}
 
-\subsubsection{Scenario 1 - Authority creates a poll}
+\subsubsection*{Scenario 1 - Authority creates a poll}
 \label{e2e:create-opinion-poll}
  {Role:} Authority worker, then citizen \\
  {Preconditions:} Already logged in authority worker. 
@@ -1328,7 +1328,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \label{fig:m5-1-visible-in-citizen-side}
 \end{figure}
 
-\subsubsection{Scenario 2 - Citizens vote and authority finalizes}
+\subsubsection*{Scenario 2 - Citizens vote and authority finalizes}
  {Role:} Citizens, then authority \\
  {Preconditions:} Active poll created test~\ref{e2e:create-opinion-poll}.
 
@@ -1359,7 +1359,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \subsection{Super Admin Governance}
 
-\subsubsection{Scenario 1 - Multisig proposal and majority approval}
+\subsubsection*{Scenario 1 - Multisig proposal and majority approval}
  {Role:} Super Admins \\
  {Preconditions:} Three Super Admin wallets and a wallet address to be added to the authority roster. 
 
@@ -1425,54 +1425,54 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 % \subsection{Alternate and Negative-Path Screenshots}
 
-% \subsubsection{Scenario 1 - Community rejection at validation}
+% \subsubsection**{Scenario 1 - Community rejection at validation}
 
 
 
-% \subsubsection{Scenario 2 - Authority reject upheld by community}
+% \subsubsection**{Scenario 2 - Authority reject upheld by community}
 
 
-% \subsubsection{Scenario 3 - Authority reject appealed, report reopened}
-
-
-
-% \subsubsection{Scenario 4 - Verification reject reopens the report}
-
-% \subsubsection{Scenario 5 - Client-side submission validation}
+% \subsubsection**{Scenario 3 - Authority reject appealed, report reopened}
 
 
 
+% \subsubsection**{Scenario 4 - Verification reject reopens the report}
+
+% \subsubsection**{Scenario 5 - Client-side submission validation}
 
 
-% \subsubsection{Scenario 6 - AI moderation rejection}
 
 
 
-% \subsubsection{Scenario 7 - Similar report detection}
+% \subsubsection**{Scenario 6 - AI moderation rejection}
 
 
-% \subsubsection{Scenario 8 - Double vote prevention}
+
+% \subsubsection**{Scenario 7 - Similar report detection}
+
+
+% \subsubsection**{Scenario 8 - Double vote prevention}
 
 
 % \subsection{Emergency Screenshots}
 
-% \subsubsection{Scenario 1 - Emergency report submission}
+% \subsubsection**{Scenario 1 - Emergency report submission}
 
 
-% \subsubsection{Scenario 2 - Authority resolve emergency}
-
-
-
+% \subsubsection**{Scenario 2 - Authority resolve emergency}
 
 
 
-% \subsubsection{Scenario 3 - Reclassify false emergency}
 
 
 
-% \subsubsection{Scenario 4 - Emergency penalty enforcement }
+% \subsubsection**{Scenario 3 - Reclassify false emergency}
 
-% \subsubsection{Scenario 5 - Emergency report without consent}
+
+
+% \subsubsection**{Scenario 4 - Emergency penalty enforcement }
+
+% \subsubsection**{Scenario 5 - Emergency report without consent}
 
 
 % \begin{figure}[H]
@@ -1526,15 +1526,15 @@ The scenarios below covers both citizen workflows and authority workflows throug
 % \subsection{Polling Screenshots}
 
 
-% \subsubsection{Scenario 1 - Authority creates a poll}
+% \subsubsection**{Scenario 1 - Authority creates a poll}
 
 
 
-% \subsubsection{Scenario 2 - Citizens vote and authority finalizes}
+% \subsubsection**{Scenario 2 - Citizens vote and authority finalizes}
 
 
 
 % \subsection{Super Admin Screenshots}
 
-% \subsubsection{Scenario 1 - Multisig proposal and majority approval}
+% \subsubsection**{Scenario 1 - Multisig proposal and majority approval}
 
