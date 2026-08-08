@@ -73,7 +73,7 @@ Table~\ref{tab:performance-snapshot} restates the key measurements from the Chap
 
 The measurements in Table~\ref{tab:performance-snapshot} line up with the choices made in Chapters~\ref{ch:architecture} and~\ref{ch:implementation}. Citizens were never meant to wait on a mined block before moving on. The relayer pays gas, accepts the payload, and returns while BullMQ finishes moderation, \ac{IPFS} upload, and anchoring behind the scenes with \ac{SSE} progress events.
 
-On the network itself, the average Clique interval sat at five seconds and submit-to-confirm latency stayed under six, which is short enough that those background steps feel responsive once they start. Gas was also lower for the actions that repeat as a case moves forward. castValidationVote() and batched window finalization cost far less than an initial submitReport(), so community checkpoints and cron-driven closes do not dominate operating cost as volume grows.
+On the network itself, the average Clique interval sat at five seconds and submit-to-confirm latency stayed under six, which is short enough that those background steps feel responsive once they start. The average latency of 5{,}017\,ms combined with backend relayer mechanism gives a good user experience that is indistinguishable from traditional web application, despite the underline blockchain. Gas was also lower for the actions that repeat as a case moves forward. castValidationVote() and batched window finalization cost far less than an initial submitReport(), so community checkpoints and cron-driven closes do not dominate operating cost as volume grows.
 
 \section{Achievement of Project Objectives}
 \label{sec:objective-assessment}
@@ -195,11 +195,11 @@ The recorded results support the following strengths of the implemented design.
     \item Citizens interact through a normal web \ac{UI}, and the relayer signs and pays for chain transactions so they do not need their own ETH or MetaMask for everyday reporting.
     \item BullMQ runs moderation, \ac{IPFS} upload, and anchoring as separate steps, and \ac{SSE} streams status back to the browser instead of leaving the user on a blank wait with no detail.
     \item Submission, validation, and poll nullifiers are checked on-chain, and pseudonyms hide wallet addresses while still letting the contracts enforce one action per citizen per phase, as the Security suite demonstrated.
-    \item Classifiers run before anything is written to an immutable ledger, which avoids the problem noted in Chapter~\ref{ch:introduction} of harmful text or images becoming impossible to remove once stored on-chain.
+    \item Use of AI moderation before anything is written to an immutable ledger, which avoids the problem ``toxic immutability'' noted in Chapter~\ref{ch:introduction} is a proactive solution to the ethical risks of permanent harmful content on-chain.
     \item Emergency reporting and multisig authority management sit in their own contracts, so urgent cases and worker provisioning are not bolted onto the standard report lifecycle as afterthoughts.
 \end{itemize}
 
-The points above do not rest on any one technique in isolation. They come from wiring together a permissioned \ac{PoA} network, relayer-paid submissions, off-chain \ac{IPFS} storage, ticket-based pseudonyms, and pre-chain moderation, then showing that the full path works in the tests recorded in Chapter~\ref{ch:testing}.
+The points above do not rest on any one technique in isolation. They come from wiring together a permissioned \ac{PoA} network, relayer-paid submissions, off-chain \ac{IPFS} storage, ticket-based pseudonyms, and off-chain moderation, then showing that the full path works in the tests recorded in Chapter~\ref{ch:testing}.
 
 \section{Scope for Future Enhancement}
 \label{sec:results-scope}
