@@ -734,12 +734,12 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{enumerate}
 \noindent {Expected result:} State of the report becomes Resolved.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m4-2-resolved}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-emergency-report-open-authority}, Figure.~\ref{fig:me2e-ereport-start-resolved}, and Figure.~\ref{fig:me2e-emergency-report-state-resolved}.
 
 \subsubsection{Scenario 3 - Reclassify false emergency}
 \label{e2e:false-emergency-report}
  {Role:} Authority worker \\
- {Preconditions:} A emergency report that should be treated as standar report. 
+ {Preconditions:} A emergency report that should be treated as standard report. 
 
 \begin{enumerate}
     \item Open the false emergency report, choose reclassify option, and confirm.
@@ -1337,8 +1337,45 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 \end{figure}
 
 
-
 \subsubsection{Scenario 2 - Authority resolve emergency}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/ereport-under-authority.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Authority worker locating Open emergency report}
+          \label{fig:me2e-emergency-report-open-authority}
+\end{figure}
+
+\begin{figure}[H]
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/emergency/start-work-on-ereport.png}
+          \caption{Authority worker starts working on an emergency report}
+         \label{fig:me2e-ereprot-start-work}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/emergency/resolve-ereport.png}
+        \caption{Authority worker marks an emergency report as resolved}
+          \label{fig:me2e-ereport-resolved}
+     \end{subfigure}
+        \caption{Emergency report resolution by authority}
+        \label{fig:me2e-ereport-start-resolved}         
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/ereport-state-changed-to-resolved.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Emergency report state transitioned to Resolved after authority marks it as resolved}
+          \label{fig:me2e-emergency-report-state-resolved}
+\end{figure}
+
+
+
+
 
 \subsubsection{Scenario 3 - Reclassify false emergency}
 
