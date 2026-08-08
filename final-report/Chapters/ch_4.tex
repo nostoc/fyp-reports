@@ -131,7 +131,7 @@ Authorized relayers submit reports and votes, and authorized authorities start w
 
 The EmergencyReporting contract stores urgent reports separately. This keeps the logic focused on the fast-track workflow rather than sharing the Reporting contract's community-validation mechanism. A valid emergency submission is created directly as Open, community validation is not performed first. The four emergency statuses are Open, InProgress, Resolved, and Reclassified.
 
-An emergency can be resolved from Open or InProgress, since an emergency may already be resolved by the time an authority formally starts work on it. A false emergency can be reclassified. When reclassification is recorded, the citizen pseudonym is blocked from new emergency submissions for 30 days, which is implemented by computing the unlock time according to Equation~\ref{eq:emergency-penalty}.
+An emergency can be resolved from Open or InProgress, since an emergency may already be resolved by the time an authority formally starts work on it. A false emergency can be reclassified. When reclassification is recorded, the citizen pseudonym is blocked from new emergency submissions for 30 days, which is implemented by computing the unlock time according to Eq.~\ref{eq:emergency-penalty}.
 
 \begin{equation}
     T_{\mathrm{unlock}} = T_{\mathrm{block}} + 30 \times 24 \times 60 \times 60,
