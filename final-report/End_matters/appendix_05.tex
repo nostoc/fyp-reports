@@ -610,7 +610,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Expected result:} Report state transitioned from PendingVerification $\rightarrow$ CommunityRejected.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m3-1-rejected}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-reject-validation} and Figure.~\ref{fig:me2e-community-rejected-report}.
 
 \subsubsection{Scenario 2 - Authority reject upheld by community}
  {Role:} Authority, then citizens. \\
@@ -623,7 +623,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{enumerate}
 \noindent {Expected result:} Status of the report transitioned from Open/InProgress $\rightarrow$ PendingRejectionReview $\rightarrow$ Closed.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m3-2-review}, Fig.~\ref{fig:m3-2-closed}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-reject-open-report}, Figure.~\ref{fig:me2e-report-state-transition-after-reject}, and Figure.~\ref{fig:me2e-citizen-uphold-reject}, and Figure.~\ref{fig:me2e-uphold-closed-report}.
 
 \subsubsection{Scenario 3 - Authority reject appealed, report reopened}
  {Role:} Authority, then citizens \\
@@ -637,7 +637,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Expected result:} Report state transition from Open/InProgress $\rightarrow$ PendingRejectionReview $\rightarrow$ Reopened $\rightarrow$ InProgress.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m3-3-reopened}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-authority-reject-issue}, Figure.~\ref{fig:me2e-pending-rejection-to-open}, Figure.~\ref{fig:me2e-citizen-appealing}, and Figure.~\ref{fig:me2e-reopened-report}.
 
 \subsubsection{Scenario 4 - Verification reject reopens the report}
  {Role:} Citizens\\
@@ -649,12 +649,12 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{enumerate}
 \noindent {Expected result:} Report state becomes {Reopened}.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m3-4-verif-reopen}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-citizen-reject-verification}, and Figure.~\ref{fig:me2e-reopened-report-verification} 
 
 \subsubsection{Scenario 5 - Client-side submission validation}
  {Role:} Citizen\\
  {Preconditions:} Logged in citizen ready to submit a report. 
- Citizen logged in at \texttt{/report}.
+ Citizen logged in at {/report}.
 
 \begin{enumerate}
     \item Try to submit a report with empty description. 
@@ -665,7 +665,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \end{enumerate}
 \noindent {Expected result:} Each invalid report is rejected with a clear validation error. 
 
-\noindent {Screenshots:} Fig.~\ref{fig:m3-5-validation}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-client-side-validation-errors-1}, and Figure.~\ref{fig:me2e-client-side-validation-errors-2}.
 
 \subsubsection{Scenario 6 - AI moderation rejection}
  {Role:} Citizen \\
@@ -693,7 +693,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Screenshots:} Fig.~\ref{fig:m3-7-duplicate}.
 
-\subsubsection{Scenario 8 - Double vote}
+\subsubsection{Scenario 8 - Double vote prevention}
  {Role:} Citizen \\
  {Preconditions:} A report in an active voting phase(PendingVerification, PendingValidation, PendingRejectionReview) and a citizen who has already voted
 
@@ -706,140 +706,161 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Screenshots:} Fig.~\ref{fig:m3-8-double-vote}.
 
-\subsection{Emergency Flows}
+\subsection{Emergency Report Submission Flows}
 
-\subsubsection{Scenario M4.1 --- Emergency report submission (happy path).}
- {Role:} Citizen. \\
- {Preconditions:} Citizen logged in; citizen is not under an emergency-channel penalty.
+\subsubsection{Scenario 1 - Emergency report submission}
+\label{e2e:emergency-report}
+ {Role:} Citizen\\
+ {Preconditions:} A loggged in citizen who is not under emergency report guideline violation penalty.emergency-channel penalty.
 
 \begin{enumerate}
-    \item On \texttt{/report}, enable the Urgent/Emergency toggle.
-    \item Confirm the emergency consent modal.
-    \item Complete category, description, location, and optional images, then submit.
-    \item Track notifications through AI, IPFS, and chain stages.
+    \item Navigate to report submission form, select report category, description, images, and location. 
+    \item Enable urgent/Emergency Report toggle, accept the emergency consent modal, and submit. 
+    \item Track the progress of the report. 
 \end{enumerate}
-\noindent {Expected result:} The report is created on the emergency path with status \texttt{Open} immediately (validation skipped).
+
+\noindent {Expected result:} Report is displaying as an emergency report with the state Open.(PendingValidation state should be skipped)
 
 \noindent {Screenshots:} Fig.~\ref{fig:m4-1-consent}, Fig.~\ref{fig:m4-1-open}.
 
-\subsubsection{Scenario M4.2 --- Authority resolve emergency.}
- {Role:} Authority worker. \\
- {Preconditions:} An emergency report in \texttt{Open} (from M4.1).
+\subsubsection{Scenario 2 - Authority resolve emergency}
+
+ {Role:} Authority worker \\
+ {Preconditions:} The emergency report in the state Open submitted in test~\ref{e2e:emergency-report}.
 
 \begin{enumerate}
-    \item Open the Authority Dashboard Emergency tab and open the report.
-    \item Optionally Start Work (\texttt{InProgress}), then Resolve; or Resolve directly from \texttt{Open}.
+    \item Locate the emergency report tab and open the report in detailed view. 
+    \item Start working on the report, then resolve.
+    \item Verify the report state transition to Resolved.
 \end{enumerate}
-\noindent {Expected result:} Status becomes \texttt{Resolved}.
+\noindent {Expected result:} State of the report becomes Resolved.
+
+Status becomes \texttt{Resolved}.
 
 \noindent {Screenshots:} Fig.~\ref{fig:m4-2-resolved}.
 
-\subsubsection{Scenario M4.3 --- Reclassify false emergency.}
- {Role:} Authority worker. \\
- {Preconditions:} A separate emergency report that should be treated as non-urgent abuse of the channel.
+\subsubsection{Scenario 3 - Reclassify false emergency}
+\label{e2e:false-emergency-report}
+ {Role:} Authority worker \\
+ {Preconditions:} A emergency report that should be treated as standar report. 
 
 \begin{enumerate}
-    \item On the emergency report detail, choose Downgrade / Reclassify (false emergency) and confirm.
+    \item Open the false emergency report, choose reclassify option, and confirm.
 \end{enumerate}
-\noindent {Expected result:} Status becomes \texttt{Reclassified}; the reporting citizen receives a 30-day lock on the emergency channel.
+
+\noindent {Expected result:} State of the report becomes Reclassified. The citizen receives a 30-day lock on the emergency channel.
 
 \noindent {Screenshots:} Fig.~\ref{fig:m4-3-reclassified}.
 
-\subsubsection{Scenario M4.4 --- Emergency penalty enforcement (negative path).}
- {Role:} Penalized citizen. \\
- {Preconditions:} Citizen from M4.3 is within the 30-day emergency lock.
+\subsubsection{Scenario 4 - Emergency penalty enforcement }
+ {Role:} Penalized citizen \\
+ {Preconditions:} The citizen who submitted false emergency report in test~\ref{e2e:false-emergency-report}, should be under 30-day penalty. 
 
 \begin{enumerate}
     \item Attempt to submit another emergency report.
-    \item Submit a standard (non-emergency) report with the same account.
+    \item Attempt to submit a standard report.
+    \item Verify that another emergency report cannot be submitted, but a standard report is still accepted. 
 \end{enumerate}
-\noindent {Expected result:} The second emergency submission is blocked; the standard report is still accepted through the normal pipeline.
+
+\noindent {Expected result:} The emergency report submission is blocked, standard report submission is valid. 
 
 \noindent {Screenshots:} Fig.~\ref{fig:m4-4-penalty}.
 
-\subsubsection{Scenario M4.5 --- Emergency without consent (negative path).}
- {Role:} Citizen. \\
- {Preconditions:} Citizen on \texttt{/report}.
+\subsubsection{Scenario 5 - Emergency report without consent}
+ {Role:} Citizen \\
+ {Preconditions:}  None
 
 \begin{enumerate}
-    \item Enable the Emergency toggle, then dismiss or cancel the consent modal without confirming.
-    \item Attempt to submit without having accepted consent.
+    \item Nagivate to report submission form, complete all details and enable emergency toggle, and submit. 
+    \item Then cancel the consent modal without confirming. 
+    \item Attempt to submit the report without accepting consent.
 \end{enumerate}
-\noindent {Expected result:} Emergency submission does not proceed without consent.
+
+\noindent {Expected result:} Emergency report submission does not proceed without consent. 
+
 
 \noindent {Screenshots:} Fig.~\ref{fig:m4-5-cancel-consent}.
 
 \subsection{Opinion Polling}
 
-\subsubsection{Scenario M5.1 --- Authority creates a poll.}
- {Role:} Authority worker. \\
- {Preconditions:} Authority wallet connected.
+\subsubsection{Scenario 1 - Authority creates a poll}
+\label{e2e:create-opinion-poll}
+ {Role:} Authority worker, then citizen \\
+ {Preconditions:} Already logged in authority worker. 
 
 \begin{enumerate}
-    \item Navigate to \texttt{/polls/create}.
-    \item Enter poll metadata (question, options / true--false as applicable) and submit.
-    \item Confirm metadata is uploaded and the on-chain poll is created.
-    \item Verify the poll appears on \texttt{/polls} or the feed for citizens.
+    \item Navigate to poll creation form. 
+    \item Enter poll title, poll description, select poll type as Yes/No, select voting window deadline, attach images if any, and submit. 
+    \item COnfirm the poll is created and appears in the Authority Polls tab.
+    \item Log in as a citizen and verify the poll appears in the citizen poll tab.
+    
 \end{enumerate}
-\noindent {Expected result:} Poll is visible to citizens and listed under the Authority Polls tab.
+\noindent {Expected result:} Poll is visible to both citizen and authority.
 
 \noindent {Screenshots:} Fig.~\ref{fig:m5-1-create}, Fig.~\ref{fig:m5-1-list}.
 
-\subsubsection{Scenario M5.2 --- Citizens vote and authority finalizes.}
- {Role:} Citizens, then authority.
- {Preconditions:} Active poll from M5.1 within its deadline.
+\subsubsection{Scenario 2 - Citizens vote and authority finalizes}
+ {Role:} Citizens, then authority \\
+ {Preconditions:} Active poll created test~\ref{e2e:create-opinion-poll}.
 
 \begin{enumerate}
-    \item As two or more citizens, open the poll and cast a vote.
-    \item As authority, finalize the poll from the Admin Polls tab when ready.
+    \item Log in several citizens and cast votes on the poll. 
+    \item Log in as authority and finalize the poll after voting is closed. 
 \end{enumerate}
-\noindent {Expected result:} Votes are recorded via the relayer; finalized poll no longer accepts new votes and shows a completed state.
+
+\noindent {Expected result:} Poll results are recorded and displayed.
+
 \noindent {Screenshots:} Fig.~\ref{fig:m5-2-vote}, Fig.~\ref{fig:m5-2-finalized}.
 
-\subsubsection{Scenario M5.3 --- Poll access and double-vote controls (negative path).}
- {Role:} Citizen. \\
- {Preconditions:} Active poll; citizen already voted once.
+\subsubsection{Scenario 3 - Double-vote controls}
+ {Role:} Citizen \\
+ {Preconditions:} Active poll and a citizen already voted once.
 
 \begin{enumerate}
-    \item As a citizen, navigate to \texttt{/polls/create} and confirm access is denied.
-    \item Attempt a second vote on the same poll with the same citizen.
+    \item Attempt to vote again on the same poll with the same citizen.
 \end{enumerate}
-\noindent {Expected result:} Citizens cannot create official polls; double vote is rejected (nullifier reuse).
+
+\noindent {Expected result:} Double voting is rejected.
 
 \noindent {Screenshots:} Fig.~\ref{fig:m5-3-denied}.
 
 \subsection{Super Admin Governance}
 
-\subsubsection{Scenario M6.1 --- Multisig proposal and majority approval (happy path).}
- {Role:} Super Admins. \\
- {Preconditions:} At least two Super Admin wallets; useful first action is setting a short voting-window duration for later M2/M3 scenarios.
+\subsubsection{Scenario 1 - Multisig proposal and majority approval}
+ {Role:} Super Admins \\
+ {Preconditions:} Three Super Admin wallets and a wallet address to be added to the authority roster. 
 
 \begin{enumerate}
-    \item As Super Admin~A, open \texttt{/super-admin} and submit a proposal (for example set voting-window duration, or add/remove an authority).
-    \item Confirm the proposal appears as active and the submitter's vote is recorded.
-    \item As Super Admin~B, approve the same proposal until majority quorum $Q=\lfloor N/2\rfloor+1$ is reached.
-    \item Confirm execution and verify the on-chain configuration or roster change.
+    \item As Super Admin A, submit a proposal to add the new wallet address to the authority roster.
+    \item As Super Admin B, vote to approve the same proposal.
+    \item As Super Admin C, vote to approve the same proposal.
+    \item Observe the proposal execution after the majority approval is reached.
 \end{enumerate}
-\noindent {Expected result:} The change applies only after majority approval; the dashboard reflects the new config or roster.
+\noindent {Expected result:} The proposal is executed after receiving majority approval, and the new wallet address is added to the authority roster.
+
 
 \noindent {Screenshots:} Fig.~\ref{fig:m6-1-propose}, Fig.~\ref{fig:m6-1-executed}.
 
-\subsubsection{Scenario M6.2 --- Unilateral change and unauthorized access (negative path).}
- {Role:} Single Super Admin; then a non-Super Admin. \\
+\subsubsection{Scenario 2 - Unilateral change and unauthorized access}
+
+ {Role:} Single Super Admin,  then a non-Super Admin \\
  {Preconditions:} At least two Super Admins registered so quorum is greater than one.
 
 \begin{enumerate}
-    \item As a single Super Admin, submit a proposal and leave it without a second approval; confirm it is not executed.
-    \item As a citizen or ordinary authority wallet, navigate to \texttt{/super-admin}.
+    \item Log in as a Super Admin and submit a proposal to change voting config.
+    \item Observe that the proposal is not executed due to lack of quorum.
+    \item Log in using an authority wallet and attempt to access the Super Admin
+    \item Notice that access is denied to the Super Admin dashboard.
+    
 \end{enumerate}
-\noindent {Expected result:} Unilateral proposals do not execute; non--Super Admin users are denied the Super Admin dashboard.
+\noindent {Expected result:} Unilateral proposals do not execute due to lack of quorum. Non-Super Admin users are denied access to the Super Admin dashboard.
 
 \noindent {Screenshots:} Fig.~\ref{fig:m6-2-denied}.
 
 \section{Testing Screenshots}
 \label{sec:testing-screenshots}
 
-The figures below correspond to the manual scenarios in Section~\ref{sec:manual-e2e}. Replace each placeholder box with a captured screenshot by placing the image under \texttt{Images/Appendix/} and uncommenting the matching \texttt{\textbackslash includegraphics} line.
+The figures below correspond to the manual scenarios in Section~\ref{sec:manual-e2e}. 
 
 \subsection{Authentication Screenshots}
 
@@ -870,32 +891,6 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
         \label{fig:authentication}
 \end{figure}
 
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/register.png}
-%     %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
-%     \caption{Registration screen of government identity simulator}
-%     \label{fig:me2e-register}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/register-success.png}
-%    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
-%     \caption{Successfull registration of a citizen via government identity simulator}
-%     \label{fig:me2e-register-success}
-% \end{figure}
-
-
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/login-screen.png}
-%     %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
-%     \caption{Citizen login to the DApp}
-%     \label{fig:me2e-login}
-% \end{figure}
 
 \begin{figure}[H]
     \centering
@@ -987,7 +982,6 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
         \label{fig:sse-progress}
 \end{figure}
 
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/standard-report-detail-page.png}
@@ -1044,21 +1038,26 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
     \label{fig:me2e-inprogress}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/post-progress-update.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority worker adding a progress update to the report}
-    \label{fig:me2e-post-progress-update}
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/post-progress-update.png}
+          \caption{Authority worker adding a progress update to the report}
+         \label{fig:me2e-post-progress-update}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/markasresolved.png}
+        \caption{Authority worker marking a report as resolved}
+          \label{fig:me2e-markasresolved}
+     \end{subfigure}
+        \caption{Authority worker actions on a report}
+        \label{fig:authority-worker-actions}    
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/markasresolved.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority worker marking a report as resolved}
-    \label{fig:me2e-markasresolved}
-\end{figure}
+
 
 \begin{figure}[H]
     \centering
@@ -1111,60 +1110,162 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 
 
-
-
-
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-2-open.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.2-b: Open status]\vspace{3.5cm}}}
-%     \caption{Report status after validation finalization (\texttt{Open}) (scenario M2.2)}
-%     \label{fig:m2-2-open}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-3-inprogress.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.3-a: InProgress after Start Work]\vspace{3.5cm}}}
-%     \caption{Authority Start Work moves the report to \texttt{InProgress} (scenario M2.3)}
-%     \label{fig:m2-3-inprogress}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-3-pending-verif.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.3-b: PendingVerification]\vspace{3.5cm}}}
-%     \caption{Report in \texttt{PendingVerification} after Mark as Solved (scenario M2.3)}
-%     \label{fig:m2-3-pending-verif}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-4-closed.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.4: Closed status]\vspace{3.5cm}}}
-%     \caption{Report closed after community verification accepts the resolution (scenario M2.4)}
-%     \label{fig:m2-4-closed}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-5-profile.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.5-a: Citizen profile]\vspace{3.5cm}}}
-%     \caption{Citizen profile showing pseudonym and tickets (scenario M2.5)}
-%     \label{fig:m2-5-profile}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m2-5-myreports.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M2.5-b: My reports]\vspace{3.5cm}}}
-%     \caption{My Reports list for the authenticated citizen (scenario M2.5)}
-%     \label{fig:m2-5-myreports}
-% \end{figure}
-
 \subsection{Alternate and Negative-Path Screenshots}
 
+\subsubsection{Scenario 1 - Community rejection at validation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reject-validation.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Citizen votes to reject a report during PendingValidation stage}
+    \label{fig:me2e-reject-validation}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/community-rejected-report.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transitioned to CommunityRejected after voting window expires}
+    \label{fig:me2e-community-rejected-report}
+\end{figure}
+
+\subsubsection{Scenario 2 - Authority reject upheld by community}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reject-open-report-authority.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority rejects an open report}
+    \label{fig:me2e-reject-open-report}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/report-state-transition-after-reject.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state updated to PendingRejectionReview after authority rejects it}
+    \label{fig:me2e-report-state-transition-after-reject}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-uphold-reject.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Citizen upholds the authority's rejection of a report}
+    \label{fig:me2e-citizen-uphold-reject}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/uphold-closed-report.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report closed after community upholds the authority rejection}
+    \label{fig:me2e-uphold-closed-report}
+\end{figure}
+
+\subsubsection{Scenario 3 - Authority reject appealed, report reopened}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/authority-reject-issue.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority rejects a report and issues a rejection reason}
+    \label{fig:me2e-authority-reject-issue}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/pending-rejection-to-open.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transition from Open to PendingRejectionReview}
+    \label{fig:me2e-pending-rejection-to-open}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-appealing.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Citizen appealing a rejected report by casting downvotes}
+    \label{fig:me2e-citizen-appealing}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reopened-report.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transitioned to Reopened after community appeals the rejection}
+    \label{fig:me2e-reopened-report}
+\end{figure}
+
+\subsubsection{Scenario 4 - Verification reject reopens the report}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-reject-verification.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Citizens vote to reject a report during PendingVerification stage}
+    \label{fig:me2e-citizen-reject-verification}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reopened-after-reject-pending-verification.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transitioned to Reopened after community rejects the resolution during PendingVerification stage}
+    \label{fig:me2e-reopened-report-verification}
+\end{figure}
+
+\subsubsection{Scenario 5 - Client-side submission validation}
+
+
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/description-error.png}
+          \caption{Client side validation error for empty description}
+         \label{fig:me2e-description-error}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/location-error.png}
+        \caption{Client side validation error for empty location}
+          \label{fig:me2e-location-error}
+     \end{subfigure}
+        \caption{Client side validation errors for description and location fields during report submission}
+        \label{fig:me2e-client-side-validation-errors-1}    
+\end{figure}
+
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/description-1000-char-limit.png}
+          \caption{Client side validation error for description exceeding 1000 characters}
+         \label{fig:me2e-description-limit-error}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/support-only-5 images.png}
+        \caption{UI only supports 5 images, image uploading widget is no longer visible}
+          \label{fig:me2e-image-error}
+     \end{subfigure}
+        \caption{Client side validation errors for description exceeding 1000 characters and image upload limit during report submission}
+        \label{fig:me2e-client-side-validation-errors-2}    
+\end{figure}
+
+
+
+\subsubsection{Scenario 6 - AI moderation rejection}
+
+\subsubsection{Scenario 7 - Similar report detection}
+
+\subsubsection{Scenario 8 - Double vote prevention}
 % \begin{figure}[H]
 %     \centering
 %     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-1-rejected.png}
@@ -1239,6 +1340,17 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 \subsection{Emergency Screenshots}
 
+\subsubsection{Scenario 1 - Emergency report submission}
+
+\subsubsection{Scenario 2 - Authority resolve emergency}
+
+\subsubsection{Scenario 3 - Reclassify false emergency}
+
+\subsubsection{Scenario 4 - Emergency penalty enforcement }
+
+\subsubsection{Scenario 5 - Emergency report without consent}
+
+
 % \begin{figure}[H]
 %     \centering
 %     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m4-1-consent.png}
@@ -1289,6 +1401,12 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 \subsection{Polling Screenshots}
 
+
+\subsubsection{Scenario 1 - Authority creates a poll}
+
+\subsubsection{Scenario 2 - Citizens vote and authority finalizes}
+
+\subsubsection{Scenario 3 - Double-vote controls}
 % \begin{figure}[H]
 %     \centering
 %     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m5-1-create.png}
@@ -1330,6 +1448,10 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 % \end{figure}
 
 \subsection{Super Admin Screenshots}
+
+\subsubsection{Scenario 1 - Multisig proposal and majority approval}
+
+\subsubsection{Scenario 2 - Unilateral change and unauthorized access}
 
 % \begin{figure}[H]
 %     \centering
