@@ -54,7 +54,7 @@ The main design goals and how they are achieved are listed in Table~\ref{tab:req
 
 A hybrid on-chain and off-chain design is used because the two environments are capable of different tasks. The blockchain is well suited to recording facts that must be trusted by every participant and never silently altered, such as the status of a report or a vote tally. However, writing large media files or running machine learning inference directly on-chain would be time consuming and expensive to replicate across every node. The system offers both auditability and practical performance by keeping heavy work off-chain, while anchoring only its outcome and a verifiable hash on-chain. 
 \begin{enumerate}
-    \item On-Chain Environment:  Executed on a private, permissioned \ac{PoA} network. It maintains minimal, immutable state variables. It includes report metadata, opinion polling metadata, lifecycle state transitions, cryptographic content hashes, single-use ticket nullifiers,\ac{RBAC} configurations, multi-signature governance proposals, and community voting tallies.
+    \item On-Chain Environment:  Executed on a private, permissioned \ac{PoA} network. It maintains minimal, immutable state variables. It includes report metadata, opinion polling metadata, lifecycle state transitions, cryptographic content hashes, single-use ticket nullifiers, \ac{RBAC} configurations, multi-signature governance proposals, and community voting tallies.
     \item Off-Chain Environment: Comprises data-intensive and computationally heavy microservices, including multimedia storage on \ac{IPFS}, automated \ac{AI} content moderation, gasless transaction orchestration via a NestJS middleware relayer, automated wallet funding, and scheduled background cron jobs for voting window finalization.
 \end{enumerate}
 
@@ -86,7 +86,7 @@ The layered architecture diagram is shown in Figure~\ref{fig:layered-architectur
         \hline
         AI moderation & Safety, spam, and civic relevance services produce off-chain decisions. A fail-closed aggregator combines their results. \\
         \hline
-        IPFS storage & One complaint JSON envelope, including metadata and base64 images, is stored under one content identifier. \\
+        \ac{IPFS} storage & One complaint \ac{JSON} envelope, including metadata and base64 images, is stored under one content identifier. \\
         \hline
         Blockchain & Four contracts enforce reports, emergencies, multisig governance, and opinion polls on a private Geth Clique \ac{PoA} network. \\
         
@@ -134,7 +134,7 @@ These boundaries show that blockchain integrity does not remove trust from ident
 \section{Privacy and Security Design}
 \label{sec:privacy-security-design}
 
-Citizen identity is decoupled from the public report record through a government identity check. A government ID and password are verified by the identity simulator, and government-signed, single-use ticket IDs are issued only after this check succeeds. Each ticket behaves as a nullifier. The nullifier gives evidence that one unit of participation was issued to an eligible citizen, and the contract's nullifier mapping stops that same ticket from being used a second time. This ticket-based approach is used because it lets the prototype enforce single-action-per-eligible-citizen immediately using well-understood signature and mapping checks. This approach preserves the possibility of introducing a stronger anonymous-credential or \ac{ZKP}  system at a later stage, without requiring to modify how the relayer, the contracts, or the voting logic consume tickets.
+Citizen identity is decoupled from the public report record through a government identity check. A government ID and password are verified by the identity simulator, and government-signed, single-use ticket IDs are issued only after this check succeeds. Each ticket behaves as a nullifier. The nullifier gives evidence that one unit of participation was issued to an eligible citizen, and the contract's nullifier mapping stops that same ticket from being used a second time. This ticket-based approach is used because it lets the prototype enforce single-action-per-eligible-citizen immediately using well-understood signature and mapping checks. This approach preserves the possibility of introducing a stronger anonymous-credential or \ac{ZKP}  system at a later stage, without requiring how the relayer, the contracts, or the voting logic consume tickets.
 
 % \begin{figure}[!htb]
 %     \centering
@@ -228,7 +228,7 @@ The lifecycle of a standard report is illustrated in Figure~\ref{fig:report-life
 
 Two separate community checkpoints are built into this lifecycle on purpose. The first, PendingValidation, protects authority time by filtering out spam, duplicates, and clearly invalid reports before any government worker is asked to act on them. The second, PendingVerification, protects citizens by making sure an authority's claim of a fix is independently confirmed by the people affected before a report is closed, rather than letting an authority close its own work unchecked. Together, the two checkpoints ensure that neither the community nor the authority can unilaterally decide that an issue is resolved.
 
-Voting window for a newly visible report runs for six hours by default. That length was chosen so cases do not sit open indefinitely, yet people who check the app during a normal working day still have time to respond. Government operators can adjust both the voting method and the window through configuration settings, so a live installation can lengthen or shorten the period without redeploying smart contracts. Every transition still has to pass the contract's own checks, and each step emits an event that can be reviewed later.
+The voting window for a newly visible report runs for six hours by default. That length was chosen so cases do not sit open indefinitely, yet people who check the app during a normal working day still have time to respond. Government operators can adjust both the voting method and the window through configuration settings, so a live installation can lengthen or shorten the period without redeploying smart contracts. Every transition still has to pass the contract's own checks, and each step emits an event that can be reviewed later.
 
 \section{Standard Report Workflow}
 \label{sec:standard-report-workflow}
@@ -244,7 +244,7 @@ A standard report is processed as follows, and Figure~\ref{fig:report-submission
 
 \begin{enumerate}
     \item The citizen is checked by the identity simulator, and a signed single-use ticket is selected.
-    \item The dApp hashes the images, forms \(H_R\) from Eq.(\ref{eq:report-hash}), and signs it with the derived citizen wallet.
+    \item The \ac{DApp} hashes the images, forms \(H_R\) from Eq.(\ref{eq:report-hash}), and signs it with the derived citizen wallet.
     \item The relayer verifies the government ticket signature, uploaded image hashes, and citizen signature. A pseudonym is derived using Eq.(\ref{eq:pseudonym}).
     \item A BullMQ flow is created. AI moderation is run first, before any storage or blockchain cost is spent, so that rejected content does not consume IPFS or gas resources. If it is accepted, the processed report is uploaded to IPFS. The CID and hash values are then submitted to the Reporting contract.
     \item The report is created as PendingValidation. The single-use ticket ID is stored as a submission nullifier.
@@ -399,7 +399,7 @@ An authorized worker uses MetaMask to act on reports, as shown in Figure~\ref{fi
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.75\textwidth,keepaspectratio]{Images/Chapter 3/authority-workflow.png}
+    \includegraphics[width=0.7\textwidth,keepaspectratio]{Images/Chapter 3/authority-workflow.png}
     \caption{Authority action and multisig governance workflow}
     \label{fig:authority-workflow}
 \end{figure}
