@@ -175,7 +175,7 @@ Each image \(I_i\) is hashed by the client and checked by the relayer as given i
     \label{eq:image-hash}
 \end{equation}
 
-The ordered image hashes are joined as \(H_I=h_1\parallel h_2\parallel\cdots\parallel h_n\). Hashing every image individually and then combining the hashes in the order the citizen uploaded them means that a single signature over the final report hash can protect the whole submission. If any image were swapped, dropped, or reordered after the citizen signed, the recomputed hash would no longer match and the relayer would reject it. The signed report hash is given by Eq.(\ref{eq:report-hash}.
+The ordered image hashes are joined as \(H_I=h_1\parallel h_2\parallel\cdots\parallel h_n\). Hashing every image individually and then combining the hashes in the order the citizen uploaded them means that a single signature over the final report hash can protect the whole submission. If any image were swapped, dropped, or reordered after the citizen signed, the recomputed hash would no longer match and the relayer would reject it. The signed report hash is given by Eq.(\ref{eq:report-hash}).
 
 \begin{equation}
     H_R = \operatorname{keccak256}\left(d \parallel t \parallel H_I\right),
