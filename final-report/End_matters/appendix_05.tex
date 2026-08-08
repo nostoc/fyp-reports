@@ -1296,13 +1296,37 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \begin{enumerate}
     \item Navigate to poll creation form. 
     \item Enter poll title, poll description, select poll type as Yes/No, select voting window deadline, attach images if any, and submit. 
-    \item COnfirm the poll is created and appears in the Authority Polls tab.
+    \item Confirm the poll is created and appears in the Authority Polls tab.
     \item Log in as a citizen and verify the poll appears in the citizen poll tab.
     
 \end{enumerate}
 \noindent {Expected result:} Poll is visible to both citizen and authority.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m5-1-create}, Fig.~\ref{fig:m5-1-list}.
+\noindent {Screenshots:} Fig.~\ref{fig:m5-1-create}, Fig.~\ref{fig:m5-1-visible-in-authority-side}, Fig.~\ref{fig:m5-1-visible-in-citizen-side}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/opinion-poll/authority-poll-creation-ui.png}
+    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.1-a: Create poll form]\vspace{3.5cm}}}
+    \caption{Poll creation ui in authority dashboard}
+    \label{fig:m5-1-create}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/opinion-poll/newly-created-poll-visible-in-authority-side.png}
+    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.1-b: Poll visible in authority side]\vspace{3.5cm}}}
+    \caption{Poll visiblity in authority dashboard}
+    \label{fig:m5-1-visible-in-authority-side}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/opinion-poll/poll-visibility-for-citizen.png}
+    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.1-c: Poll visible in citizen side]\vspace{3.5cm}}}
+    \caption{Poll visiblity in citizen dashboard}
+    \label{fig:m5-1-visible-in-citizen-side}
+\end{figure}
 
 \subsubsection{Scenario 2 - Citizens vote and authority finalizes}
  {Role:} Citizens, then authority \\
@@ -1315,19 +1339,23 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Expected result:} Poll results are recorded and displayed.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m5-2-vote}, Fig.~\ref{fig:m5-2-finalized}.
+\noindent {Screenshots:} Fig.~\ref{fig:m5-2-poll-results}, Fig.~\ref{fig:m5-2-finalize-poll-enable-after-voting-closed}.
 
-\subsubsection{Scenario 3 - Double-vote controls}
- {Role:} Citizen \\
- {Preconditions:} Active poll and a citizen already voted once.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/opinion-poll/poll-results.png}
+    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.2-a: Poll results]\vspace{3.5cm}}}
+    \caption{Poll results after voting closed}
+    \label{fig:m5-2-poll-results}
+\end{figure}
 
-\begin{enumerate}
-    \item Attempt to vote again on the same poll with the same citizen.
-\end{enumerate}
-
-\noindent {Expected result:} Double voting is rejected.
-
-\noindent {Screenshots:} Fig.~\ref{fig:m5-3-denied}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/opinion-poll/Finalize-poll-is-enable-after-voting-closed.png}
+    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.2-a: Finalize poll is enable after voting closed]\vspace{3.5cm}}}
+    \caption{Finalize poll is enable after voting closed}
+    \label{fig:m5-2-finalize-poll-enable-after-voting-closed}
+\end{figure}
 
 \subsection{Super Admin Governance}
 
@@ -1344,23 +1372,31 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent {Expected result:} The proposal is executed after receiving majority approval, and the new wallet address is added to the authority roster.
 
 
-\noindent {Screenshots:} Fig.~\ref{fig:m6-1-propose}, Fig.~\ref{fig:m6-1-executed}.
+\noindent {Screenshots:} Fig.~\ref{fig:m6-1-propose}, Fig.~\ref{fig:m6-1-executed}, Fig.~\ref{fig:m6-1-visible-in-governance-members}.
 
-\subsubsection{Scenario 2 - Unilateral change and unauthorized access}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/sadmin/m6-1-propose.png}
+    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M6.1-a: Super Admin proposal]\vspace{3.5cm}}}
+    \caption{Super Admin proposal form in the dashboard}
+    \label{fig:m6-1-propose}
+\end{figure}
 
- {Role:} Single Super Admin,  then a non-Super Admin \\
- {Preconditions:} At least two Super Admins registered so quorum is greater than one.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/sadmin/m6-1-executed.png}
+    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M6.1-b: Executed proposal]\vspace{3.5cm}}}
+    \caption{Proposal executed after majority quorum}
+    \label{fig:m6-1-executed}
+\end{figure}
 
-\begin{enumerate}
-    \item Log in as a Super Admin and submit a proposal to change voting config.
-    \item Observe that the proposal is not executed due to lack of quorum.
-    \item Log in using an authority wallet and attempt to access the Super Admin
-    \item Notice that access is denied to the Super Admin dashboard.
-    
-\end{enumerate}
-\noindent {Expected result:} Unilateral proposals do not execute due to lack of quorum. Non-Super Admin users are denied access to the Super Admin dashboard.
-
-\noindent {Screenshots:} Fig.~\ref{fig:m6-2-denied}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/Appendix/me2e/sadmin/visible-in-governance-members.png}
+    % \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M6.1-c: Visible in Governance Members]\vspace{3.5cm}}}
+    \caption{Proposal visible in super admin dashboard}    
+    \label{fig:m6-1-visible-in-governance-members}
+\end{figure}
 
 % \section{Testing Screenshots}
 % \label{sec:testing-screenshots}
@@ -1487,80 +1523,18 @@ The scenarios below covers both citizen workflows and authority workflows throug
 %     \label{fig:m4-5-cancel-consent}
 % \end{figure}
 
-\subsection{Polling Screenshots}
+% \subsection{Polling Screenshots}
 
 
-\subsubsection{Scenario 1 - Authority creates a poll}
+% \subsubsection{Scenario 1 - Authority creates a poll}
 
-\subsubsection{Scenario 2 - Citizens vote and authority finalizes}
 
-\subsubsection{Scenario 3 - Double-vote controls}
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m5-1-create.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.1-a: Create poll form]\vspace{3.5cm}}}
-%     \caption{Authority create-poll form (scenario M5.1)}
-%     \label{fig:m5-1-create}
-% \end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m5-1-list.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.1-b: Poll list]\vspace{3.5cm}}}
-%     \caption{Poll visible to citizens after creation (scenario M5.1)}
-%     \label{fig:m5-1-list}
-% \end{figure}
+% \subsubsection{Scenario 2 - Citizens vote and authority finalizes}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m5-2-vote.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.2-a: Citizen poll vote]\vspace{3.5cm}}}
-%     \caption{Citizen casting a poll vote (scenario M5.2)}
-%     \label{fig:m5-2-vote}
-% \end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m5-2-finalized.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.2-b: Finalized poll]\vspace{3.5cm}}}
-%     \caption{Poll after authority finalization (scenario M5.2)}
-%     \label{fig:m5-2-finalized}
-% \end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m5-3-denied.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M5.3: Poll create access denied]\vspace{3.5cm}}}
-%     \caption{Citizen denied access to poll creation (scenario M5.3)}
-%     \label{fig:m5-3-denied}
-% \end{figure}
+% \subsection{Super Admin Screenshots}
 
-\subsection{Super Admin Screenshots}
+% \subsubsection{Scenario 1 - Multisig proposal and majority approval}
 
-\subsubsection{Scenario 1 - Multisig proposal and majority approval}
-
-\subsubsection{Scenario 2 - Unilateral change and unauthorized access}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m6-1-propose.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M6.1-a: Super Admin proposal]\vspace{3.5cm}}}
-%     \caption{Super Admin governance proposal form (scenario M6.1)}
-%     \label{fig:m6-1-propose}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m6-1-executed.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M6.1-b: Executed proposal]\vspace{3.5cm}}}
-%     \caption{Proposal executed after majority quorum (scenario M6.1)}
-%     \label{fig:m6-1-executed}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m6-2-denied.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M6.2: Super Admin access denied]\vspace{3.5cm}}}
-%     \caption{Non--Super Admin denied access to the Super Admin dashboard (scenario M6.2)}
-%     \label{fig:m6-2-denied}
-% \end{figure}
