@@ -449,7 +449,34 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent{Expected result:} The citizen is registered successfully and redirected to the dApp.
 
-\noindent{Screenshots:} Figure.~\ref{fig:me2e-register}, Figure.~\ref{fig:me2e-register-success}.
+\noindent{Screenshots:} Figure.~\ref{fig:authentication}.
+
+\begin{figure}[H]
+     \centering
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/register.png}
+          \caption{Registration screen of government identity simulator}
+        \label{fig:me2e-register}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/register-success.png}
+         \caption{Successfull registration of a citizen via government identity simulator}
+         \label{fig:me2e-register-success}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/login-screen.png}
+         \caption{Citizen login to the DApp}
+         \label{fig:me2e-login}
+     \end{subfigure}
+        \caption{Citizen authentication}
+        \label{fig:authentication}
+\end{figure}
+
 
 \subsubsection{Scenario 2 - Citizen Authentication}
 {Role:} Citizen. \\
@@ -468,6 +495,24 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-login}, Figure.~\ref{fig:me2e-pin-creation}, and  Figure.~\ref{fig:me2e-feed}. 
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/pin-creation.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
+    \caption{PIN creation screen}
+    \label{fig:me2e-pin-creation}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/feed.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
+    \caption{Citizen feed after successful authentication}
+    \label{fig:me2e-feed}
+\end{figure}
+
+
+
 \subsubsection{Scenario 3 - Invalid Citizen Credentials}
 {Role:} Unauthenticated visitor. \\
 {Preconditions:} None.
@@ -478,6 +523,16 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent{Expected result:} Authentication fails with a clear error. 
 
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-invalid}.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/invalid.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Invalid citizen credentials error}
+    \label{fig:me2e-invalid}
+\end{figure}
+
 
 \subsubsection{Scenario 4 - Authority MetaMask connection}
 {Role:} Authority worker. \\
@@ -493,6 +548,17 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-authority-dashboard}.
 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-dashboard.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority dashboard after login via Metamask}
+    \label{fig:me2e-authority-dashboard}
+\end{figure}
+
+
+
 \subsubsection{Scenario 5 - Unauthorized access to authority portal}
 {Role:} Unregistered wallet.\\
 {Preconditions:} MetaMask is connected with a wallet that does not have AUTHORITY\_ROLE or SUPER\_ADMIN\_ROLE.
@@ -506,6 +572,15 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-authority-access-denied}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-access-denied.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Access denied when a unauthorized goverment worker tries to access authority portal }
+    \label{fig:me2e-authority-access-denied}
+\end{figure}
+
+
 \subsubsection{Scenario 6 - Unauthenticated access to protected citizen routes}
 {Role:} Unauthenticated citizen.\\
 {Preconditions:} No citizen session.
@@ -517,6 +592,14 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent{Expected result:} Both routes show access denied error.
 
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-citizen-access-denied}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/citizen-route-access-denied.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Access denied when a unauthorized citizen try to access a protected route }
+    \label{fig:me2e-citizen-access-denied}
+\end{figure}
 
 \subsection{Standard Report Lifecycle }
 
@@ -535,7 +618,51 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent{Expected result:} One ticket is used. The report is moderated, stored, and submitted to blockchain. The state update is correct.
 
-\noindent{Screenshots:} Figure.~\ref{fig:me2e-standard-report-submit}, Figure.~\ref{fig:sse-progress}, and Figure.~\ref{fig:me2e-standard-report-detail}
+\noindent{Screenshots:} Figure.~\ref{fig:me2e-standard-report-submit}, Figure.~\ref{fig:sse-progress}, and Figure.~\ref{fig:me2e-standard-report-detail}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/standard-report-submit.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Standard report submission form}
+    \label{fig:me2e-standard-report-submit}
+\end{figure}
+
+
+
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-1.png}
+          \caption{SSE pipeline progress (AI moderation step)}
+         \label{fig:me2e-sse-1}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-2.png}
+         \caption{SSE pipeline progress (IPFS upload step)}
+         \label{fig:me2e-sse-2}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-3.png}
+         \caption{SSE pipeline progress (on-chain anchoring step)}
+         \label{fig:me2e-sse-3}
+     \end{subfigure}
+        \caption{SSE pipeline progress}
+        \label{fig:sse-progress}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/standard-report-detail-page.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Detailed report page with state transitioned to PendingValidation after submission}
+    \label{fig:me2e-standard-report-detail}
+\end{figure}
 
 \subsubsection{Scenario 2 - Community validation to Open}
 \label{e2e:community-validation}
@@ -551,6 +678,23 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent{Expected result:} Report state changed to Open. Three upvotes are recorded. 
 
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-community-validation-vote} and  Figure.~\ref{fig:me2e-pending-validation-to-open}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/other-people-voting.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Community validation voting}
+    \label{fig:me2e-community-validation-vote}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/pendinvalidation-to-open.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Reportstate transition from PendingValidation to Open}
+    \label{fig:me2e-pending-validation-to-open}
+\end{figure}
+
+
 
 \subsubsection{Scenario 3 - Authority claim the report, update, and mark solved}
 \label{e2e:open-inprogress-pending-verification}
@@ -569,6 +713,68 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-actionable-report-view}, Figure.~\ref{fig:me2e-opened-report}, Figure.~\ref{fig:me2e-authority-worker-start-work}, Figure.~\ref{fig:me2e-inprogress}, Figure.~\ref{fig:me2e-post-progress-update}, Figure.~\ref{fig:me2e-markasresolved}, and Figure.~\ref{fig:me2e-pending-verification}.
 
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/actiobale-report-view.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority worker locating the report under Actionable tab}
+    \label{fig:me2e-actionable-report-view}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/opened-report.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority worker views Open report}
+    \label{fig:me2e-opened-report}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-worker-start-work.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority worker starts working on a report}
+    \label{fig:me2e-authority-worker-start-work}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/inprogress.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transitioned to Inprogress after authority worker starts work}
+    \label{fig:me2e-inprogress}
+\end{figure}
+
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/post-progress-update.png}
+          \caption{Authority worker adding a progress update to the report}
+         \label{fig:me2e-post-progress-update}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/markasresolved.png}
+        \caption{Authority worker marking a report as resolved}
+          \label{fig:me2e-markasresolved}
+     \end{subfigure}
+        \caption{Authority worker actions on a report}
+        \label{fig:authority-worker-actions}    
+\end{figure}
+
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/pending-verification.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transition from InProgress to PendingVerification after authority marks as resolved}
+    \label{fig:me2e-pending-verification}
+\end{figure}
+
+
 \subsubsection{Scenario 4 - Community verification to Closed}
 {Role:} Citizens.\\
 {Preconditions:} Report from test~\ref{e2e:open-inprogress-pending-verification} is in {PendingVerification} state. At least two citizens are available to accept the resolution.
@@ -581,6 +787,32 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent{Expected result:} Status becomes {Closed}, completing the report life cycle described in  Chapter~\ref{ch:testing}. Progress update is visible to citizens. 
 
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-community-verification}, Figure.~\ref{fig:me2e-authority-action-log}, and Figure.~\ref{fig:me2e-closed-report}.
+
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/community-verification.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{A citizen accept the resolution by upvoting}
+    \label{fig:me2e-community-verification}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-action-log.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority action log visible to citizens}
+    \label{fig:me2e-authority-action-log}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/closed.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report successfully closed after community verification accepts the resolution}
+    \label{fig:me2e-closed-report}
+\end{figure}
 
 
 \subsubsection{Scenario 4 - Citizen profile, my reports, and notifications}
@@ -597,6 +829,26 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent{Screenshots:} Figure.~\ref{fig:me2e-profile} and Figure.~\ref{fig:me2e-notifications}
 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/profile.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Profile page of citizen showing previously submitted reports}
+    \label{fig:me2e-profile}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/notifications.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Notifications page for the citizen}
+    \label{fig:me2e-notifications}
+\end{figure}
+
+
+
+
 \subsection{Standard Report Alternate and Negative Paths}
 
 \subsubsection{Scenario 1 - Community rejection at validation}
@@ -612,6 +864,22 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-reject-validation} and Figure.~\ref{fig:me2e-community-rejected-report}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reject-validation.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Citizen votes to reject a report during PendingValidation stage}
+    \label{fig:me2e-reject-validation}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/community-rejected-report.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transitioned to CommunityRejected after voting window expires}
+    \label{fig:me2e-community-rejected-report}
+\end{figure}
+
 \subsubsection{Scenario 2 - Authority reject upheld by community}
  {Role:} Authority, then citizens. \\
  {Preconditions:} A report in the state Open or InProgress.
@@ -624,6 +892,40 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent {Expected result:} Status of the report transitioned from Open/InProgress $\rightarrow$ PendingRejectionReview $\rightarrow$ Closed.
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-reject-open-report}, Figure.~\ref{fig:me2e-report-state-transition-after-reject}, and Figure.~\ref{fig:me2e-citizen-uphold-reject}, and Figure.~\ref{fig:me2e-uphold-closed-report}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/alteranate/reject-open-report-authority.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority rejects an open report}
+    \label{fig:me2e-reject-open-report}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/report-state-transition-after-reject.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state updated to PendingRejectionReview after authority rejects it}
+    \label{fig:me2e-report-state-transition-after-reject}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-uphold-reject.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Citizen upholds the authority's rejection of a report}
+    \label{fig:me2e-citizen-uphold-reject}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/uphold-closed-report.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report closed after community upholds the authority rejection}
+    \label{fig:me2e-uphold-closed-report}
+\end{figure}
+
 
 \subsubsection{Scenario 3 - Authority reject appealed, report reopened}
  {Role:} Authority, then citizens \\
@@ -639,6 +941,38 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-authority-reject-issue}, Figure.~\ref{fig:me2e-pending-rejection-to-open}, Figure.~\ref{fig:me2e-citizen-appealing}, and Figure.~\ref{fig:me2e-reopened-report}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/authority-reject-issue.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Authority rejects a report and issues a rejection reason}
+    \label{fig:me2e-authority-reject-issue}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/pending-rejection-to-open.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transition from Open to PendingRejectionReview}
+    \label{fig:me2e-pending-rejection-to-open}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-appealing.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Citizen appealing a rejected report by casting downvotes}
+    \label{fig:me2e-citizen-appealing}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reopened-report.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transitioned to Reopened after community appeals the rejection}
+    \label{fig:me2e-reopened-report}
+\end{figure}
+
 \subsubsection{Scenario 4 - Verification reject reopens the report}
  {Role:} Citizens\\
  {Preconditions:} A report in the state {PendingVerification} after Mark as Solved.
@@ -650,6 +984,24 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent {Expected result:} Report state becomes {Reopened}.
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-citizen-reject-verification}, and Figure.~\ref{fig:me2e-reopened-report-verification} 
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-reject-verification.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Citizens vote to reject a report during PendingVerification stage}
+    \label{fig:me2e-citizen-reject-verification}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reopened-after-reject-pending-verification.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Report state transitioned to Reopened after community rejects the resolution during PendingVerification stage}
+    \label{fig:me2e-reopened-report-verification}
+\end{figure}
+
 
 \subsubsection{Scenario 5 - Client-side submission validation}
  {Role:} Citizen\\
@@ -667,6 +1019,46 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-client-side-validation-errors-1}, and Figure.~\ref{fig:me2e-client-side-validation-errors-2}.
 
+
+\begin{figure}[H]
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/description-error.png}
+          \caption{Client side validation error for empty description}
+         \label{fig:me2e-description-error}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/location-error.png}
+        \caption{Client side validation error for empty location}
+          \label{fig:me2e-location-error}
+     \end{subfigure}
+        \caption{Client side validation errors for description and location fields during report submission}
+        \label{fig:me2e-client-side-validation-errors-1}    
+\end{figure}
+
+\begin{figure}[H]
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/description-1000-char-limit.png}
+          \caption{Client side validation error for description exceeding 1000 characters}
+         \label{fig:me2e-description-limit-error}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/support-only-5 images.png}
+        \caption{UI only supports 5 images, image uploading widget is no longer visible}
+          \label{fig:me2e-image-error}
+     \end{subfigure}
+        \caption{Client side validation errors for description exceeding 1000 characters and image upload limit during report submission}
+        \label{fig:me2e-client-side-validation-errors-2}    
+\end{figure}
+
+
 \subsubsection{Scenario 6 - AI moderation rejection}
  {Role:} Citizen \\
  {Preconditions:} Logged in citizen logged ready to submit a report.
@@ -678,6 +1070,34 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent {Expected result:} The job fails at AI moderation stage. Report submission fails. 
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-spam-report-submit}, and Figure.~\ref{fig:me2e-ai-moderation-report-rejection}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/spam-report-submission.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Submitting a spam report}
+    \label{fig:me2e-spam-report-submit}
+\end{figure}
+
+\begin{figure}[H]
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/ai-validation.png}
+          \caption{AI moderation rejects the report submission}
+         \label{fig:me2e-ai-moderation-reject}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/notification-showing-ai-reection.png}
+        \caption{SSE notification showing AI moderation rejection}
+          \label{fig:me2e-ai-moderation-notification}
+     \end{subfigure}
+        \caption{AI moderation rejection of a report}
+        \label{fig:me2e-ai-moderation-report-rejection}         
+\end{figure}
+
 
 \subsubsection{Scenario 7 - Similar report detection}
  {Role:} Citizen \\
@@ -692,6 +1112,22 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-similar-report-detection}, and Figure.~\ref{fig:me2e-similar-report-preview}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/alteranate/similar-report-detection.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Similar report detection during submission}
+    \label{fig:me2e-similar-report-detection}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/similar-report-preview.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Preview of identified similar report}
+          \label{fig:me2e-similar-report-preview}
+\end{figure}
+
 \subsubsection{Scenario 8 - Double vote prevention}
  {Role:} Citizen \\
  {Preconditions:} A report in an active voting phase(PendingVerification, PendingValidation, PendingRejectionReview) and a citizen who has already voted
@@ -704,6 +1140,16 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent {Expected result:} The second vote is rejected. 
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-double-vote-prevention}.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/double-vote-prvention.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Double vote prevention during community validation}
+          \label{fig:me2e-double-vote-prevention}
+\end{figure}
+
 
 \subsection{Emergency Report Submission Flows}
 
@@ -722,6 +1168,24 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-emergency-consent}, and Figure.~\ref{fig:me2e-emergency-report-open}.
 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/emergency-consent.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Consent modal displaying when submitting an emergency report}
+          \label{fig:me2e-emergency-consent}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/emergency/report-state-open.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Report directly moved to Open state after submission}
+          \label{fig:me2e-emergency-report-open}
+\end{figure}
+
+
 \subsubsection{Scenario 2 - Authority resolve emergency}
 
  {Role:} Authority worker \\
@@ -735,6 +1199,41 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent {Expected result:} State of the report becomes Resolved.
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-emergency-report-open-authority}, Figure.~\ref{fig:me2e-ereport-start-resolved}, and Figure.~\ref{fig:me2e-emergency-report-state-resolved}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/emergency/ereport-under-authority.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Authority worker locating Open emergency report}
+          \label{fig:me2e-emergency-report-open-authority}
+\end{figure}
+
+\begin{figure}[H]
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+          \includegraphics[width=\textwidth]{Images/Appendix/me2e/emergency/start-work-on-ereport.png}
+          \caption{Authority worker starts working on an emergency report}
+         \label{fig:me2e-ereprot-start-work}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Images/Appendix/me2e/emergency/resolve-ereport.png}
+        \caption{Authority worker marks an emergency report as resolved}
+          \label{fig:me2e-ereport-resolved}
+     \end{subfigure}
+        \caption{Emergency report resolution by authority}
+        \label{fig:me2e-ereport-start-resolved}         
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/emergency/ereport-state-changed-to-resolved.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Emergency report state transitioned to Resolved after authority marks it as resolved}
+          \label{fig:me2e-emergency-report-state-resolved}
+\end{figure}
+
 
 \subsubsection{Scenario 3 - Reclassify false emergency}
 \label{e2e:false-emergency-report}
@@ -748,6 +1247,15 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \noindent {Expected result:} State of the report becomes Reclassified. The citizen receives a 30-day lock on the emergency channel.
 
 \noindent {Screenshots:} Figure.~\ref{fig:me2e-reclassify-ereport}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/reclassify-ereport.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Authority worker reclassifies a false emergency report}
+          \label{fig:me2e-reclassify-ereport}
+\end{figure}
+
 
 % \subsubsection{Scenario 4 - Emergency penalty enforcement }
 %  {Role:} Penalized citizen \\
@@ -854,538 +1362,77 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Screenshots:} Fig.~\ref{fig:m6-2-denied}.
 
-\section{Testing Screenshots}
-\label{sec:testing-screenshots}
-
-The figures below correspond to the manual scenarios in Section~\ref{sec:manual-e2e}. 
-
-\subsection{Authentication Screenshots}
-
-
-\begin{figure}[H]
-     \centering
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-          \includegraphics[width=\textwidth]{Images/Appendix/me2e/register.png}
-          \caption{Registration screen of government identity simulator}
-        \label{fig:me2e-register}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/register-success.png}
-         \caption{Successfull registration of a citizen via government identity simulator}
-         \label{fig:me2e-register-success}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/login-screen.png}
-         \caption{Citizen login to the DApp}
-         \label{fig:me2e-login}
-     \end{subfigure}
-        \caption{Citizen authentication}
-        \label{fig:authentication}
-\end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{Images/Appendix/me2e/pin-creation.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
-    \caption{PIN creation screen}
-    \label{fig:me2e-pin-creation}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/feed.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.1-a: Citizen login]\vspace{3.5cm}}}
-    \caption{Citizen feed after successful authentication}
-    \label{fig:me2e-feed}
-\end{figure}
-
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/invalid.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Invalid citizen credentials error}
-    \label{fig:me2e-invalid}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-dashboard.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority dashboard after login via Metamask}
-    \label{fig:me2e-authority-dashboard}
-\end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-access-denied.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Access denied when a unauthorized goverment worker tries to access authority portal }
-    \label{fig:me2e-authority-access-denied}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/citizen-route-access-denied.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Access denied when a unauthorized citizen try to access a protected route }
-    \label{fig:me2e-citizen-access-denied}
-\end{figure}
-
-\subsection{Standard Lifecycle Screenshots}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/standard-report-submit.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Standard report submission form}
-    \label{fig:me2e-standard-report-submit}
-\end{figure}
-
-
-
-\begin{figure}
-     \centering
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-          \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-1.png}
-          \caption{SSE pipeline progress (AI moderation step)}
-         \label{fig:me2e-sse-1}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-2.png}
-         \caption{SSE pipeline progress (IPFS upload step)}
-         \label{fig:me2e-sse-2}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/sse-3.png}
-         \caption{SSE pipeline progress (on-chain anchoring step)}
-         \label{fig:me2e-sse-3}
-     \end{subfigure}
-        \caption{SSE pipeline progress}
-        \label{fig:sse-progress}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/standard-report-detail-page.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Detailed report page with state transitioned to PendingValidation after submission}
-    \label{fig:me2e-standard-report-detail}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/other-people-voting.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Community validation voting}
-    \label{fig:me2e-community-validation-vote}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/pendinvalidation-to-open.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Reportstate transition from PendingValidation to Open}
-    \label{fig:me2e-pending-validation-to-open}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/actiobale-report-view.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority worker locating the report under Actionable tab}
-    \label{fig:me2e-actionable-report-view}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/opened-report.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority worker views Open report}
-    \label{fig:me2e-opened-report}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-worker-start-work.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority worker starts working on a report}
-    \label{fig:me2e-authority-worker-start-work}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/inprogress.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report state transitioned to Inprogress after authority worker starts work}
-    \label{fig:me2e-inprogress}
-\end{figure}
-
-\begin{figure}
-     \centering
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-          \includegraphics[width=\textwidth]{Images/Appendix/me2e/post-progress-update.png}
-          \caption{Authority worker adding a progress update to the report}
-         \label{fig:me2e-post-progress-update}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/markasresolved.png}
-        \caption{Authority worker marking a report as resolved}
-          \label{fig:me2e-markasresolved}
-     \end{subfigure}
-        \caption{Authority worker actions on a report}
-        \label{fig:authority-worker-actions}    
-\end{figure}
-
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/pending-verification.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report state transition from InProgress to PendingVerification after authority marks as resolved}
-    \label{fig:me2e-pending-verification}
-\end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/community-verification.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{A citizen accept the resolution by upvoting}
-    \label{fig:me2e-community-verification}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/authority-action-log.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority action log visible to citizens}
-    \label{fig:me2e-authority-action-log}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/closed.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report successfully closed after community verification accepts the resolution}
-    \label{fig:me2e-closed-report}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/profile.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Profile page of citizen showing previously submitted reports}
-    \label{fig:me2e-profile}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/notifications.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Notifications page for the citizen}
-    \label{fig:me2e-notifications}
-\end{figure}
-
-
-
-\subsection{Alternate and Negative-Path Screenshots}
-
-\subsubsection{Scenario 1 - Community rejection at validation}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reject-validation.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Citizen votes to reject a report during PendingValidation stage}
-    \label{fig:me2e-reject-validation}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/community-rejected-report.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report state transitioned to CommunityRejected after voting window expires}
-    \label{fig:me2e-community-rejected-report}
-\end{figure}
-
-\subsubsection{Scenario 2 - Authority reject upheld by community}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/alteranate/reject-open-report-authority.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority rejects an open report}
-    \label{fig:me2e-reject-open-report}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/report-state-transition-after-reject.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report state updated to PendingRejectionReview after authority rejects it}
-    \label{fig:me2e-report-state-transition-after-reject}
-\end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-uphold-reject.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Citizen upholds the authority's rejection of a report}
-    \label{fig:me2e-citizen-uphold-reject}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/uphold-closed-report.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report closed after community upholds the authority rejection}
-    \label{fig:me2e-uphold-closed-report}
-\end{figure}
-
-\subsubsection{Scenario 3 - Authority reject appealed, report reopened}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/authority-reject-issue.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Authority rejects a report and issues a rejection reason}
-    \label{fig:me2e-authority-reject-issue}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/pending-rejection-to-open.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report state transition from Open to PendingRejectionReview}
-    \label{fig:me2e-pending-rejection-to-open}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-appealing.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Citizen appealing a rejected report by casting downvotes}
-    \label{fig:me2e-citizen-appealing}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reopened-report.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report state transitioned to Reopened after community appeals the rejection}
-    \label{fig:me2e-reopened-report}
-\end{figure}
-
-\subsubsection{Scenario 4 - Verification reject reopens the report}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/citizen-reject-verification.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Citizens vote to reject a report during PendingVerification stage}
-    \label{fig:me2e-citizen-reject-verification}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/reopened-after-reject-pending-verification.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Report state transitioned to Reopened after community rejects the resolution during PendingVerification stage}
-    \label{fig:me2e-reopened-report-verification}
-\end{figure}
-
-\subsubsection{Scenario 5 - Client-side submission validation}
-
-
-\begin{figure}[H]
-     \centering
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/description-error.png}
-          \caption{Client side validation error for empty description}
-         \label{fig:me2e-description-error}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/location-error.png}
-        \caption{Client side validation error for empty location}
-          \label{fig:me2e-location-error}
-     \end{subfigure}
-        \caption{Client side validation errors for description and location fields during report submission}
-        \label{fig:me2e-client-side-validation-errors-1}    
-\end{figure}
-
-\begin{figure}[H]
-     \centering
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/description-1000-char-limit.png}
-          \caption{Client side validation error for description exceeding 1000 characters}
-         \label{fig:me2e-description-limit-error}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/support-only-5 images.png}
-        \caption{UI only supports 5 images, image uploading widget is no longer visible}
-          \label{fig:me2e-image-error}
-     \end{subfigure}
-        \caption{Client side validation errors for description exceeding 1000 characters and image upload limit during report submission}
-        \label{fig:me2e-client-side-validation-errors-2}    
-\end{figure}
-
-
-
-\subsubsection{Scenario 6 - AI moderation rejection}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/spam-report-submission.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Submitting a spam report}
-    \label{fig:me2e-spam-report-submit}
-\end{figure}
-
-\begin{figure}[H]
-     \centering
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/ai-validation.png}
-          \caption{AI moderation rejects the report submission}
-         \label{fig:me2e-ai-moderation-reject}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/notification-showing-ai-reection.png}
-        \caption{SSE notification showing AI moderation rejection}
-          \label{fig:me2e-ai-moderation-notification}
-     \end{subfigure}
-        \caption{AI moderation rejection of a report}
-        \label{fig:me2e-ai-moderation-report-rejection}         
-\end{figure}
-
-\subsubsection{Scenario 7 - Similar report detection}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/alteranate/similar-report-detection.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-    \caption{Similar report detection during submission}
-    \label{fig:me2e-similar-report-detection}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/similar-report-preview.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-     \caption{Preview of identified similar report}
-          \label{fig:me2e-similar-report-preview}
-\end{figure}
-
-
-\subsubsection{Scenario 8 - Double vote prevention}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/double-vote-prvention.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-     \caption{Double vote prevention during community validation}
-          \label{fig:me2e-double-vote-prevention}
-\end{figure}
-
-\subsection{Emergency Screenshots}
-
-\subsubsection{Scenario 1 - Emergency report submission}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/emergency-consent.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-     \caption{Consent modal displaying when submitting an emergency report}
-          \label{fig:me2e-emergency-consent}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/report-state-open.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-     \caption{Report directly moved to Open state after submission}
-          \label{fig:me2e-emergency-report-open}
-\end{figure}
-
-
-\subsubsection{Scenario 2 - Authority resolve emergency}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/ereport-under-authority.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-     \caption{Authority worker locating Open emergency report}
-          \label{fig:me2e-emergency-report-open-authority}
-\end{figure}
-
-\begin{figure}[H]
-     \centering
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-          \includegraphics[width=\textwidth]{Images/Appendix/me2e/emergency/start-work-on-ereport.png}
-          \caption{Authority worker starts working on an emergency report}
-         \label{fig:me2e-ereprot-start-work}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.45\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{Images/Appendix/me2e/emergency/resolve-ereport.png}
-        \caption{Authority worker marks an emergency report as resolved}
-          \label{fig:me2e-ereport-resolved}
-     \end{subfigure}
-        \caption{Emergency report resolution by authority}
-        \label{fig:me2e-ereport-start-resolved}         
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/ereport-state-changed-to-resolved.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-     \caption{Emergency report state transitioned to Resolved after authority marks it as resolved}
-          \label{fig:me2e-emergency-report-state-resolved}
-\end{figure}
-
-
-
-
-
-\subsubsection{Scenario 3 - Reclassify false emergency}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/reclassify-ereport.png}
-    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
-     \caption{Authority worker reclassifies a false emergency report}
-          \label{fig:me2e-reclassify-ereport}
-\end{figure}
+% \section{Testing Screenshots}
+% \label{sec:testing-screenshots}
+
+% The figures below correspond to the manual scenarios in Section~\ref{sec:manual-e2e}. 
+
+% \subsection{Authentication Screenshots}
+
+
+
+
+
+
+
+
+
+
+
+% \subsection{Standard Lifecycle Screenshots}
+
+
+
+
+
+
+
+% \subsection{Alternate and Negative-Path Screenshots}
+
+% \subsubsection{Scenario 1 - Community rejection at validation}
+
+
+
+% \subsubsection{Scenario 2 - Authority reject upheld by community}
+
+
+% \subsubsection{Scenario 3 - Authority reject appealed, report reopened}
+
+
+
+% \subsubsection{Scenario 4 - Verification reject reopens the report}
+
+% \subsubsection{Scenario 5 - Client-side submission validation}
+
+
+
+
+
+% \subsubsection{Scenario 6 - AI moderation rejection}
+
+
+
+% \subsubsection{Scenario 7 - Similar report detection}
+
+
+% \subsubsection{Scenario 8 - Double vote prevention}
+
+
+% \subsection{Emergency Screenshots}
+
+% \subsubsection{Scenario 1 - Emergency report submission}
+
+
+% \subsubsection{Scenario 2 - Authority resolve emergency}
+
+
+
+
+
+
+% \subsubsection{Scenario 3 - Reclassify false emergency}
+
+
 
 % \subsubsection{Scenario 4 - Emergency penalty enforcement }
 
