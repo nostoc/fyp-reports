@@ -3,29 +3,27 @@
 \chapter{Introduction}
 \label{ch:introduction}
 
-Local governance is fundamental to the upkeep of public infrastructure and the overall well-being of the community. To address civic problems such as damaged roads, waste management issues, street light failures, and effective communication between citizens and local authorities is critical. Recently, the integration of e-governance systems and crowdsourcing has improved the citizen participation and streamline the reporting and resolution of public issues. 
+Local governance is fundamental to the upkeep of public infrastructure and the overall well-being of the community. To address civic problems such as damaged roads, waste management issues, and street light failures, effective communication between citizens and local authorities is critical. Recently, the integration of e-governance systems and crowdsourcing has improved citizen participation and streamlined the reporting and resolution of public issues.
 
 However, most of the current systems rely on centralized architectures. This poses a challenge in dealing with data integrity, transparency, and user privacy. Citizens are reluctant to provide complaints about sensitive topics due to potential retaliation or the possibility of their personal information being abused. At the same time, the local government is faced with the challenge of verifying the authenticity of anonymous complaints raised by citizens.
 
-Some of the key features of Blockchain technology are immutability, transparency, and decentralization. Those features can be used to address several limitations of conventional reporting systems. It is possible to design reporting platforms that protect user anonymity while ensuring the integrity and accountability of reported information by combining blockchain-based architectures and privacy-preserving mechanisms. This project examines the application of blockchain technology in developing a secure, community-driven reporting framework tailored to local governance contexts. 
+Blockchains keep a shared record that is hard to alter once written, visible to every authorised participant, and maintained without a single central database owner. Those properties speak directly to the integrity and transparency gaps in conventional reporting systems. Pairing a permissioned ledger with privacy-preserving identity techniques makes it feasible to let citizens raise sensitive complaints under a pseudonym while still leaving an auditable trail of what was reported and how it was handled. This project builds and evaluates such a framework for local governance, where community input, authority response, and public consultation need to coexist on one platform.
 
 \section{Background}
 
-In the context of local governance, crowdsourced reporting systems and e-governance platforms are widely adopted. By using those systems, citizens can report issues, provide feedback and participate in decision making. It improves inclusiveness and  accountability of every citizen. In developing countries like Sri Lanka, these systems have the potential to significantly improve the governance efficiency. Timely identification and resolution of public concerns are the key to governance efficiency. 
+Local authorities increasingly rely on crowdsourced reporting tools and e-government portals so that residents can flag problems, leave feedback, and participate in consultations. Used well, those channels widen who gets heard and create a clearer record of how issues were raised and closed. In developing countries such as Sri Lanka, faster problem detection and follow-up on street-level complaints could materially improve day-to-day service delivery.
 
-However, despite their advantages, the conventional e-governance and reporting systems are still highly centralized, making them prone to various threats such as data tampering, illegal access, and single points of failure. In addition, the ability to track behavior down to individual users could serve as a discouraging factor, particularly in reporting delicate matters in a system that lacks anonymity. Blockchain-based systems have appeared as a feasible solution for managing shared data in a tamper-proof and transparent manner. The ability of permissioned blockchains to enable controlled participation while maintaining accountability through trusted validators makes them a desirable choice for governance applications. By using smart contracts, reporting workflows and opinion polling can be automated rather than relying on centralized intermediaries. 
+Most such deployments nonetheless remain centrally hosted. A single operator controls the database, which creates familiar risks. Records can be altered, access can be misused, and an outage can take the whole service offline. Citizens may also hesitate to report sensitive matters when every action is tied to a named account. Shared ledgers offer one response to the integrity side of that problem, and permissioned networks in particular let a known set of validators maintain the chain while still publishing an auditable history. Smart contracts can encode reporting steps and opinion polls in code instead of routing each transition through a back-office clerk.
 
-While blockchain technology offers data integrity and transparency, it still poses challenges related to user privacy and content moderation among anonymous participants.  These challenges remain open research and implementation problems. Combining  blockchain with privacy-preserving identity mechanisms and \ac{AI}-assisted moderation can help address these limitations and supports the need for a comprehensive framework for secure and reliable community-assisted reporting.
+Integrity alone is not enough. Anonymous or pseudonymous participation raises questions about who may submit what, and about harmful content that must not be frozen permanently on an immutable chain. Privacy-preserving identity schemes and \ac{AI}-assisted moderation before on-chain storage are two practical ways to narrow those gaps. The framework developed in this project brings those pieces together for community-assisted reporting at the local level.
 
 \section{Problem Statement}
 
-The existing frameworks of e-governance and crowdsourced reporting systems for local governance do not provide an integrated mechanism that can guarantee data integrity, user anonymity, and trustworthiness of citizen submitted reports. Centralized architectures are prone to unauthorized access, data tampering, and lack of transparency. At the same time, identity dependent systems discourage citizen engagement due to privacy concerns and fear of retaliation.
+Local councils already run complaint apps and web portals. None of them, as typically deployed, tie together three things at once. A tamper-evident record, a way for residents to speak without attaching their name to every post, and some check that a report is worth an authority's time. Centralized services make the first goal fragile. One compromised admin account or altered row is enough to undermine trust. Named logins fix audit trails but scare people off. Few residents will file a sensitive complaint through a form that stores their government ID next to the text.
 
-Although blockchain has been applied to the local government context, many blockchain-based reporting systems still fail to balance anonymity with mechanisms for assessing the reliability and quality of submitted reports. Furthermore, the lack of content moderation and trust evaluation increases the risk of misinformation, and malicious or low quality submissions. 
+Blockchains have been tried in this space. The implementations that exist often pick a side. Either the citizen stays anonymous, and the authority has no hook to weigh report quality, or the account is known and participation drops. Few prototypes filter spam, hate, or obvious nonsense before writing to a ledger that cannot be edited later. Without that step, malicious and toxic content remains alongside genuine reports indefinitely.
 
 Therefore, there is a clear need for a privacy-preserving, blockchain-based reporting framework that enables anonymous citizen participation while ensuring data immutability, transparent workflows, and reliable evaluation of reported information. This gap is addressed by designing and prototyping a permissioned blockchain-based community-assisted reporting system that incorporates smart contracts, off-chain data storage, and \ac{AI}-assisted content moderation mechanism suitable for local governance environments.
-
-
 
 \section{Objectives and Scope}
 \subsection{Aim}
@@ -55,7 +53,7 @@ The aim of this project is to design and prototype a blockchain-based, privacy-p
 \begin{enumerate}
    \item A prototype of the proposed blockchain will be implemented with a minimum of three full nodes. The \ac{PoA} consensus mechanism will be used to enable efficient and controlled transaction validation within a permissioned network, while excluding deployment of public, permissionless blockchains or globally distributed ledger infrastructures. 
    
-   \item User authentication and identity decoupling are managed through a simulated identity service, and the design and implementation of a fully decentralized Self-Sovereign Identity (SSI) blockchain are explicitly excluded from the scope of this project.
+   \item User authentication and identity decoupling run through a simulated government identity service. Building a fully decentralized Self-Sovereign Identity (SSI) network is out of scope for this project. That limit is deliberate. The ticket-and-nullifier interface handed to the relayer and smart contracts is built to be swappable, so a production-grade \ac{ZKP} or anonymous-credential system could replace the simulator in a later iteration without rewriting reporting, voting, or governance logic.
    
    % \item The functional scope of the blockchain layer is strictly limited to managing the lifecycle of reporting tickets  and facilitating public opinion polls, while other e-Governance services such as taxation, civil registration, or licensing systems are not considered. 
 
@@ -80,9 +78,9 @@ The aim of this project is to design and prototype a blockchain-based, privacy-p
 
 \subsection{Digital Citizen Reporting and e-Governance Systems}
 
-Electronic governance (e-governance) is using information and communication technologies to provide government services. This includes the support of government to citizens (G2C), government to business (G2B) , government to agencies (G2A) etc. By utilizing the e-governance platforms, everyone can gain access to whole range of public services. Additionally, citizens can submit complaints and participate in governance decision making process. \cite{9587836}.
+Electronic governance (e-governance) is using information and communication technologies to provide government services. This includes the support of government to citizens (G2C), government to business (G2B) , government to agencies (G2A). By utilizing the e-governance platforms, everyone can gain access to whole range of public services. Additionally, citizens can submit complaints and participate in governance decision making process. \cite{9587836}.
 
-Digital citizen reporting system is one of many use cases of e-governance. FixMyStreet is one such platform. \cite{mysociety2026fixmystreet} It enables citizens to report issues for different issue categories. Sanitation, Traffic and Public Safety are some examples. Studies show that that FixMyStreet improves governance administrative efficiency, civic participation and  transparency.\cite{oliveira2020smartcities}.
+Digital citizen reporting system is one of many use cases of e-governance. FixMyStreet is one such platform \cite{mysociety2026fixmystreet}. It enables citizens to report issues for different issue categories. Sanitation, Traffic and Public Safety are some examples. Studies show that that FixMyStreet improves governance administrative efficiency, civic participation and  transparency.\cite{oliveira2020smartcities}.
 
 Even though there are many benefits of digital citizen reporting in local governance as described earlier, most of those systems still use centralized server based architecture. This centralized approach has its own limitations and  disadvantages. Susceptibility to data tampering, lack of transparency are the main problems that impact heavily on public trust. In addition to that, mandatory identity disclosure is discouraging public participation on this kind of reporting systems. Therefore, these problems motivate the findings of new decentralized, transparent and immutable architectures that still preserve user privacy with accountability.
 
@@ -100,7 +98,7 @@ Despite the advancements in the blockchain base applications, existing literatur
 
 The traditional centralized platforms have data integrity issues, transparency issues and trust issues when it comes to citizen reporting. Past works also indicates that centralized complaint registries often have single point of failures , delayed responses and public mistrust. Therefore blockchain integrated reporting services can be used to mitigate those issues. 
 
-A blockchain based police complaint management system that utilize RSA basedement system has proposed by Pratheeba\cite{pratheeba_blockchain_police_complaint} contains a modular architecture. It's include security, blockchain, web interface and a hybrid cloud storage. This system ensure immutability of complaint records by cryptographic hash linking. And also it utilizes RSA based encryption to restrict the access only to authorized personnel. In addition to that, Pratheeba used \ac{NLP} techniques to automatically categorize complaints in the system based on their priorities. 
+A blockchain based police complaint management system that utilize RSA based system has proposed by Pratheeba\cite{pratheeba_blockchain_police_complaint} contains a modular architecture. It includes security, blockchain, web interface and a hybrid cloud storage. This system ensure immutability of complaint records by cryptographic hash linking. Additionally it utilizes RSA based encryption to restrict the access only to authorized personnel. In addition to that, Pratheeba used \ac{NLP} techniques to automatically categorize complaints in the system based on their priorities. 
 
 \begin{figure}[h!]
     \centering
@@ -110,7 +108,7 @@ A blockchain based police complaint management system that utilize RSA basedemen
 \end{figure}
 
 
-A three tier architecture for decentralized complaint management framework has proposed by Manjula \cite{manjula2025decentralized} is shown in Figure \ref{fig:complaint-managment-system-architecture}. The three layers are web based presentation layer, a business logic layer and finally a blockchain data layer. This system has a role based access control method to involve multiple stakeholders. Citizens, Law enforcement authorities and judicial bodies are some of them. More importantly this system has an immutable storage for multimedia evidences. Intelligent complaint assignment based on workloads, automatic escalation mechanism are some of the key features of the framework. The experimental evaluations show that a significant reductions in complaint processing time. The successful detection of data tampering also archived by blockchain verification.
+A three-tier architecture for a decentralized complaint management framework proposed by Manjula \cite{manjula2025decentralized} is shown in Figure \ref{fig:complaint-managment-system-architecture}. The three layers are a web-based presentation layer, a business logic layer, and finally a blockchain data layer. This system has a role-based access control method to involve multiple stakeholders. Citizens, Law enforcement authorities, and judicial bodies are some of them. More importantly, this system has immutable storage for multimedia evidence. Intelligent complaint assignment based on workloads, automatic escalation mechanism are some of the key features of the framework. The experimental evaluations show that a significant reductions in complaint processing time. The successful detection of data tampering is also achieved by blockchain verification.
 
 In literature, existing blockchain based complaint management systems shows some improvements in transparency and administrative efficiency. But most of them are domain specific. They primarily target law enforcement or isolated governance functions. In addition to that several platforms still rely on centralized architectures. Only a limited attention is given for implementing a community assisted validation, for privacy preserving reporting mechanisms and efficient handling of multimedia evidences. Therefore these limitations highlight the need for a generalized reporting framework for local governance.
 
@@ -139,7 +137,7 @@ In the context of voting and opinion polling, smart contracts offer enhanced sec
 
 \subsection{User Interfaces for Blockchain-Based e-Governance Applications}
 
-User interfaces play a critical role in determining the accessibility and adoption of blockchain based e-governance systems. In the traditional applications the user literacy is less important but in this conventional blockchain applications the user literacy is highly considered because of the blockchain concepts that are different from the traditional apps and it does make the users hard to understand and adopt. The literature consistently identifies usability and user experience challenges as major barriers to the adoption of decentralized applications for the general public. Particularly where security requirements conflict with established usability principles \cite{mdpi2025usercentric}, \cite{sonule2025uxweb3}. So the design of intuitive, inclusive, and responsive web interfaces is essential for enabling effective interaction between citizens, government officials, and the underlying blockchain infrastructure.
+A council can deploy sound smart contracts and still lose citizens on the login screen. Blockchain e-government tools ask more of the person using them than a typical web form. Wallets, confirmations, fees, and failed transactions. None of that appears in a standard complaint portal. Surveys on Web3 interfaces repeat the same complaint. Ordinary users drop off when security demands outrun what the screen explains \cite{mdpi2025usercentric}, \cite{sonule2025uxweb3}. For local reporting, the interface must work for citizens who will never read a protocol specification, and for officials who need task-focused screens rather than raw chain explorers.
 
 \subsubsection*{Usability Challenges in Decentralized Governance Systems}
 
@@ -192,7 +190,7 @@ Inclusivity is a fundamental requirement for e-governance systems. According to 
 
 \subsection{AI-Based Content Moderation in Civic Reporting}
 
-Since blockchain is inheritably immutable its introduce a unique challenge for content moderation in a civic reporting system. In a centralized platforms, administrators can remove or edit inappropriate content. But in a decentralized blockchain based system data cannot be altered once confirmed \cite{tencentcloud2025moderation}. While immutability strengthens transparency and accountability, it also raises the risk of permanently storing harmful, illegal, or misleading content. Therefore the literature focuses the need for pre moderation strategies to prevent unsuitable content from being recorded on chain or to limit its visibility after publication \cite{dzone2026blockchainai}.
+A confirmed transaction is permanent. That property underpins audit trails in civic reporting. It also blocks the usual moderation playbook. On a central forum an administrator can unpublish a thread. On chain, deletion is not an option once validators have included the data \cite{tencentcloud2025moderation}. Harmful text, illegal images, or malicious content could therefore remain visible for as long as the network exists. Researchers treat pre-publication filtering as the practical fix. Classify and review before anchoring, or store only a hash on ledger while keeping the raw attachment elsewhere \cite{dzone2026blockchainai}.
 
 \subsection{Need for Automated Content Moderation}
 
@@ -234,69 +232,27 @@ Finally, the issue of “toxic immutability” remains a critical challenge for 
 
 
 \section{Methodology}
-This section explains the design followed to develop the proposed framework. It describes how the project objectives were translated into system requirements, how the main components were identified, and why a modular prototype-based approach was selected. The methodology also explains the reasoning behind the selected technologies, workflows, and suggested evaluation approaches.
+This section describes how the system was designed and tested. Project objectives were turned into requirements, then into components that could be built and checked separately. The reasons for major technology and workflow choices are explained in the later chapters.
 
-The proposed system is evaluated through controlled subsystem testing and integration testing. Since the project combines blockchain, privacy-preserving identity, off-chain storage, AI moderation, and a web-based DApp, each component is first designed and validated separately. The components are then integrated through defined APIs, cryptographic data formats, and deployment configurations to evaluate the complete report submission workflow.
+Testing followed the same order. The private chain, identity service, \ac{IPFS} storage, AI moderation, and web \ac{DApp} were each tested on their own first. They were then connected through shared APIs and deployment settings so a full report could be submitted from start to finish.
 
 \subsection{Research Methodology}
-% Explain:
-% prototype-oriented approach,
-% modular architecture,
-% experimental evaluation.
 
-This project follows a design-oriented and prototype-based research methodology. 
-The main objective is to design, implement, and evaluate a blockchain-based, 
-community-assisted, privacy-preserving reporting framework for local governance. 
-The system is developed as a functional prototype within a controlled experimental 
-environment rather than as a large-scale production deployment.
+This project uses a design-oriented, prototype-based approach. The main goal is to design, implement, and evaluate a blockchain-based, community-assisted, privacy-preserving reporting system for local governance. The result is a working prototype tested in a controlled lab environment, not a large-scale public deployment.
 
-The research approach is based on identifying the limitations of existing centralized 
-citizen reporting platforms and designing a decentralized alternative that improves 
-transparency, integrity, anonymity, and trustworthiness. The project combines several 
-technologies, including a private permissioned blockchain, smart contracts, a simulated 
-identity verification mechanism, off-chain storage, AI-assisted content moderation, a 
-backend relayer, and a web-based decentralized application.
+The design responds to known problems in centralized citizen reporting platforms. Weak transparency, easy data tampering, poor anonymity, and low trust in anonymous reports are some of them. The system combines a private permissioned blockchain, smart contracts, a simulated identity verification service, off-chain storage, AI-based content moderation, a backend relayer, and a web-based \ac{DApp}.
 
-The system is developed using an incremental and modular development approach. 
-First, the functional and non-functional requirements of the system are identified. 
-Based on these requirements, the overall architecture and system components are 
-designed. Each major subsystem is then implemented and tested independently before 
-being integrated into the complete reporting workflow. This reduces implementation 
-complexity and allows each team member to focus on a specific technical component 
-while maintaining compatibility with the overall architecture.
+Development was carried out step by step. Functional and non-functional requirements were identified first. After that, the overall architecture and components were designed. Each major subsystem was built and tested on its own before it was added to the full reporting workflow. This modular approach reduced complexity and let each team member work on one part while keeping the same overall design.
 
-Each subsystem is first validated independently. After subsystem-level testing, the 
-components are connected through defined APIs, blockchain interfaces, cryptographic 
-data formats, and deployment configurations. The main integration focus at the current 
-stage is the end-to-end report submission scenario. In this workflow, a citizen submits 
-a report through the DApp, the report is authenticated and verified by the relayer, the 
-content is moderated by the AI oracle service, accepted content is stored off-chain, and 
-the final metadata is recorded on-chain.
+Subsystem tests came first. After that, the parts were linked through fixed APIs, blockchain interfaces, shared cryptographic formats, and deployment settings. The main integration test is the end-to-end report submission flow. A citizen submits a report through the \ac{DApp}. The relayer checks the ticket and signatures. The AI service moderates the content. Accepted content is stored off-chain. The final metadata is recorded on the blockchain.
 
-The project also follows an experimental evaluation approach. The prototype is tested 
-using synthetic reports, manually prepared moderation test cases, safe civic images, 
-unsafe image test samples, and controlled integration scenarios. These tests are used 
-to evaluate the correctness of subsystem behavior, component interaction, security 
-checks, content moderation, and report submission flow.
+The prototype was tested with sample reports, prepared moderation cases, safe civic images, unsafe image samples, and controlled integration scenarios. These tests checked subsystem behaviour, interaction between components, security rules, content moderation, and the full submission path.
 
-In addition to controlled laboratory testing, the project team has discussed a possible 
-real-world pilot deployment with the project supervisor. Upon receiving the approval from the 
-Faculty Board, the system may be deployed within the faculty 
-environment for reporting issues within the faculty. This potential pilot would provide an opportunity to evaluate the 
-practical usability, privacy expectations, and reporting workflow of the system in a 
-real-world institutional context.
-This approach follows the phased methodology described in the project proposal, where 
-requirement analysis, system design, blockchain implementation, smart contract 
-development, identity integration, IPFS integration, AI moderation, DApp development, 
-testing, and evaluation are carried out incrementally.
+The team has also discussed a possible pilot with the project supervisor. If the Faculty Board approves it, the system may be tried inside the faculty for reporting faculty-related issues. That pilot could give feedback on usability, privacy, and the reporting workflow in a real setting. Whether or not the pilot runs, the main evidence in this report comes from the lab and integration tests in Chapters~\ref{ch:testing} and~\ref{ch:results}.
 
 \subsection{System Requirements Analysis}
 
-The system requirements analysis identifies the main functions and quality 
-requirements that must be satisfied by the proposed framework. These requirements 
-were derived from the project objectives, literature review findings, and the expected 
-reporting workflow of a local governance environment. The requirements are divided 
-into functional and non-functional requirements.
+This subsection lists what the system must do and how well it must perform. The requirements were derived from the project objectives, the literature review, and the expected reporting workflow in a local government setting. They are grouped into functional requirements and non-functional requirements.
 
 \subsubsection*{Functional Requirements}
 
@@ -365,52 +321,45 @@ The system also has several non-functional requirements.
     Citizen identities should be decoupled from on-chain report records. The blockchain should store only pseudonymous identifiers, ticket hashes, metadata, and cryptographic references. The blockchain should not store any \ac{PII}s.
 
     \item \textbf{Integrity:}
-    Report payloads, media hashes, AI oracle decisions, IPFS content, and blockchain 
-    records should use cryptographic hashes and digital signatures.
+    Reports, image hashes, AI moderation results, \ac{IPFS} files, and on-chain records must be protected with hashes and digital signatures so tampering can be detected.
 
     \item \textbf{Availability:}
-    The deployed services should remain accessible during testing, integration, and 
-    demonstration.
+    All deployed services must stay online and reachable during testing, integration, and demonstration.
 
     \item \textbf{Performance:}
-    The system should process reports within a reasonable time under prototype 
-    workloads. The system should be evaluated for practical response times.
+    Reports must be processed within acceptable time limits under prototype load. Response times must be measured and reported.
 
     \item \textbf{Maintainability:}
-    The system should be modular and containerized to simplify deployment, debugging, 
-    testing, and future extension.
+    The system must be split into modules and run in containers so it is easier to deploy, debug, test, and extend later.
 
     \item \textbf{Auditability:}
-    Important workflow decisions, such as report submission, moderation decisions, 
-    vote counts, state transitions, and authority actions, should be logged or anchored through hashes, blockchain events, or signed responses.
+    Key actions, including report submission, moderation outcomes, vote totals, status changes, and authority steps, must leave a trace through logs, blockchain events, signed responses, or content hashes.
 
     \item \textbf{Usability:}
-    The DApp should hide unnecessary blockchain complexity from normal users. 
-    Citizens should be able to submit reports without manually paying gas fees and without directly interacting with low-level blockchain tools.
+    The \ac{DApp} must keep blockchain details out of the citizen's way. Users must be able to submit reports without buying cryptocurrency, paying gas themselves, or using low-level wallet tools.
 
     \item \textbf{Scalability:}
-    Large report content and media files should be stored off-chain so that the 
-    blockchain remains lightweight and scalable.
+    Large text and image files must be kept off-chain so the blockchain stores only references and stays small enough to handle growing report volume.
 \end{enumerate}
 
 \subsection{Identified System Components}
 
-Based on the above functional and non-functional requirements, the proposed system 
-is divided into several modular components. 
+The requirements above map to seven main parts. Each part has a clear job and was developed and tested before being connected to the rest.
 
 \begin{enumerate}
-    \item Private permissioned PoA blockchain for immutable record keeping.
-    \item Web-based DApp for user interaction.
-    
-    \item ZKP GovID simulator for identity verification and ticket issuance.
+    \item A private permissioned \ac{PoA} blockchain stores report status, vote counts, and governance actions in a shared ledger that all validators keep in sync.
 
-    \item Backend relayer for verification and workflow orchestration.
+    \item A web-based \ac{DApp} is the front end used by citizens and authority staff to file reports, cast votes, and manage cases.
 
-    \item AI-based content moderation service for content validation.
+    \item A GovID simulator checks a citizen against a mock government record and issues signed one-time tickets. In the full design these tickets could be replaced by stronger privacy credentials, but the interface stays the same.
 
-    \item IPFS off-chain storage for report content and media storage.
+    \item A backend relayer receives citizen submissions, runs signature and ticket checks, queues moderation and storage jobs, and submits the final transaction to the chain.
 
-    \item Smart contracts for report and opinion polling lifecycle management.
+    \item An \ac{AI} moderation service reads report text and images and returns accept or reject decisions before any content is anchored.
+
+    \item An \ac{IPFS} service holds photos and full report payloads off-chain. The blockchain keeps only the content identifier and hash.
+
+    \item Smart contracts written in Solidity define how standard reports, emergency reports, authority actions, and opinion polls change state from open to closed.
 
  
 \end{enumerate}
@@ -421,9 +370,9 @@ is divided into several modular components.
 
 \subsection{Project Timeline}
 
-The project is planned to be completed over two academic semesters using an incremental development approach. The work is divided into several phases, starting from background study and requirement analysis, followed by system design, subsystem implementation, integration, testing, and final evaluation.
+The project was completed over two academic semesters using an incremental development approach. The work moved through background study and requirement analysis, system design, subsystem implementation, integration, testing, and final evaluation.
 
-The timeline shown in Figure~\ref{fig:ganttchart} was prepared to guide the development process and to allocate sufficient time for each major component of the system. Since this is a progress report, some implementation activities are still ongoing. At the current stage, the main focus is on completing subsystem implementation and moving toward full system integration for the report submission workflow.
+Figure~\ref{fig:ganttchart} shows the timeline that was used to plan each phase and assign time to every major component. By the end of the second semester, all subsystems were implemented, integrated, and tested, including the full end-to-end report submission workflow.
 
 \begin{sidewaysfigure}[!p]
     \centering
@@ -494,28 +443,26 @@ The timeline shown in Figure~\ref{fig:ganttchart} was prepared to guide the deve
     \label{fig:ganttchart}
 \end{sidewaysfigure}
 
-\subsection{Resources Required}
+\subsection{Resources Used}
 
-The successful implementation and evaluation of the proposed system require a combination of computational resources, software tools, and development platforms. As the project focuses on prototyping and experimental validation, the required resources are limited to a controlled academic environment. 
-
+The project relied on a mix of hardware, software, and hosting services. All work was carried out in a controlled academic environment suited to prototyping and experimental testing, not in a live government production setup.
 
 \begin{enumerate}[i]
-    \item Three university-provided high-compute machines to simulate a permissioned blockchain network.
+    \item Personal laptops were used for development, testing, and report writing.
 
-    \item Personal laptops for application development, testing, and documentation.
+    \item An Ethereum-compatible permissioned blockchain was configured with \ac{PoA} consensus.
 
-    \item Ethereum-compatible permissioned blockchain framework configured with \ac{PoA} consensus.
+    \item Smart contract tools were used, including Solidity, Hardhat, and Remix.
 
-    \item Smart contract development tools (Solidity, Hardhat/Truffle, Remix).
+    \item Web development tools were used to build the responsive \ac{DApp} interface.
 
-    \item Modern web application development technologies for building a responsive and user-friendly \ac{DApp} interface.
+    \item Python machine learning libraries and pre-trained models were used for content moderation.
 
-    \item Python-based machine learning libraries and pre-trained models for
-    content moderation.
+    \item \ac{IPFS} was used for off-chain storage of report text and images.
 
-    \item \ac{IPFS} for off-chain multimedia storage.
-
-    \item Version control and collaboration tools (Git, GitHub).
+    \item Git and GitHub were used for version control and team collaboration.
+    
+    \item Two \ac{VPS} instances were used to host the blockchain nodes, relayer, GovID simulator, GovID registration \ac{UI}, moderation services, \ac{IPFS}, and \ac{DApp}.
 \end{enumerate}
 
 
