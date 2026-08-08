@@ -4,9 +4,9 @@
 \section{Introduction}
 \label{sec:architecture-introduction}
 
-This chapter presents the design of the local governance reporting system. The system is divided into clear layers. Identity checking, content processing, storage, and public record keeping are separated, with each responsibility handled by the part of the system best suited to it. Facts that must be trusted by every participant and never quietly altered, such as a report's status, a vote count, or an authority's action, are recorded on a private blockchain. Work that is heavy or slow, such as storing photographs or running \ac{AI} moderation models, is done off-chain, and only its result and a verifiable hash are anchored on-chain. This split keeps the ledger small and fast while still making every important decision auditable.
+This chapter presents the design of the local governance reporting system. The system is divided into clear layers. Identity checking, content processing, storage, and public record keeping are separated, with each responsibility handled by the part of the system best suited to it. Facts that must be trusted by every participant and never quietly altered, such as a report's status, a vote count, or an authority's action, are recorded on a private blockchain. Uploading images, running \ac{AI} moderation are time consuming and data intensive tasks. Therefore these tasks are handled off-chain. The verifiable hash of the images and also the verdict of the moderation are stored in the blockchain.
 
-The design supports standard civic reports, emergency reports, community voting, authority work, and public opinion polls. Figure~\ref{fig:component-interaction} gives a high-level view of how the main components communicate before the rest of the chapter explains each part and the reasoning behind it. Citizen participation is pseudonymous on-chain. A citizen authenticates through a government identity check and receives signed, single-use tickets, consistent with the identity-simulation scope adopted for this prototype. The sections that follow explain how these tickets support anonymous but accountable participation throughout the reporting, voting, and polling workflows.
+Standard civic report submissions, emergency reporting, community voting, public opinion polling and authority works are included in the designed system. Figure~\ref{fig:component-interaction} gives a high-level view of how the main components communicate before the rest of the chapter explains each part and the reasoning behind it. Citizen participation is pseudonymous on-chain. A citizen authenticates through a government identity check and receives signed, single-use tickets, consistent with the identity-simulation scope adopted for this prototype. The sections that follow explain how these tickets support anonymous but accountable participation throughout the reporting, voting, and polling workflows.
 
 \begin{figure}[!htb]
     \centering
@@ -107,16 +107,26 @@ The blockchain uses chain ID 1337 and a 5 $s$ Clique period. Three validator nod
 \section{Trust Boundaries}
 \label{sec:trust-boundaries}
 
-The designed system contains multiple trust boundaries. Explicitly identifying these boundaries, rather than treating the system as one uniformly trusted entity clarifies which component must behave correctly for a given guarantee to hold. This distinction is essential for understanding what the  blockchain's tamper-evidence does and does not ensure. 
+% The designed system contains multiple trust boundaries. Explicitly identifying these boundaries, rather than treating the system as one uniformly trusted entity clarifies which component must behave correctly for a given guarantee to hold. This distinction is essential for understanding what the  blockchain's tamper-evidence does and does not ensure. 
+%
+% \begin{enumerate}
+%     \item Citizen device boundary: The citizen seed, derived wallet, ticket batch, and optional encrypted session are handled in the browser. A compromised browser can expose these values.
+%     \item Identity simulator boundary: The simulator sees the government ID and password. It is trusted to check the simulated citizen record and to issue valid tickets only after successful authentication.
+%     \item Relayer boundary: The relayer sees report text, location, images, ticket data, and the citizen wallet address. It is trusted to verify requests and to submit only approved data.
+%     \item AI boundary: The aggregator and classifier services receive report content. Their decisions are advisory off-chain gates and are not blockchain consensus.
+%     \item Storage boundary: The IPFS service receives the accepted complaint envelope. No authentication is implemented at the service level. Network isolation is therefore assumed.
+%     \item Blockchain boundary: Validators are trusted collectively to operate the private network. Contract rules are shared by all nodes, but the permissioned validator group is not fully trustless.
+% \end{enumerate}
 
+The system does not rely on the assumption that every layer is honest. Each major component sits behind its own trust line. It defines what it can read, what it can write, and what happens if it misbehaves. That framing helps separate what the blockchain ledger can prove after the fact from what still depends on application code, operators, or user devices.
 
 \begin{enumerate}
-    \item Citizen device boundary: The citizen seed, derived wallet, ticket batch, and optional encrypted session are handled in the browser. A compromised browser can expose these values.
-    \item Identity simulator boundary: The simulator sees the government ID and password. It is trusted to check the simulated citizen record and to issue valid tickets only after successful authentication.
-    \item Relayer boundary: The relayer sees report text, location, images, ticket data, and the citizen wallet address. It is trusted to verify requests and to submit only approved data.
-    \item AI boundary: The aggregator and classifier services receive report content. Their decisions are advisory off-chain gates and are not blockchain consensus.
-    \item Storage boundary: The IPFS service receives the accepted complaint envelope. No authentication is implemented at the service level. Network isolation is therefore assumed.
-    \item Blockchain boundary: Validators are trusted collectively to operate the private network. Contract rules are shared by all nodes, but the permissioned validator group is not fully trustless.
+    \item Citizen device: The browser stores the citizen seed, derived wallet, ticket batch, and any encrypted session data. A compromised or tampered client can leak all of these.
+    \item Identity simulator: The prototype login sends a government ID and password to this service. It must match the simulated citizen record and release signed tickets only after authentication succeeds.
+    \item Relayer: The relayer handles report text, location, images, ticket data, and the citizen wallet address before a transaction is broadcast. It is expected to validate each request and pass through only submissions that cleared the earlier checks.
+    \item AI moderation: Aggregator and classifier services also process report content. Their accept or reject outcomes gate submission off-chain. Validators do not re run those models as part of consensus.
+    \item Storage: The accepted complaint envelope is written to \ac{IPFS}. The storage service itself does not enforce authentication in the prototype, so who can reach it is left to network isolation and deployment policy.
+    \item Blockchain: A fixed set of validators maintains the private network and runs the same contract logic on each node. Integrity of on-chain state still rests on that permissioned group rather than on an open, anonymous mining pool.
 \end{enumerate}
 
 These boundaries show that blockchain integrity does not remove trust from identity checking, moderation, storage access, or endpoint operation.
@@ -140,9 +150,9 @@ A citizen wallet is derived deterministically from a citizen seed in the browser
     \label{eq:pseudonym}
 \end{equation}
 
-where \(P\) is the citizen pseudonym, \(A\) is the citizen wallet address, \(D\) is a configured domain salt, and \(\parallel\) denotes packed concatenation. This design keeps the citizen's wallet address out of public report records, while still letting the contract recognise that two submissions came from the same citizen through the stable pseudonym. That recognition is a deliberate design choice rather than an oversight. It is exactly what allows the one-vote-per-citizen and one-report-per-ticket rules described later in this chapter to be enforced without the contract ever learning who the citizen is. The result is pseudonymous participation which a practical and useful privacy-preserving level for a prototype. Furthermore, it provides a foundation that a future anonymous-credential scheme could build on and strengthen further.
+where \(P\) is the citizen pseudonym, \(A\) is the citizen wallet address, \(D\) is a configured domain salt, and \(\parallel\) denotes packed concatenation. Public report entries therefore carry \(P\) instead of \(A\). The same citizen always produces the same pseudonym, so the contract can tell whether two actions came from one wallet even though the real address never appears on-chain. That property is intentional. Later sections rely on it to enforce one vote per citizen and one report per ticket without storing personal identifiers in the ledger. For this prototype, that level of indirection is enough to separate civic participation from direct wallet exposure, and the same salt-and-address recipe could later be swapped for a fuller anonymous-credential flow if needed.
 
-Before a report is queued, the relayer verifies the government signature on the ticket, the hash of every uploaded image, and the citizen's \ac{ECDSA} signature on the report payload, as shown in Figure~\ref{fig:relayer-verification}. These checks are deliberately ordered from cheapest to most expensive. The government ticket signature is checked first because it is the fastest way to discard a request that was never properly authorized, before spending time on validating image hashes or recovering the signer of the heavier report-hash signature.
+Before a report enters the queue, the relayer runs the checks in Figure~\ref{fig:relayer-verification}. It validates the government signature on the ticket, compares hashes for each uploaded image, and recovers the citizen signer from the \ac{ECDSA} signature over the report payload. These steps are arranged so that lightweight checks run first. An invalid or already-used ticket is rejected immediately, avoiding the cost of hash verification and signature recovery on payloads that were never authorised in the first place.
 
 \begin{figure}[!htb]
     \centering
@@ -151,7 +161,7 @@ Before a report is queued, the relayer verifies the government signature on the 
     \label{fig:relayer-verification}
 \end{figure}
 
-The \ac{AI} aggregator is protected by an \ac{API} key, a relayer signature, a timestamp limit, and a nonce replay store. A missing classifier response or a failed classifier request is treated as a rejection. This fail-closed rule is chosen over a fail-open alternative because the cost of the two error types is not symmetric. A citizen whose report is delayed by a temporary moderation outage can simply resubmit once the service recovers. Whereas content that bypasses moderation because a classifier unavailability cannot  subsequently be removed from the tamper-evident ledger. Treating uncertainty as a rejection protects the harder-to-reverse outcome.
+Access to the \ac{AI} aggregator requires an \ac{API} key, a relayer signature, a fresh timestamp, and a nonce that has not been seen before. If the classifier does not respond or returns an error, the submission is rejected outright. The system prefers that behaviour over letting reports through during an outage. A citizen blocked by downtime can try again once moderation is back; a report that slipped past a broken gate would be written to an immutable chain and could not be undone. Rejecting on doubt avoids the worse of those two failures.
 
 \section{Report Data and Composite Hash}
 \label{sec:report-data-hash}
@@ -218,7 +228,7 @@ The lifecycle of a standard report is illustrated in Figure~\ref{fig:report-life
 
 Two separate community checkpoints are built into this lifecycle on purpose. The first, PendingValidation, protects authority time by filtering out spam, duplicates, and clearly invalid reports before any government worker is asked to act on them. The second, PendingVerification, protects citizens by making sure an authority's claim of a fix is independently confirmed by the people affected before a report is closed, rather than letting an authority close its own work unchecked. Together, the two checkpoints ensure that neither the community nor the authority can unilaterally decide that an issue is resolved.
 
-The default voting window is six hours, which is short enough to keep the workflow responsive while still giving citizens across a working day a reasonable chance to see and vote on a new report. The voting method and window can be changed through government-side configuration. As a result, a deployment can tune this balance without changing contract code. State changes are checked by contract functions, and events provide an audit trail.
+Voting window for a newly visible report runs for six hours by default. That length was chosen so cases do not sit open indefinitely, yet people who check the app during a normal working day still have time to respond. Government operators can adjust both the voting method and the window through configuration settings, so a live installation can lengthen or shorten the period without redeploying smart contracts. Every transition still has to pass the contract's own checks, and each step emits an event that can be reviewed later.
 
 \section{Standard Report Workflow}
 \label{sec:standard-report-workflow}
@@ -289,7 +299,7 @@ The detection workflow is described below.
 \section{Emergency Report Workflow}
 \label{sec:emergency-workflow}
 
-Emergency reports use the same relayer checks, moderation pipeline, and IPFS storage process, so the same integrity and safety guarantees described above apply for them as well. However, a separate smart contract (EmergencyReporting) is used and a submitted emergency becomes Open directly rather than waiting for standard community validation, as shown in Figure~\ref{fig:emergency-workflow}. This shortcut exists because the community voting window that protects the standard workflow from spam would be harmful for a genuine emergency, such as a gas leak or collapsing structure, where every additional hour of delay increases risk to public safety. In EmergencyReporting smart contract, four states are used, as summarized in Table~\ref{tab:emergency-statuses} and Figure~\ref{fig:emergency-lifecycle}.
+Emergency reports use the same relayer checks, moderation pipeline, and IPFS storage process, so the same integrity and safety guarantees described above apply for them as well. However, a separate smart contract (EmergencyReporting) is used and a submitted emergency becomes Open directly rather than waiting for standard community validation, as shown in Figure~\ref{fig:emergency-workflow}. This shortcut exists because the community voting window that protects the standard workflow from spam would be harmful for a genuine emergency, such as a gas leak or collapsing structure, where every additional hour of delay increases risk to public safety. The four states are used in the Emergency Reporting smart contract are summarized in Table~\ref{tab:emergency-statuses} and Figure~\ref{fig:emergency-lifecycle}.
 
 \begin{figure}[!htbp]
     \centering
@@ -327,14 +337,14 @@ Emergency reports use the same relayer checks, moderation pipeline, and IPFS sto
     \label{fig:emergency-lifecycle}
 \end{figure}
 
-An authority can start work, resolve an emergency, or reclassify a false emergency. Resolution can be made directly from Open state when a rapid response is needed, since a fast-moving emergency may already be handled by the time an authority formally logs progress.
+Authorities may mark a case as in progress, close it as resolved, or downgrade it to a false emergency. In urgent situations they can record resolution straight from the Open state instead of waiting for an intermediate step, on the assumption that a genuine emergency may already be under control before the status is updated on the system.
 
-Because the emergency channel deliberately skips community validation for the sake of speed, it needs a different safeguard against misuse than the standard channel's voting step provides. The 30-day emergency penalty box fills that role. When a report is reclassified as a false emergency, the reporting pseudonym is temporarily blocked from the Emergency Reporting contract. This design keeps the emergency path immediate and unobstructed for citizens who use it honestly, while discouraging repeated false alarms. This block applies only to the emergency reports so a citizen can still use standard reporting during the cooldown period.
+The emergency route does not wait for community voting, which saves time but removes the spam filter that standard reports receive. The 30-day penalty box on emergency submissions is the compensating control. If an authority labels a report a false emergency, that citizen's pseudonym cannot file another emergency report through the Emergency Reporting contract for thirty days. Honest users still get a short, direct path when they need it. Repeated false alarms become expensive. The restriction targets only the emergency contract, so the same person can continue to raise ordinary reports while the timer runs.
 
 \section{Community Voting}
 \label{sec:community-voting}
 
-Community voting is used in three standard-report phases.
+Standard reports pass through three points where the community is asked to vote.
 \begin{enumerate}
     \item Initial validation
     \item Solution verification
@@ -355,12 +365,12 @@ Table~\ref{tab:voting-phases} summarizes the outcome of each phase, and Figures~
         \hline
         Solution verification & PendingVerification& Becomes Closed& Becomes Reopened\\
         \hline
-        Rejection review & PendingRejectionReview& Rejection upheld; becomes Closed& Appeal succeeds; becomes Reopened\\
+        Rejection review & PendingRejectionReview& Rejection upheld. Becomes Closed& Appeal succeeds. Becomes Reopened\\
         
     \end{tabular}
 \end{table}
 
-A separate single-use government-signed ticket is supplied for each vote. The relayer checks the ticket and the citizen signature. The ticket ID is used as a vote nullifier, while the pseudonym is also checked to enforce one-vote-per-citizen in the relevant phase.
+Each vote requires its own government-signed ticket that can be spent only once. Before forwarding the vote, the relayer validates that ticket together with the citizen's signature on the vote payload. The ticket identifier is recorded as a nullifier so the same ticket cannot be reused, and the pseudonym is checked so a citizen cannot cast more than one vote in the same phase.
 
 \begin{figure}[!htbp]
     \centering
@@ -369,7 +379,7 @@ A separate single-use government-signed ticket is supplied for each vote. The re
     \label{fig:community-validation-workflow}
 \end{figure}
 
-The default method is a simple majority, where the positive count must be greater than the negative count. The contract also supports a two-thirds supermajority, a minimum-vote threshold, and a hybrid of two methods. These options exist because not every decision carries the same weight. A  simple majority is adequate for the everyday validation of routine reports, while for issues that require stronger validation, another voting method can be configured.
+By default, a vote passes when approvals outnumber rejections. The Reporting contract can also be switched to a two-thirds supermajority, a minimum turnout threshold, or a hybrid rule that combines two criteria. There is no single rule that every local governance body would accept. What works for one council may be too weak or too slow for another. Choosing how votes are finalised is therefore left to the deploying authority, and the system implements all of the options listed above. After a method is selected and applied, it governs every future standard-report voting window across the deployment.
 
 Expired windows can be finalized by lazy evaluation when a late vote is received, or by batch finalization using scheduled cron jobs. Providing two ways to trigger finalization means that a report's progress does not depend on any single actor remembering to close its voting window. A citizen's late vote can trigger it, or a scheduled cron job can trigger it. 
 
@@ -401,9 +411,9 @@ Authority access is governed by the AuthorityMultiSig contract. Super Admins sub
     \label{eq:governance-quorum}
 \end{equation}
 
-where \(Q\) is the required number of approvals and \(N\) is the current number of Super Admins. Requiring a strict majority, rather than a simple plurality or a single approver, ensures that no single compromised or rogue Super Admin account can unilaterally add a fake authority worker, remove a legitimate one, or change the voting method. At least half of the Super Admin group must independently agree, which mirrors how sensitive administrative changes are handled in traditional multi-signature governance designs.
+where \(Q\) is the required number of approvals and \(N\) is the current number of Super Admins. A proposal needs more than half of the group to vote yes, not just one signature or the largest share of votes cast. That bar blocks a single stolen or misused Super Admin account from registering a malicious authority worker, stripping a real one, or rewriting the voting rules on its own. The threshold follows the same idea as conventional multisignature admin panels, where sensitive changes need several independent sign-offs.
 
-Approved proposals can add or remove Super Admins, add or remove authority workers, and change the Reporting contract voting method. Authority changes are applied to both standard and emergency reporting when both contract references are configured, so that a worker's permissions stay consistent everywhere. 
+Once passed, a proposal may add or remove Super Admins, add or remove authority workers, or update the voting method on the Reporting contract. When both standard and emergency contract addresses are wired in, worker grants and revocations are written to each, so the same person does not end up authorised on one channel and blocked on the other.
 
 \section{Opinion Polling}
 \label{sec:opinion-polling}
@@ -419,20 +429,22 @@ An authorized authority creates a poll with an IPFS metadata CID, a future deadl
     \label{fig:opinion-polling-workflow}
 \end{figure}
 
-Poll results are public counts, and their identity details are never stored alongside a vote. Only the poll ID, the chosen option, and a single-use nullifier are recorded. This gives citizens a low-friction, ticket-based way to make their opinion count publicly without exposing who cast which vote, using the same nullifier mechanism already trusted elsewhere in the system for reports and validation votes. A poll is marked inactive and results are published when it is finalized.
+Tallies are visible to everyone, but nothing in the vote record ties a vote back to a named citizen. The chain stores only the poll ID, the selected option, and a nullifier that cannot be spent twice on the same poll. Citizens therefore take part through the same ticket-and-nullifier pattern used for reports and community votes, gaining a public say without leaving an identity trail next to their choice. When the deadline passes and finalization runs, the poll is closed and the outcome is fixed on the ledger.
 
 \section{Design Rationale}
 \label{sec:design-rationale}
 
-The private Clique PoA network is selected over a public chain because a small, known set of validators can agree on blocks in seconds rather than minutes, which matters for a citizen-facing reporting workflow. A non-mining RPC node separates application access from block sealing for the reasons given in Section~\ref{sec:layered-architecture}, read and write traffic should never be able to interfere with consensus.
+A private Clique \ac{PoA} network is used instead of a public blockchain because block confirmation can complete in seconds when only a small, pre-approved validator set is involved. That responsiveness matters when citizens expect a report or vote to show up without a long delay. Rather than the longer waits typical on open networks. A non-mining RPC node separates application access from block sealing for the reasons given in Section~\ref{sec:layered-architecture}. Read and write traffic should never be able to interfere with consensus.
 
 The four-contract design separates normal reports, urgent reports, governance, and public opinion consultation because each has a different lifecycle and a different risk. Combining them into a single contract would force every report, including a routine pothole complaint, to carry the complexity needed for emergency fast-tracking and poll tallying, making the contract harder to reason and to test. Splitting them keeps each contract's logic close to the one workflow it serves.
 
-The relayer is used because citizens should be able to participate without first acquiring cryptocurrency or understanding gas fees, both of which are significant adoption barriers for a public-service tool that needs to reach non-technical users. BullMQ is used because AI content moderation, IPFS storage, and blockchain confirmation can together take longer time than a single HTTP request should take. An ordered job queue lets each step retry independently without repeating steps that already succeeded. IPFS is used to keep large content outside smart contracts, since storing a photograph directly on-chain would multiply gas cost for every validator that replicates the ledger. A \ac{CID} still lets anyone verify that the off-chain content matches what was originally submitted.
+The relayer is used because citizens should be able to participate without first acquiring cryptocurrency or understanding gas fees, both of which are significant adoption barriers for a public-service tool that needs to reach non-technical users. BullMQ is used because AI content moderation, IPFS storage, and blockchain confirmation can together take longer time than a single HTTP request should take. 
+Work is handed off through an ordered queue so a failed moderation call or a slow IPFS upload can be retried on its own, without replaying steps that already completed. Large attachments stay in \ac{IPFS} rather than inside contract storage, because putting even one photograph on-chain would inflate gas for every node that holds a copy of the ledger. The on-chain record keeps only the \ac{CID}, which is enough for anyone to fetch the file later and confirm it still matches what was submitted.
 
-The identity layer is built as a simulator that issues signed, single-use tickets rather than a fully custom identity system as mentioned in the scope of the project. Chapter~\ref{ch:conclusions} discusses how this identity layer, together with independent auditing and broader validator governance, can be strengthened as the project matures.
+Identity is handled by a simulator that hands out signed, single-use tickets instead of building a full decentralised identity stack, which sits outside this project's stated scope. Chapter~\ref{ch:conclusions} outlines how that layer, along with stronger auditing and a wider validator governance model, could be extended in future work.
 
 \section{Summary}
 \label{sec:architecture-summary}
 
-This chapter has presented a layered design in which identity simulation, relayed processing, AI moderation, IPFS storage, and private PoA records each play a distinct, well-justified role. Standard reports pass through two community checkpoints so that neither the public nor the authority can unilaterally decide that an issue is resolved. Emergencies are opened immediately to keep urgent response fast, backed by a penalty-box safeguard against misuse of that shortcut. Multisignature governance keeps authority access and voting configuration under shared control rather than any single account. Pseudonymous tickets give citizens a practical, working form of participation that does not require them to reveal their identity in order to submit a report, vote, or take part in a public opinion poll. Chapter~\ref{ch:implementation} explains how each of these design decisions was implemented, and Chapters~\ref{ch:testing} and~\ref{ch:results} evaluate how well the resulting prototype performs against them.
+This chapter laid out a design built in layers. Simulated identity checks, relayed submission, \ac{AI} moderation, \ac{IPFS} storage, and a private \ac{PoA} ledger each handle a separate concern. Standard reports must clear two community votes, one before an authority acts and one after a fix is claimed, so neither side can close a case on its own. Emergency reports skip the first vote to save time, with a thirty-day penalty box to discourage abuse of that faster path.
+Multisignature governance keeps authority access and voting configuration under shared control rather than any single account. Pseudonymous tickets give citizens a practical, working form of participation that does not require them to reveal their identity in order to submit a report, vote, or take part in a public opinion poll. Chapter~\ref{ch:implementation} explains how each of these design decisions was implemented, and Chapters~\ref{ch:testing} and~\ref{ch:results} evaluate how well the resulting prototype performs against them.
