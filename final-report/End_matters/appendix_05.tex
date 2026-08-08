@@ -747,36 +747,36 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Expected result:} State of the report becomes Reclassified. The citizen receives a 30-day lock on the emergency channel.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m4-3-reclassified}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-reclassify-ereport}.
 
-\subsubsection{Scenario 4 - Emergency penalty enforcement }
- {Role:} Penalized citizen \\
- {Preconditions:} The citizen who submitted false emergency report in test~\ref{e2e:false-emergency-report}, should be under 30-day penalty. 
+% \subsubsection{Scenario 4 - Emergency penalty enforcement }
+%  {Role:} Penalized citizen \\
+%  {Preconditions:} The citizen who submitted false emergency report in test~\ref{e2e:false-emergency-report}, should be under 30-day penalty. 
 
-\begin{enumerate}
-    \item Attempt to submit another emergency report.
-    \item Attempt to submit a standard report.
-    \item Verify that another emergency report cannot be submitted, but a standard report is still accepted. 
-\end{enumerate}
+% \begin{enumerate}
+%     \item Attempt to submit another emergency report.
+%     \item Attempt to submit a standard report.
+%     \item Verify that another emergency report cannot be submitted, but a standard report is still accepted. 
+% \end{enumerate}
 
-\noindent {Expected result:} The emergency report submission is blocked, standard report submission is valid. 
+% \noindent {Expected result:} The emergency report submission is blocked, standard report submission is valid. 
 
-\noindent {Screenshots:} Fig.~\ref{fig:m4-4-penalty}.
+% \noindent {Screenshots:} Fig.~\ref{fig:m4-4-penalty}.
 
-\subsubsection{Scenario 5 - Emergency report without consent}
- {Role:} Citizen \\
- {Preconditions:}  None
+% \subsubsection{Scenario 5 - Emergency report without consent}
+%  {Role:} Citizen \\
+%  {Preconditions:}  None
 
-\begin{enumerate}
-    \item Nagivate to report submission form, complete all details and enable emergency toggle, and submit. 
-    \item Then cancel the consent modal without confirming. 
-    \item Attempt to submit the report without accepting consent.
-\end{enumerate}
+% \begin{enumerate}
+%     \item Nagivate to report submission form, complete all details and enable emergency toggle, and submit. 
+%     \item Then cancel the consent modal without confirming. 
+%     \item Attempt to submit the report without accepting consent.
+% \end{enumerate}
 
-\noindent {Expected result:} Emergency report submission does not proceed without consent. 
+% \noindent {Expected result:} Emergency report submission does not proceed without consent. 
 
 
-\noindent {Screenshots:} Fig.~\ref{fig:m4-5-cancel-consent}.
+% \noindent {Screenshots:} Fig.~\ref{fig:m4-5-cancel-consent}.
 
 \subsection{Opinion Polling}
 
@@ -1379,9 +1379,17 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
 
 \subsubsection{Scenario 3 - Reclassify false emergency}
 
-\subsubsection{Scenario 4 - Emergency penalty enforcement }
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/reclassify-ereport.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Authority worker reclassifies a false emergency report}
+          \label{fig:me2e-reclassify-ereport}
+\end{figure}
 
-\subsubsection{Scenario 5 - Emergency report without consent}
+% \subsubsection{Scenario 4 - Emergency penalty enforcement }
+
+% \subsubsection{Scenario 5 - Emergency report without consent}
 
 
 % \begin{figure}[H]
