@@ -710,7 +710,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 \subsubsection{Scenario 1 - Emergency report submission}
 \label{e2e:emergency-report}
  {Role:} Citizen\\
- {Preconditions:} A loggged in citizen who is not under emergency report guideline violation penalty.emergency-channel penalty.
+ {Preconditions:} A loggged in citizen who is not under emergency report guideline violation penalty. 
 
 \begin{enumerate}
     \item Navigate to report submission form, select report category, description, images, and location. 
@@ -720,7 +720,7 @@ The scenarios below covers both citizen workflows and authority workflows throug
 
 \noindent {Expected result:} Report is displaying as an emergency report with the state Open.(PendingValidation state should be skipped)
 
-\noindent {Screenshots:} Fig.~\ref{fig:m4-1-consent}, Fig.~\ref{fig:m4-1-open}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-emergency-consent}, and Figure.~\ref{fig:me2e-emergency-report-open}.
 
 \subsubsection{Scenario 2 - Authority resolve emergency}
 
@@ -733,8 +733,6 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \item Verify the report state transition to Resolved.
 \end{enumerate}
 \noindent {Expected result:} State of the report becomes Resolved.
-
-Status becomes \texttt{Resolved}.
 
 \noindent {Screenshots:} Fig.~\ref{fig:m4-2-resolved}.
 
@@ -1318,81 +1316,27 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
           \label{fig:me2e-double-vote-prevention}
 \end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-1-rejected.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.1: CommunityRejected]\vspace{3.5cm}}}
-%     \caption{Report status \texttt{CommunityRejected} after validation downvotes (scenario M3.1)}
-%     \label{fig:m3-1-rejected}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-2-review.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.2-a: PendingRejectionReview]\vspace{3.5cm}}}
-%     \caption{Report in \texttt{PendingRejectionReview} after authority reject (scenario M3.2)}
-%     \label{fig:m3-2-review}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-2-closed.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.2-b: Closed after uphold]\vspace{3.5cm}}}
-%     \caption{Report closed after community upholds the authority rejection (scenario M3.2)}
-%     \label{fig:m3-2-closed}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-3-reopened.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.3: Reopened after appeal]\vspace{3.5cm}}}
-%     \caption{Report \texttt{Reopened} after community appeals the rejection (scenario M3.3)}
-%     \label{fig:m3-3-reopened}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-4-verif-reopen.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.4: Reopened after verification reject]\vspace{3.5cm}}}
-%     \caption{Report \texttt{Reopened} after verification reject majority (scenario M3.4)}
-%     \label{fig:m3-4-verif-reopen}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-5-validation.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.5: Client validation error]\vspace{3.5cm}}}
-%     \caption{Client-side validation preventing an invalid submission (scenario M3.5)}
-%     \label{fig:m3-5-validation}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-6-ai-reject.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.6: AI rejection in notifications]\vspace{3.5cm}}}
-%     \caption{AI moderation rejection shown in notifications (scenario M3.6)}
-%     \label{fig:m3-6-ai-reject}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-7-duplicate.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.7: Duplicate warning modal]\vspace{3.5cm}}}
-%     \caption{Duplicate geo and category warning modal (scenario M3.7)}
-%     \label{fig:m3-7-duplicate}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     % \includegraphics[width=0.85\textwidth]{Images/Appendix/m3-8-double-vote.png}
-%     \fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M3.8: Double-vote or ticket error]\vspace{3.5cm}}}
-%     \caption{Double-vote or ticket-exhaustion error (scenario M3.8)}
-%     \label{fig:m3-8-double-vote}
-% \end{figure}
-
 \subsection{Emergency Screenshots}
 
 \subsubsection{Scenario 1 - Emergency report submission}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/emergency-consent.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Consent modal displaying when submitting an emergency report}
+          \label{fig:me2e-emergency-consent}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{Images/Appendix/me2e/emergency/report-state-open.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Report directly moved to Open state after submission}
+          \label{fig:me2e-emergency-report-open}
+\end{figure}
+
+
 
 \subsubsection{Scenario 2 - Authority resolve emergency}
 
