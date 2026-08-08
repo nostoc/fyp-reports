@@ -687,11 +687,10 @@ The scenarios below covers both citizen workflows and authority workflows throug
     \item Submit a new report with the same category and location within about 1\,km of the existing report.
     \item Observe the duplicate report warning modal. 
     \item Acknowledge the warning and cancel submission to avoid duplication. 
-    \item Verify the redirection to the existing report detail page.
 \end{enumerate}
-\noindent {Expected result:} The similar report warning appears, the citizen can select to cancel submission or proceed. If cancelled, the citizen is redirected to the existing report detail page.
+\noindent {Expected result:} The similar report warning appears, the citizen can view the preview of the similar report.
 
-\noindent {Screenshots:} Fig.~\ref{fig:m3-7-duplicate}.
+\noindent {Screenshots:} Figure.~\ref{fig:me2e-similar-report-detection}, and Figure.~\ref{fig:me2e-similar-report-preview}.
 
 \subsubsection{Scenario 8 - Double vote prevention}
  {Role:} Citizen \\
@@ -1284,13 +1283,30 @@ The figures below correspond to the manual scenarios in Section~\ref{sec:manual-
          \centering
          \includegraphics[width=\textwidth]{Images/Appendix/me2e/alteranate/notification-showing-ai-reection.png}
         \caption{SSE notification showing AI moderation rejection}
-          \label{fig:me2e-image-error}
+          \label{fig:me2e-ai-moderation-notification}
      \end{subfigure}
         \caption{AI moderation rejection of a report}
-        \label{fig:me2e-ai-moderation-report-rejection}    
+        \label{fig:me2e-ai-moderation-report-rejection}         
 \end{figure}
 
 \subsubsection{Scenario 7 - Similar report detection}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Images/Appendix/me2e/alteranate/similar-report-detection.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+    \caption{Similar report detection during submission}
+    \label{fig:me2e-similar-report-detection}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Images/Appendix/me2e/alteranate/similar-report-preview.png}
+    %\fbox{\parbox{0.85\textwidth}{\centering\vspace{3.5cm}[Screenshot M1.3: Invalid credentials error]\vspace{3.5cm}}}
+     \caption{Preview of identified similar report}
+          \label{fig:me2e-similar-report-preview}
+\end{figure}
+
 
 \subsubsection{Scenario 8 - Double vote prevention}
 % \begin{figure}[H]
