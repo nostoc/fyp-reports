@@ -4,9 +4,9 @@
 \section{Introduction}
 \label{sec:architecture-introduction}
 
-This chapter presents the design of the local governance reporting system. The system is divided into clear layers. Identity checking, content processing, storage, and public record keeping are separated, with each responsibility handled by the part of the system best suited to it. Facts that must be trusted by every participant and never quietly altered, such as a report's status, a vote count, or an authority's action, are recorded on a private blockchain. Uploading images, running \ac{AI} moderation are time consuming and data intensive tasks. Therefore these tasks are handled off-chain. The verifiable hash of the images and also the verdict of the moderation are stored in the blockchain.
+This chapter presents the design of the local governance reporting system. The system is divided into clear layers. Identity checking, content processing, storage, and public record keeping are separated, with each responsibility handled by the part of the system best suited to it. Facts that must be trusted by every participant and never quietly altered, such as a report's status, a vote count, or an authority's action, are recorded on a private blockchain. Uploading images and running \ac{AI} moderation are time consuming and data intensive tasks. Therefore, these tasks are handled off-chain. The verifiable hash of the images and also the verdict of the moderation are stored in the blockchain.
 
-Standard civic report submissions, emergency reporting, community voting, public opinion polling and authority works are included in the designed system. Figure~\ref{fig:component-interaction} gives a high-level view of how the main components communicate before the rest of the chapter explains each part and the reasoning behind it. Citizen participation is pseudonymous on-chain. A citizen authenticates through a government identity check and receives signed, single-use tickets, consistent with the identity-simulation scope adopted for this prototype. The sections that follow explain how these tickets support anonymous but accountable participation throughout the reporting, voting, and polling workflows.
+Standard civic report submissions, emergency reporting, community voting, public opinion polling, and authority works are included in the designed system. Figure~\ref{fig:component-interaction} gives a high-level view of how the main components communicate before the rest of the chapter explains each part and the reasoning behind it. Citizen participation is pseudonymous on-chain. A citizen authenticates through a government identity check and receives signed, single-use tickets, consistent with the identity-simulation scope adopted for this prototype. The sections that follow explain how these tickets support anonymous but accountable participation throughout the reporting, voting, and polling workflows.
 
 \begin{figure}[!htb]
     \centering
@@ -52,9 +52,9 @@ The main design goals and how they are achieved are listed in Table~\ref{tab:req
 \section{Overall Layered Architecture}
 \label{sec:layered-architecture}
 
-A hybrid on-chain and off-chain design is used because the two environments are capable at different tasks. The blockchain is well suited to recording facts that must be trusted by every participant and never silently altered, such as status of a report or a vote tally. However, writing large media files or running machine learning inference directly on-chain would be time consuming and expensive to replicate across every node. The system offers both auditability and practical performance by keeping heavy work off-chain, while anchoring only its outcome and a verifiable hash on-chain. 
+A hybrid on-chain and off-chain design is used because the two environments are capable of different tasks. The blockchain is well suited to recording facts that must be trusted by every participant and never silently altered, such as the status of a report or a vote tally. However, writing large media files or running machine learning inference directly on-chain would be time consuming and expensive to replicate across every node. The system offers both auditability and practical performance by keeping heavy work off-chain, while anchoring only its outcome and a verifiable hash on-chain. 
 \begin{enumerate}
-     \item On-Chain Environment:  Executed on a private, permissioned \ac{PoA} network. It maintains minimal, immutable state variables. It includes report metadata, opinion polling metadata, lifecycle state transitions, cryptographic content hashes, single-use ticket nullifiers,\ac{RBAC} configurations, multi-signature governance proposals, and community voting tallies.
+    \item On-Chain Environment:  Executed on a private, permissioned \ac{PoA} network. It maintains minimal, immutable state variables. It includes report metadata, opinion polling metadata, lifecycle state transitions, cryptographic content hashes, single-use ticket nullifiers, \ac{RBAC} configurations, multi-signature governance proposals, and community voting tallies.
     \item Off-Chain Environment: Comprises data-intensive and computationally heavy microservices, including multimedia storage on \ac{IPFS}, automated \ac{AI} content moderation, gasless transaction orchestration via a NestJS middleware relayer, automated wallet funding, and scheduled background cron jobs for voting window finalization.
 \end{enumerate}
 
@@ -86,16 +86,16 @@ The layered architecture diagram is shown in Figure~\ref{fig:layered-architectur
         \hline
         AI moderation & Safety, spam, and civic relevance services produce off-chain decisions. A fail-closed aggregator combines their results. \\
         \hline
-        IPFS storage & One complaint JSON envelope, including metadata and base64 images, is stored under one content identifier. \\
+        \ac{IPFS} storage & One complaint \ac{JSON} envelope, including metadata and base64 images, is stored under one content identifier. \\
         \hline
         Blockchain & Four contracts enforce reports, emergencies, multisig governance, and opinion polls on a private Geth Clique \ac{PoA} network. \\
         
     \end{tabular}
 \end{table}
 
-These layer boundaries are drawn along trust and technology. The identity simulator is decoupled from the relayer because it represents a different administrative authority. AI and IPFS services are comparatively slow and are best isolated behind asynchronous jobs rather than called synchronously. Consequently, the relayer and queue layer are maintained in a separated location from AI and IPFS. The blockchain layer is kept as thin as possible because every extra byte stored or computation executed on-chain is replicated and paid for by every node in the network. Therefore, only the facts that genuinely need a tamper-evident public record are stored on blockchain.
+These layer boundaries are drawn along trust and technology. The identity simulator is decoupled from the relayer because it represents a different administrative authority. AI and IPFS services are comparatively slow and are best isolated behind asynchronous jobs rather than called synchronously. Consequently, the relayer and queue layer are maintained in a separate location from AI and IPFS. The blockchain layer is kept as thin as possible because every extra byte stored or computation executed on-chain is replicated and paid for by every node in the network. Therefore, only the facts that genuinely need a tamper-evident public record are stored on the blockchain.
 
-The blockchain uses chain ID 1337 and a 5 $s$ Clique period. Three validator nodes seal blocks, and a fourth node does not mine but instead exposes the \ac{JSON}-\ac{RPC} interface used by the rest of the system, as shown in Figure~\ref{fig:validator-topology}. A 5 $s$ block period is short enough to give citizens fast confirmation feedback for a civic reporting workload, while still being long enough for three validators to agree reliably without specialised hardware. Separating the \ac{RPC}-only node from the three sealing validators means that read traffic from the dApp and write traffic from the relayer can never compete with or accidentally disrupt the block-sealing process. If the RPC node is restarted or briefly overloaded block production continues unaffected on the other three nodes. Direct reads are made by the dApp through this RPC interface. Citizen writes are normally sent through the relayer. Authority transactions are signed with MetaMask.
+The blockchain uses chain ID 1337 and a 5 $s$ Clique period. Three validator nodes seal blocks, and a fourth node does not mine but instead exposes the \ac{JSON}-\ac{RPC} interface used by the rest of the system, as shown in Figure~\ref{fig:validator-topology}. A 5 $s$ block period is short enough to give citizens fast confirmation feedback for a civic reporting workload, while still being long enough for three validators to agree reliably without specialised hardware. Separating the \ac{RPC}-only node from the three sealing validators means that read traffic from the \ac{DApp} and write traffic from the relayer can never compete with or accidentally disrupt the block-sealing process. If the \ac{RPC} node is restarted or briefly overloaded block production continues unaffected on the other three nodes. Direct reads are made by the \ac{DApp} through this \ac{RPC} interface. Citizen writes are normally sent through the relayer. Authority transactions are signed with MetaMask.
 
 \begin{figure}[!htb]
     \centering
@@ -134,7 +134,7 @@ These boundaries show that blockchain integrity does not remove trust from ident
 \section{Privacy and Security Design}
 \label{sec:privacy-security-design}
 
-Citizen identity is decoupled from the public report record through a government identity check. A government ID and password are verified by the identity simulator, and government-signed, single-use ticket IDs are issued only after this check succeeds. Each ticket behaves as a nullifier. The nullifier gives evidence that one unit of participation was issued to an eligible citizen, and the contract's nullifier mapping stops that same ticket from being used a second time. This ticket-based approach is used because it lets the prototype enforce single-action-per-eligible-citizen immediately using well-understood signature and mapping checks. This approach preserves the possibility of introducing a stronger anonymous-credential or \ac{ZKP}  system at a later stage, without requiring to modify how the relayer, the contracts, or the voting logic consume tickets.
+Citizen identity is decoupled from the public report record through a government identity check. A government ID and password are verified by the identity simulator, and government-signed, single-use ticket IDs are issued only after this check succeeds. Each ticket behaves as a nullifier. The nullifier gives evidence that one unit of participation was issued to an eligible citizen, and the contract's nullifier mapping stops that same ticket from being used a second time. This ticket-based approach is used because it lets the prototype enforce single-action-per-eligible-citizen immediately using well-understood signature and mapping checks. This approach preserves the possibility of introducing a stronger anonymous-credential or \ac{ZKP}  system at a later stage, without requiring how the relayer, the contracts, or the voting logic consume tickets.
 
 % \begin{figure}[!htb]
 %     \centering
@@ -228,7 +228,7 @@ The lifecycle of a standard report is illustrated in Figure~\ref{fig:report-life
 
 Two separate community checkpoints are built into this lifecycle on purpose. The first, PendingValidation, protects authority time by filtering out spam, duplicates, and clearly invalid reports before any government worker is asked to act on them. The second, PendingVerification, protects citizens by making sure an authority's claim of a fix is independently confirmed by the people affected before a report is closed, rather than letting an authority close its own work unchecked. Together, the two checkpoints ensure that neither the community nor the authority can unilaterally decide that an issue is resolved.
 
-Voting window for a newly visible report runs for six hours by default. That length was chosen so cases do not sit open indefinitely, yet people who check the app during a normal working day still have time to respond. Government operators can adjust both the voting method and the window through configuration settings, so a live installation can lengthen or shorten the period without redeploying smart contracts. Every transition still has to pass the contract's own checks, and each step emits an event that can be reviewed later.
+The voting window for a newly visible report runs for six hours by default. That length was chosen so cases do not sit open indefinitely, yet people who check the app during a normal working day still have time to respond. Government operators can adjust both the voting method and the window through configuration settings, so a live installation can lengthen or shorten the period without redeploying smart contracts. Every transition still has to pass the contract's own checks, and each step emits an event that can be reviewed later.
 
 \section{Standard Report Workflow}
 \label{sec:standard-report-workflow}
@@ -244,7 +244,7 @@ A standard report is processed as follows, and Figure~\ref{fig:report-submission
 
 \begin{enumerate}
     \item The citizen is checked by the identity simulator, and a signed single-use ticket is selected.
-    \item The dApp hashes the images, forms \(H_R\) from Eq.(\ref{eq:report-hash}), and signs it with the derived citizen wallet.
+    \item The \ac{DApp} hashes the images, forms \(H_R\) from Eq.(\ref{eq:report-hash}), and signs it with the derived citizen wallet.
     \item The relayer verifies the government ticket signature, uploaded image hashes, and citizen signature. A pseudonym is derived using Eq.(\ref{eq:pseudonym}).
     \item A BullMQ flow is created. AI moderation is run first, before any storage or blockchain cost is spent, so that rejected content does not consume IPFS or gas resources. If it is accepted, the processed report is uploaded to IPFS. The CID and hash values are then submitted to the Reporting contract.
     \item The report is created as PendingValidation. The single-use ticket ID is stored as a submission nullifier.
@@ -399,7 +399,7 @@ An authorized worker uses MetaMask to act on reports, as shown in Figure~\ref{fi
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.75\textwidth,keepaspectratio]{Images/Chapter 3/authority-workflow.png}
+    \includegraphics[width=0.7\textwidth,keepaspectratio]{Images/Chapter 3/authority-workflow.png}
     \caption{Authority action and multisig governance workflow}
     \label{fig:authority-workflow}
 \end{figure}
