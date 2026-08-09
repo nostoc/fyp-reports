@@ -122,7 +122,7 @@ Table~\ref{tab:contract-inventory} summarizes the five test files and responsibi
 
 \subsection{Functional Test Procedure}
 
-For Reporting.sol, both valid and deliberately invalid reports are submitted, exercising every custom revert condition alongside the success path. Validation, verification, and rejection-review votes are cast from multiple accounts, voting deadlines are advanced, and the resulting status transition has been checked against the state machine defined in Chapter~\ref{ch:architecture}. Pagination, per-citizen lookup, and the authority action history has been exercised so that the read-side of the contract is verified as same as the write-side.
+For Reporting.sol, both valid and deliberately invalid reports have been submitted, exercising every custom revert condition alongside the success path. Validation, verification, and rejection-review votes have been cast from multiple accounts, voting deadlines are advanced, and the resulting status transition has been checked against the state machine defined in Chapter~\ref{ch:architecture}. Pagination, per-citizen lookup, and the authority action history has been exercised so that the read-side of the contract is verified as same as the write-side.
 
 For EmergencyReporting.sol, the fast-track path has been checked end to end. A submission opens immediately without a validation phase, an authority can resolve it directly from Open or after claiming it with startWork, and a reclassified report correctly locks its citizen's pseudonym for the configured penalty window. For OpinionPolling.sol, poll creation restrictions, nullifier-based one-vote enforcement, and deadline handling has been covered. For AuthorityMultiSig.sol, proposal creation, automatic self-approval, and quorum-based execution ahas been covered for both Super Admin and authority-worker changes.
 \subsection{Results}
@@ -149,7 +149,7 @@ For EmergencyReporting.sol, the fast-track path has been checked end to end. A s
 \end{table}
 
 
-All 75 cases across the five contract test files passed in a single combined Hardhat run completing in five seconds as shown in Table~\ref{tab:contract-results}. More details on the test cases are provided in Appendix~\ref{apndx:smart-contract-test-cases}.
+All 75 cases across the five contract test files have been passed in a single combined Hardhat run completing in five seconds as shown in Table~\ref{tab:contract-results}. More details on the test cases are provided in Appendix~\ref{apndx:smart-contract-test-cases}.
 
 \section{Security and Sybil-Resistance Testing}
 \label{sec:security-testing}
@@ -181,7 +181,7 @@ Security.ts is dedicated to the specific risks a public-facing civic-reporting s
 \end{tabular}
 \end{table}
 
-Running the replay case 100 times, rather than once, is a deliberate choice. A single successful rejection could be a coincidence of test ordering, whereas 100 consecutive rejections give confidence that the nullifier check is a behaving as designed. The other five cases are each run once, because they are deterministic and do not depend on a sequence of events. More details on the test cases are provided in Appendix~\ref{apndx:security-test-cases}. 
+Running the replay case 100 times, rather than once, is a deliberate choice. A single successful rejection could be a coincidence of test ordering, whereas 100 consecutive rejections give confidence that the nullifier check is a behaving as designed. The other five cases have been run once, because they are deterministic and do not depend on a sequence of events. More details on the test cases are provided in Appendix~\ref{apndx:security-test-cases}. 
 
 \subsection{Results}
 
@@ -361,9 +361,9 @@ A dedicated Hardhat script measures the private network's practical performance 
     \label{fig:benchmark-measurements}
 \end{figure}
 
-Gas for submitReport() was averaged over five submissions run before any other benchmark load, so the figure reflects a quiet network. End-to-end latency was timed from dispatch until the receipt confirmed inclusion in a block, matching the wait a citizen sees after the relayer submits on their behalf. Throughput was estimated by broadcasting a batch of transactions in parallel with explicit nonce and fee assignment, then dividing the number that confirmed by the elapsed time.
+Gas for submitReport() has been averaged over five submissions run before any other benchmark load, so the figure reflects a quiet network. End-to-end latency has been timed from dispatch until the receipt confirmed inclusion in a block, matching the wait a citizen sees after the relayer submits on their behalf. Throughput has been estimated by broadcasting a batch of transactions in parallel with explicit nonce and fee assignment, then dividing the number that confirmed by the elapsed time.
 
-The Clique block interval was derived from consecutive sealed block timestamps rather than the configured period alone, because live validator timing can differ slightly from the nominal setting. Vote transactions were costed with the same five-sample method used for report submission. Batch-finalization gas was captured by pointing at a short voting-window contract, opening several reports against it, and invoking the finalize routine once to close them in a single transaction.
+The Clique block interval was derived from consecutive sealed block timestamps rather than the configured period alone, because live validator timing can differ slightly from the nominal setting. Vote transactions were costed with the same five-sample method used for report submission. Batch-finalization gas has been captured by pointing at a short voting-window contract, opening several reports against it, and invoking the finalize routine once to close them in a single transaction.
 
 \subsection{Results}
 
@@ -450,7 +450,7 @@ These measurements has been read directly from the deployed network described in
 
 \subsection{Method}
 
-A manual integration script uploads files of increasing size through the IPFS HTTP service, retrieves each one by its returned CID, and compares the retrieved content hash against the original. This directly exercises the content-addressing guarantee the architecture relies on. If a CID resolves to content whose hash matches what was uploaded, the integrity property is behaving as designed. Concurrent uploads and an unreachable-service case are also checked, so that both normal and failure conditions are covered.
+A manual integration script uploads files of increasing size through the IPFS HTTP service, retrieves each one by its returned CID, and compares the retrieved content hash against the original. This directly exercises the content-addressing guarantee the architecture relies on. If a CID resolves to content whose hash matches what was uploaded, the integrity property is behaving as designed. Concurrent uploads and an unreachable-service case have also been checked, so that both normal and failure conditions are covered.
 
 \subsection{Results}
 
@@ -509,7 +509,7 @@ The test cases, their descriptions, and the results of the IPFS integration test
 
 
 
-All eight cases has been passed. As illustrated in Figure~\ref{fig:ipfs-latency-chart}, upload latency increases with attachment size, from 518\,ms for a text-only complaint to 4{,}308\,ms for a $\sim$5\,MB image, and five concurrent uploads complete successfully with distinct CIDs.
+All eight cases have been passed. As illustrated in Figure~\ref{fig:ipfs-latency-chart}, upload latency increases with attachment size, from 518\,ms for a text-only complaint to 4{,}308\,ms for a $\sim$5\,MB image, and five concurrent uploads complete successfully with distinct CIDs.
 
 The identity simulator has been exercised as part of the same integrated workflow described in Section~\ref{sec:e2e-testing}. A government-signed ticket identifier is issued, consumed by the relayer, and its nullifier is recognized by the contracts on reuse.
 
