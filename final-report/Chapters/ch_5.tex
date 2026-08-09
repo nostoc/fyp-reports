@@ -149,7 +149,7 @@ For EmergencyReporting.sol, the fast-track path has been checked end to end. A s
 \end{table}
 
 
-All 75 cases across the five contract test files passed in a single combined Hardhat run completing in five seconds. More details on the test cases are provided in Appendix~\ref{apndx:smart-contract-test-cases}.
+All 75 cases across the five contract test files passed in a single combined Hardhat run completing in five seconds as shown in Table~\ref{tab:contract-results}. More details on the test cases are provided in Appendix~\ref{apndx:smart-contract-test-cases}.
 
 \section{Security and Sybil-Resistance Testing}
 \label{sec:security-testing}
@@ -261,7 +261,7 @@ The relayer's cryptographic and validation logic has been tested in isolation wi
 \end{table}
 
 
-All three spec files pass, giving 25 passing cases in 2.538\,s. More detailed test cases are provided in Appendix~\ref{apndx:relayer-test-cases}.
+All three spec files pass, giving 25 passing cases in 2.538\,s as shown in Table~\ref{tab:relayer-results}. More detailed test cases are provided in Appendix~\ref{apndx:relayer-test-cases}.
 
 \section{AI Moderation Testing}
 \label{sec:ai-testing}
@@ -516,7 +516,7 @@ The identity simulator has been exercised as part of the same integrated workflo
 \section{\ac{E2E} (E2E) Manual Testing }
 \label{sec:e2e-testing}
 
-A complete lifecycle scenario has been executed across every layer of the system. A simulated citizen registers via government identity simulator, and receives a batch of signed, single-use tickets. Then submit a standard report, which moves through AI moderation, IPFS storage, and finally on-chain submission. Three other citizens cast validation upvotes during voting window, and report moves to state Open after finalizaton. An authority claims the report, start working on it, and posts an update, updaing report state to InProgress. Then upload evidence to support resolution of the issue, and mark the report as solved, moving report state to PendingVerification. Two citizens accept the resolution by submitting positive verification votes, moving report state to Closed. 
+A complete lifecycle scenario has been executed across every layer of the system. A simulated citizen registers via government identity simulator, and receives a batch of signed, single-use tickets. Then submits a standard report, which moves through AI moderation, IPFS storage, and finally on-chain submission. Three other citizens cast validation upvotes during voting window, and report moves to state Open after finalizaton. An authority claims the report, start working on it, and posts an update, updating report state to InProgress. Then upload evidence to support resolution of the issue, and mark the report as solved, moving report state to PendingVerification. Two citizens accept the resolution by submitting positive verification votes, moving report state to Closed. 
 
 In addition to this happy path, full manual E2E UI test cases and together with screenshots are included in Section~\ref{sec:manual-e2e}. 
 
